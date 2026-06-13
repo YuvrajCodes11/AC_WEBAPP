@@ -37,6 +37,7 @@ def material_issue_list(request):
     if search:
         material_issues = material_issues.filter(
             Q(issue_id__icontains=search) |
+            Q(heading__icontains=search) |
             Q(project__project_id__icontains=search) |
             Q(project__site_name__icontains=search) |
             Q(project__customer__customer_name__icontains=search) |
@@ -61,10 +62,20 @@ def material_issue_list(request):
             total=Sum("returned_quantity")
         )["total"] or decimal_zero()
 
+        issue.total_unused_quantity = issue.items.aggregate(
+            total=Sum("unused_quantity")
+        )["total"] or decimal_zero()
+
+        issue.total_scrap_quantity = issue.items.aggregate(
+            total=Sum("scrap_quantity")
+        )["total"] or decimal_zero()
+
         issue.total_balance_quantity = (
             issue.total_issued_quantity
             - issue.total_consumed_quantity
             - issue.total_returned_quantity
+            - issue.total_unused_quantity
+            - issue.total_scrap_quantity
         )
 
     total_issues = MaterialIssue.objects.count()
@@ -135,7 +146,15 @@ def material_issue_customer_report(request):
             total=Sum("returned_quantity")
         )["total"] or decimal_zero()
 
-        total_balance = total_issued - total_consumed - total_returned
+        total_unused = issue_items.aggregate(
+            total=Sum("unused_quantity")
+        )["total"] or decimal_zero()
+
+        total_scrap = issue_items.aggregate(
+            total=Sum("scrap_quantity")
+        )["total"] or decimal_zero()
+
+        total_balance = total_issued - total_consumed - total_returned - total_unused - total_scrap
 
         if issue_items.exists():
             report_data.append({
@@ -145,11 +164,46 @@ def material_issue_customer_report(request):
                 "total_issued": total_issued,
                 "total_consumed": total_consumed,
                 "total_returned": total_returned,
+                "total_unused": total_unused,
+                "total_scrap": total_scrap,
                 "total_balance": total_balance,
             })
 
     return render(request, "material_issue_customer_report.html", {
         "report_data": report_data,
+        "search": search,
+    })
+
+
+@login_required
+def scrap_report(request):
+    search = request.GET.get("search", "").strip()
+
+    scrap_items = MaterialIssueItem.objects.select_related(
+        "material_issue",
+        "material_issue__project",
+        "material_issue__project__customer",
+        "store_item",
+        "store_item__category",
+    ).filter(scrap_quantity__gt=0).order_by("-scrap_date", "-id")
+
+    if search:
+        scrap_items = scrap_items.filter(
+            Q(material_issue__issue_id__icontains=search) |
+            Q(material_issue__project__project_id__icontains=search) |
+            Q(material_issue__project__customer__customer_name__icontains=search) |
+            Q(store_item__item_code__icontains=search) |
+            Q(store_item__item_description__icontains=search) |
+            Q(scrap_reason__icontains=search)
+        )
+
+    total_scrap = scrap_items.aggregate(
+        total=Sum("scrap_quantity")
+    )["total"] or decimal_zero()
+
+    return render(request, "scrap_report.html", {
+        "scrap_items": scrap_items,
+        "total_scrap": total_scrap,
         "search": search,
     })
 
@@ -185,6 +239,7 @@ def add_material_issue(request):
             project_id = request.POST.get("project")
             boq_id = request.POST.get("boq") or None
             issued_to = request.POST.get("issued_to", "Site Engineer").strip()
+            heading = request.POST.get("heading", "").strip() or "Material Issue"
             received_by = request.POST.get("received_by", "").strip()
             status = request.POST.get("status") or "ISSUED"
             remarks = request.POST.get("remarks", "").strip()
@@ -203,11 +258,12 @@ def add_material_issue(request):
 
                 boq = None
                 if boq_id:
-                    boq = get_object_or_404(ProjectBOQ, id=boq_id)
+                    boq = get_object_or_404(ProjectBOQ, id=boq_id, project=project)
 
                 material_issue = MaterialIssue.objects.create(
                     project=project,
                     boq=boq,
+                    heading=heading,
                     issued_to=issued_to or "Site Engineer",
                     received_by=received_by,
                     status=status,
@@ -239,7 +295,8 @@ def add_material_issue(request):
                         if boq_item_id:
                             boq_item = get_object_or_404(
                                 ProjectBOQItem,
-                                id=boq_item_id
+                                id=boq_item_id,
+                                boq__project=project,
                             )
 
                     remark = ""
@@ -306,10 +363,20 @@ def material_issue_detail(request, id):
         total=Sum("returned_quantity")
     )["total"] or decimal_zero()
 
+    total_unused_quantity = issue_items.aggregate(
+        total=Sum("unused_quantity")
+    )["total"] or decimal_zero()
+
+    total_scrap_quantity = issue_items.aggregate(
+        total=Sum("scrap_quantity")
+    )["total"] or decimal_zero()
+
     total_balance_quantity = (
         total_issued_quantity
         - total_consumed_quantity
         - total_returned_quantity
+        - total_unused_quantity
+        - total_scrap_quantity
     )
 
     return render(request, "material_issue_detail.html", {
@@ -318,6 +385,8 @@ def material_issue_detail(request, id):
         "total_issued_quantity": total_issued_quantity,
         "total_consumed_quantity": total_consumed_quantity,
         "total_returned_quantity": total_returned_quantity,
+        "total_unused_quantity": total_unused_quantity,
+        "total_scrap_quantity": total_scrap_quantity,
         "total_balance_quantity": total_balance_quantity,
     })
 
@@ -354,7 +423,8 @@ def edit_material_issue(request, id):
                 if boq_id:
                     material_issue.boq = get_object_or_404(
                         ProjectBOQ,
-                        id=boq_id
+                        id=boq_id,
+                        project=material_issue.project
                     )
                 else:
                     material_issue.boq = None
@@ -363,6 +433,10 @@ def edit_material_issue(request, id):
                     "issued_to",
                     "Site Engineer"
                 ).strip()
+
+                material_issue.heading = (
+                    request.POST.get("heading", "").strip() or "Material Issue"
+                )
 
                 material_issue.received_by = request.POST.get(
                     "received_by",
@@ -415,6 +489,8 @@ def add_material_issue_item(request, issue_id):
 
     if material_issue.boq:
         boq_items = boq_items.filter(boq=material_issue.boq)
+    else:
+        boq_items = boq_items.filter(boq__project=material_issue.project)
 
     error = None
 
@@ -440,7 +516,11 @@ def add_material_issue_item(request, issue_id):
 
                 boq_item = None
                 if boq_item_id:
-                    boq_item = get_object_or_404(ProjectBOQItem, id=boq_item_id)
+                    boq_item = get_object_or_404(
+                        ProjectBOQItem,
+                        id=boq_item_id,
+                        boq__project=material_issue.project,
+                    )
 
                 MaterialIssueItem.objects.create(
                     material_issue=material_issue,
@@ -487,6 +567,8 @@ def edit_material_issue_item(request, id):
 
     if issue_item.material_issue.boq:
         boq_items = boq_items.filter(boq=issue_item.material_issue.boq)
+    else:
+        boq_items = boq_items.filter(boq__project=issue_item.material_issue.project)
 
     error = None
 
@@ -500,6 +582,21 @@ def edit_material_issue_item(request, id):
                 request.POST.get("returned_quantity") or "0"
             )
 
+            issue_item.unused_quantity = Decimal(
+                request.POST.get("unused_quantity") or "0"
+            )
+
+            issue_item.serial_number = (
+                request.POST.get("serial_number", "").strip()
+                or issue_item.store_item.serial_number
+            )
+
+            issue_item.scrap_quantity = Decimal(
+                request.POST.get("scrap_quantity") or "0"
+            )
+
+            issue_item.scrap_date = request.POST.get("scrap_date") or None
+            issue_item.scrap_reason = request.POST.get("scrap_reason", "").strip()
             issue_item.remarks = request.POST.get("remarks", "").strip()
 
             issue_item.save()
@@ -578,10 +675,20 @@ def material_issue_print(request, id):
         total=Sum("returned_quantity")
     )["total"] or decimal_zero()
 
+    total_unused_quantity = issue_items.aggregate(
+        total=Sum("unused_quantity")
+    )["total"] or decimal_zero()
+
+    total_scrap_quantity = issue_items.aggregate(
+        total=Sum("scrap_quantity")
+    )["total"] or decimal_zero()
+
     total_balance_quantity = (
         total_issued_quantity
         - total_consumed_quantity
         - total_returned_quantity
+        - total_unused_quantity
+        - total_scrap_quantity
     )
 
     return render(request, "material_issue_print.html", {
@@ -590,5 +697,7 @@ def material_issue_print(request, id):
         "total_issued_quantity": total_issued_quantity,
         "total_consumed_quantity": total_consumed_quantity,
         "total_returned_quantity": total_returned_quantity,
+        "total_unused_quantity": total_unused_quantity,
+        "total_scrap_quantity": total_scrap_quantity,
         "total_balance_quantity": total_balance_quantity,
     })

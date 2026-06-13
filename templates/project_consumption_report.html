@@ -33,9 +33,10 @@ Project Consumption Report
 
                 <thead>
                     <tr class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] text-white">
-                        <th class="px-6 py-5 text-left">Project</th>
+                        <th class="px-6 py-5 text-left">Customer / Project</th>
                         <th class="px-6 py-5 text-left">Location</th>
-                        <th class="px-6 py-5 text-left">Item</th>
+                        <th class="px-6 py-5 text-left">Material Item</th>
+                        <th class="px-6 py-5 text-left">Type</th>
                         <th class="px-6 py-5 text-left">Size</th>
                         <th class="px-6 py-5 text-left">Unit</th>
                         <th class="px-6 py-5 text-left">Total Qty</th>
@@ -47,9 +48,15 @@ Project Consumption Report
                     {% for row in rows %}
 
                     <tr class="hover:bg-blue-50">
-                        <td class="px-6 py-5 font-bold">{{ row.issue__project__customer_name }}</td>
+                        <td class="px-6 py-5 font-bold">
+                            {{ row.customer_name|default:"No Customer" }}
+                            <div class="text-sm font-normal text-gray-500">
+                                {{ row.project_id|default:"-" }}{% if row.site_name %} - {{ row.site_name }}{% endif %}
+                            </div>
+                        </td>
                         <td class="px-6 py-5">{{ row.issue__project__location }}</td>
                         <td class="px-6 py-5">{{ row.store_item__item_description }}</td>
+                        <td class="px-6 py-5">{% if row.store_item__is_vrv %}VRV{% else %}Non-VRV{% endif %}</td>
                         <td class="px-6 py-5">{{ row.store_item__size|default:"-" }}</td>
                         <td class="px-6 py-5">{{ row.store_item__unit }}</td>
                         <td class="px-6 py-5 font-bold text-[#0F4C81]">{{ row.total_quantity }}</td>
@@ -58,7 +65,7 @@ Project Consumption Report
                     {% empty %}
 
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">No consumption data found.</td>
+                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">No consumption data found.</td>
                     </tr>
 
                     {% endfor %}

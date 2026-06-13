@@ -124,6 +124,8 @@ def add_project(request):
                 material_collection_notes=request.POST.get("material_collection_notes", "").strip(),
                 project_stage_notes=request.POST.get("project_stage_notes", "").strip(),
                 remarks=request.POST.get("remarks", "").strip(),
+                insurance_start_date=parse_date(request.POST.get("insurance_start_date")),
+                insurance_end_date=parse_date(request.POST.get("insurance_end_date")),
                 is_active=True if request.POST.get("is_active") == "on" else True,
                 created_by=request.user,
             )
@@ -184,6 +186,8 @@ def edit_project(request, id):
             project.material_collection_notes = request.POST.get("material_collection_notes", "").strip()
             project.project_stage_notes = request.POST.get("project_stage_notes", "").strip()
             project.remarks = request.POST.get("remarks", "").strip()
+            project.insurance_start_date = parse_date(request.POST.get("insurance_start_date"))
+            project.insurance_end_date = parse_date(request.POST.get("insurance_end_date"))
             project.is_active = True if request.POST.get("is_active") == "on" else False
 
             project.save()

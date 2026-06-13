@@ -49,10 +49,23 @@ Edit Material Issue
 
                     <div>
                         <label class="block font-bold mb-2">
+                            Heading *
+                        </label>
+
+                        <input type="text"
+                               name="heading"
+                               required
+                               value="{{ material_issue.heading }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
                             Project *
                         </label>
 
                         <select name="project"
+                                id="project-select"
                                 required
                                 class="w-full border border-slate-300 rounded-2xl px-4 py-3">
 
@@ -72,6 +85,7 @@ Edit Material Issue
                         </label>
 
                         <select name="boq"
+                                id="boq-select"
                                 class="w-full border border-slate-300 rounded-2xl px-4 py-3">
 
                             <option value="">
@@ -80,8 +94,9 @@ Edit Material Issue
 
                             {% for boq in boqs %}
                             <option value="{{ boq.id }}"
+                                    data-project="{% if boq.project %}{{ boq.project.id }}{% endif %}"
                                     {% if material_issue.boq and material_issue.boq.id == boq.id %}selected{% endif %}>
-                                {{ boq.boq_id }} - {{ boq.project.site_name }}
+                                {{ boq.boq_id }}{% if boq.project %} - {{ boq.project.site_name }}{% endif %}
                             </option>
                             {% endfor %}
 
@@ -179,5 +194,29 @@ Edit Material Issue
     </div>
 
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const projectSelect = document.getElementById("project-select");
+    const boqSelect = document.getElementById("boq-select");
+
+    function filterBoqs() {
+        const projectId = projectSelect.value;
+        let selectedVisible = false;
+
+        Array.from(boqSelect.options).forEach(function(option) {
+            const visible = !option.value || option.dataset.project === projectId;
+            option.hidden = !visible;
+            option.disabled = !visible;
+            if (visible && option.selected) selectedVisible = true;
+        });
+
+        if (!selectedVisible) boqSelect.value = "";
+    }
+
+    projectSelect.addEventListener("change", filterBoqs);
+    filterBoqs();
+});
+</script>
 
 {% endblock %}

@@ -41,6 +41,11 @@ Material Issues
                         Customer Report
                     </a>
 
+                    <a href="{% url 'scrap_report' %}"
+                       class="bg-white/20 text-white px-5 py-3 rounded-2xl font-bold">
+                        Scrap Report
+                    </a>
+
                     <a href="{% url 'add_material_issue' %}"
                        class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
                         + New Issue
@@ -224,6 +229,7 @@ Material Issues
 
                             <td class="px-4 py-4 font-black text-[#0F4C81] whitespace-nowrap">
                                 {{ issue.issue_id }}
+                                <div class="text-xs text-slate-600 mt-1">{{ issue.heading }}</div>
                             </td>
 
                             <td class="px-4 py-4 min-w-[260px]">
@@ -281,10 +287,28 @@ Material Issues
                                     </div>
 
                                     <div class="bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
+                                        <p class="text-xs text-cyan-600 font-bold">
+                                            Not Used Material
+                                        </p>
+                                        <p class="font-black text-cyan-700">
+                                            {{ issue.total_unused_quantity }}
+                                        </p>
+                                    </div>
+
+                                    <div class="bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
                                         <p class="text-xs text-orange-500 font-bold">
-                                            Balance Material
+                                            Scrap Material
                                         </p>
                                         <p class="font-black text-orange-700">
+                                            {{ issue.total_scrap_quantity }}
+                                        </p>
+                                    </div>
+
+                                    <div class="bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                                        <p class="text-xs text-red-500 font-bold">
+                                            Balance Material
+                                        </p>
+                                        <p class="font-black text-red-700">
                                             {{ issue.total_balance_quantity }}
                                         </p>
                                     </div>

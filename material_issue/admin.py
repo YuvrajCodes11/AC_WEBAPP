@@ -18,6 +18,10 @@ class MaterialIssueItemInline(admin.TabularInline):
         "issued_quantity",
         "consumed_quantity",
         "returned_quantity",
+        "unused_quantity",
+        "scrap_quantity",
+        "serial_number",
+        "scrap_date",
         "balance_quantity",
         "remarks",
     )
@@ -31,6 +35,7 @@ class MaterialIssueItemInline(admin.TabularInline):
 class MaterialIssueAdmin(admin.ModelAdmin):
     list_display = (
         "issue_id",
+        "heading",
         "project",
         "boq",
         "issue_date",
@@ -49,6 +54,7 @@ class MaterialIssueAdmin(admin.ModelAdmin):
 
     search_fields = (
         "issue_id",
+        "heading",
         "project__project_id",
         "project__site_name",
         "project__customer__customer_name",
@@ -77,6 +83,10 @@ class MaterialIssueItemAdmin(admin.ModelAdmin):
         "issued_quantity",
         "consumed_quantity",
         "returned_quantity",
+        "unused_quantity",
+        "scrap_quantity",
+        "serial_number",
+        "scrap_date",
         "balance_quantity",
         "is_stock_updated",
         "created_at",

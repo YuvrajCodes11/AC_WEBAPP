@@ -8,9 +8,7 @@ class CustomerComplaintForm(forms.ModelForm):
         model = CustomerComplaint
         fields = [
             "customer",
-            "site_type",
             "visit_date",
-            "no_of_technicians",
             "complaint_title",
             "complaint_description",
             "work_done",
@@ -23,17 +21,8 @@ class CustomerComplaintForm(forms.ModelForm):
                 "class": "select2 w-full"
             }),
 
-            "site_type": forms.Select(attrs={
-                "class": "w-full border border-slate-300 rounded-2xl px-4 py-3"
-            }),
-
             "visit_date": forms.DateInput(attrs={
                 "type": "date",
-                "class": "w-full border border-slate-300 rounded-2xl px-4 py-3"
-            }),
-
-            "no_of_technicians": forms.NumberInput(attrs={
-                "min": "1",
                 "class": "w-full border border-slate-300 rounded-2xl px-4 py-3"
             }),
 

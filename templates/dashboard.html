@@ -91,6 +91,36 @@ Dashboard
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
 
+        {% if insurance_alerts %}
+        <div class="col-span-full mb-2">
+            <div class="bg-amber-50 border border-amber-300 rounded-2xl p-4">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-amber-600 text-lg">⚠️</span>
+                    <h3 class="font-black text-amber-800 text-sm uppercase tracking-wide">Insurance Expiry Alerts</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {% for project in insurance_alerts %}
+                    <div class="bg-white border border-amber-200 rounded-xl p-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-black text-slate-800 text-sm">{{ project.site_name }}</p>
+                                <p class="text-xs text-slate-500 mt-0.5">{{ project.project_id }}</p>
+                                {% if project.customer %}
+                                <p class="text-xs text-blue-700 font-bold mt-1">{{ project.customer.customer_name }}</p>
+                                {% endif %}
+                                <p class="text-xs text-slate-500 mt-1">Insurance End: <span class="font-bold text-slate-700">{{ project.insurance_end_date }}</span></p>
+                            </div>
+                            <span class="{% if project.insurance_days_left == 0 %}bg-red-100 text-red-700{% elif project.insurance_days_left <= 3 %}bg-orange-100 text-orange-700{% else %}bg-amber-100 text-amber-700{% endif %} px-2 py-1 rounded-lg text-xs font-black whitespace-nowrap">
+                                {% if project.insurance_days_left == 0 %}Expires Today{% else %}{{ project.insurance_days_left }}d left{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         {% if profile.role == "CEO" %}
         <a href="{% url 'add_manager' %}" class="animate-card delay-1 dashboard-card group relative overflow-hidden bg-gradient-to-br from-indigo-900 to-[#0F4C81] text-white p-5 rounded-3xl flex flex-col justify-between h-full">
             <div>

@@ -150,6 +150,14 @@ def reports_dashboard(request):
         total=models.Sum("returned_quantity")
     )["total"] or 0
 
+    total_material_unused_quantity = MaterialIssueItem.objects.aggregate(
+        total=models.Sum("unused_quantity")
+    )["total"] or 0
+
+    total_material_scrap_quantity = MaterialIssueItem.objects.aggregate(
+        total=models.Sum("scrap_quantity")
+    )["total"] or 0
+
     recent_customers = Customer.objects.order_by("-id")[:10]
 
     recent_projects = CustomerProject.objects.select_related(
@@ -225,6 +233,8 @@ def reports_dashboard(request):
         "total_material_issued_quantity": total_material_issued_quantity,
         "total_material_consumed_quantity": total_material_consumed_quantity,
         "total_material_returned_quantity": total_material_returned_quantity,
+        "total_material_unused_quantity": total_material_unused_quantity,
+        "total_material_scrap_quantity": total_material_scrap_quantity,
 
         "recent_customers": recent_customers,
         "recent_projects": recent_projects,

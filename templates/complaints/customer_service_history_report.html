@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Service History{% endblock %}
+
+{% block content %}
+
+<style>
+@media print {
+    .no-print, nav, aside, header, footer, a, button { display: none !important; }
+    body { background: white !important; }
+    .print-card { box-shadow: none !important; border: 1px solid #000 !important; break-inside: avoid; }
+    table { width: 100% !important; border-collapse: collapse !important; }
+    th, td { border: 1px solid #000 !important; color: #000 !important; padding: 6px !important; }
+}
+</style>
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="no-print bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white">Customer Service History</h1>
+                    <p class="text-blue-100 mt-2">Customer-wise complaints, visits and service history.</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'complaint_dashboard' %}" class="bg-white/20 text-white px-5 py-3 rounded-2xl font-bold">Dashboard</a>
+                    <button onclick="window.print()" class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">Print / PDF</button>
+                </div>
+            </div>
+        </div>
+
+        <form method="GET" class="no-print bg-white rounded-3xl border border-slate-200 p-4 mb-8 flex gap-3">
+            <input name="search" value="{{ search }}" placeholder="Search customer, ID, phone or company..."
+                   class="flex-1 border border-slate-200 rounded-2xl px-4 py-3">
+            <button class="bg-[#0F4C81] text-white px-6 py-3 rounded-2xl font-bold">Search</button>
+            {% if search %}
+            <a href="{% url 'customer_service_history_report' %}" class="bg-slate-100 text-slate-700 px-6 py-3 rounded-2xl font-bold">Clear</a>
+            {% endif %}
+        </form>
+
+        {% for entry in report_data %}
+        <div class="print-card bg-white rounded-3xl border border-slate-200 shadow-sm mb-8 overflow-hidden">
+            <div class="bg-slate-50 border-b border-slate-200 px-6 py-5">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase">Customer Information</p>
+                        <h2 class="text-2xl font-black text-slate-900 mt-1">{{ entry.customer.customer_name }}</h2>
+                        <p class="text-sm text-slate-600 mt-1">
+                            {{ entry.customer.customer_id }} | {{ entry.customer.phone_number }}
+                            {% if entry.customer.company_name %}| {{ entry.customer.company_name }}{% endif %}
+                        </p>
+                        <p class="text-sm text-slate-500 mt-1">{{ entry.customer.address|default:"-" }}</p>
+                        <a href="{% url 'customer_service_history_pdf' entry.customer.id %}"
+                           class="no-print inline-flex mt-3 bg-[#0F4C81] text-white px-4 py-2 rounded-xl text-sm font-bold">
+                            Download PDF
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-center">
+                        <div class="bg-blue-50 rounded-2xl px-4 py-3">
+                            <p class="text-xs font-bold text-blue-500 uppercase">Complaints</p>
+                            <p class="text-2xl font-black text-blue-700">{{ entry.total_complaints }}</p>
+                        </div>
+                        <div class="bg-green-50 rounded-2xl px-4 py-3">
+                            <p class="text-xs font-bold text-green-500 uppercase">Visits</p>
+                            <p class="text-2xl font-black text-green-700">{{ entry.total_visits }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-8">
+                <div>
+                    <h3 class="text-lg font-black text-[#0F4C81] mb-3">Visit Dates</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">Date</th>
+                                    <th class="px-4 py-3 text-left">Type</th>
+                                    <th class="px-4 py-3 text-left">Status</th>
+                                    <th class="px-4 py-3 text-left">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for visit in entry.visits %}
+                                <tr class="border-t">
+                                    <td class="px-4 py-3">{{ visit.service_date|date:"d M Y" }}</td>
+                                    <td class="px-4 py-3">{{ visit.get_service_type_display }}</td>
+                                    <td class="px-4 py-3">{{ visit.get_status_display }}</td>
+                                    <td class="px-4 py-3">{{ visit.remarks|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="px-4 py-5 text-center text-slate-500">No scheduled visits.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-black text-[#0F4C81] mb-3">Complaint History</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">Complaint</th>
+                                    <th class="px-4 py-3 text-left">Date</th>
+                                    <th class="px-4 py-3 text-left">Site Type</th>
+                                    <th class="px-4 py-3 text-left">Status</th>
+                                    <th class="px-4 py-3 text-left">Service History</th>
+                                    <th class="px-4 py-3 text-left">Technician</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for complaint in entry.complaints %}
+                                <tr class="border-t">
+                                    <td class="px-4 py-3 font-bold">{{ complaint.complaint_id }} - {{ complaint.complaint_title }}</td>
+                                    <td class="px-4 py-3">{{ complaint.visit_date|date:"d M Y" }}</td>
+                                    <td class="px-4 py-3">{{ complaint.get_site_type_display }}</td>
+                                    <td class="px-4 py-3">{{ complaint.get_status_display }}</td>
+                                    <td class="px-4 py-3">{{ complaint.work_done|default:complaint.complaint_description|default:"-" }}</td>
+                                    <td class="px-4 py-3">-</td>
+                                </tr>
+                                {% endfor %}
+                                {% for service in entry.service_complaints %}
+                                <tr class="border-t">
+                                    <td class="px-4 py-3 font-bold">{{ service.complaint_id }}</td>
+                                    <td class="px-4 py-3">{{ service.complaint_date|date:"d M Y" }}</td>
+                                    <td class="px-4 py-3">{{ service.customer_category }}</td>
+                                    <td class="px-4 py-3">{{ service.get_status_display }}</td>
+                                    <td class="px-4 py-3">{{ service.nature_of_complaint }}{% if service.remarks %}<br>{{ service.remarks }}{% endif %}</td>
+                                    <td class="px-4 py-3">{{ service.technician_name|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                                {% if not entry.complaints and not entry.service_complaints %}
+                                <tr><td colspan="6" class="px-4 py-5 text-center text-slate-500">No complaints found.</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white rounded-3xl border border-slate-200 p-14 text-center text-slate-500">
+            No customer service history found.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

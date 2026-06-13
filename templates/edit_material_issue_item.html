@@ -20,7 +20,7 @@ Edit Material Issue Item
                     </h1>
 
                     <p class="text-blue-100 mt-2">
-                        Update consumed, returned and balance quantity.
+                        Update consumed, returned, scrap and balance quantity.
                     </p>
                 </div>
 
@@ -116,6 +116,64 @@ Edit Material Issue Item
                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
 
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Not Used Quantity
+                        </label>
+
+                        <input type="number"
+                               name="unused_quantity"
+                               step="0.01"
+                               min="0"
+                               value="{{ issue_item.unused_quantity }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Serial Number
+                        </label>
+
+                        <input type="text"
+                               name="serial_number"
+                               value="{{ issue_item.serial_number|default:issue_item.store_item.serial_number|default:'' }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Scrap Quantity
+                        </label>
+
+                        <input type="number"
+                               name="scrap_quantity"
+                               step="0.01"
+                               min="0"
+                               value="{{ issue_item.scrap_quantity }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Scrap Date
+                        </label>
+
+                        <input type="date"
+                               name="scrap_date"
+                               value="{{ issue_item.scrap_date|date:'Y-m-d'|default:'' }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                </div>
+
+                <div class="mt-5">
+                    <label class="block font-bold mb-2">
+                        Scrap Reason
+                    </label>
+
+                    <textarea name="scrap_reason"
+                              rows="3"
+                              class="w-full border border-slate-300 rounded-2xl px-4 py-3">{{ issue_item.scrap_reason|default:"" }}</textarea>
                 </div>
 
                 <div class="mt-5">

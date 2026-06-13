@@ -59,7 +59,7 @@ Print Material Issue
                 </p>
 
                 <h2 class="text-xl font-black text-slate-900 mt-5 uppercase">
-                    Material Issue Slip
+                    {{ material_issue.heading }}
                 </h2>
 
             </div>
@@ -123,9 +123,12 @@ Print Material Issue
                             <th class="border border-slate-300 px-3 py-2 text-left">Item Description</th>
                             <th class="border border-slate-300 px-3 py-2 text-left">Size</th>
                             <th class="border border-slate-300 px-3 py-2 text-left">Unit</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Type</th>
                             <th class="border border-slate-300 px-3 py-2 text-left">Issued Qty</th>
                             <th class="border border-slate-300 px-3 py-2 text-left">Consumed</th>
                             <th class="border border-slate-300 px-3 py-2 text-left">Returned</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Not Used</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Scrap</th>
                             <th class="border border-slate-300 px-3 py-2 text-left">Balance</th>
                         </tr>
                     </thead>
@@ -139,14 +142,17 @@ Print Material Issue
                             <td class="border border-slate-300 px-3 py-2">{{ item.store_item.item_description }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.store_item.size|default:"-" }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.store_item.get_unit_display }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{% if item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.issued_quantity }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.consumed_quantity }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.returned_quantity }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.unused_quantity }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.scrap_quantity }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.balance_quantity }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="9" class="border border-slate-300 px-3 py-6 text-center">
+                            <td colspan="12" class="border border-slate-300 px-3 py-6 text-center">
                                 No material item found.
                             </td>
                         </tr>

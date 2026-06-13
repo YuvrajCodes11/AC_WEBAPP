@@ -222,25 +222,23 @@ def project_full_pdf_report(request, project_id):
                     fontName="Helvetica-Bold" if bold else "Helvetica",
                     textColor=col, alignment=align))
 
-            cw = [(PAGE_W - 2*MARGIN)*p for p in [0.32, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.09]]
-            bdata = [[hdr("Item"), hdr("Unit"), hdr("Req."), hdr("Issued"),
-                      hdr("Consumed"), hdr("Returned"), hdr("Balance"), hdr("Amount")]]
+            cw = [(PAGE_W - 2*MARGIN)*p for p in [0.36, 0.1, 0.12, 0.12, 0.12, 0.18]]
+            bdata = [[hdr("Item"), hdr("Unit"), hdr("BOQ Qty"), hdr("Issued"),
+                      hdr("Balance"), hdr("Amount")]]
             gtot = Decimal("0")
             for item in boq_items:
                 gtot += item.total_amount()
                 bdata.append([
-                    td(item.store_item.item_description),
+                    td(f"{item.store_item.item_description} ({'VRV' if item.store_item.is_vrv else 'Non-VRV'})"),
                     td(item.store_item.get_unit_display(), align=1),
                     td(f"{item.required_quantity:.1f}", align=2),
                     td(f"{item.issued_quantity:.1f}", col=colors.HexColor("#2563EB"), align=2),
-                    td(f"{item.consumed_quantity:.1f}", col=BRAND_ORANGE, align=2),
-                    td(f"{item.returned_quantity:.1f}", col=BRAND_PURPLE, align=2),
                     td(f"{item.balance_quantity():.1f}", bold=True, col=BRAND_RED, align=2),
                     td(fmt_money(item.total_amount()), bold=True, col=BRAND_GREEN, align=2),
                 ])
             nr = len(bdata)
             bdata.append([
-                td("Total", bold=True), td(""), td(""), td(""), td(""), td(""), td(""),
+                td("Total", bold=True), td(""), td(""), td(""), td(""),
                 td(fmt_money(gtot), bold=True, col=BRAND_GREEN, align=2),
             ])
             bt = Table(bdata, colWidths=cw, repeatRows=1)
@@ -275,10 +273,12 @@ def project_full_pdf_report(request, project_id):
         items = issue.items.select_related("store_item").all()
         total_issued   = sum(i.issued_quantity for i in items)
         total_returned = sum(i.returned_quantity for i in items)
+        total_unused = sum(i.unused_quantity for i in items)
         total_consumed = sum(i.consumed_quantity for i in items)
+        total_scrap = sum(i.scrap_quantity for i in items)
 
         issue_hdr = Table([[
-            Paragraph(f"<b>{issue.issue_id}</b>", ParagraphStyle(
+            Paragraph(f"<b>{issue.issue_id}</b><br/>{issue.heading}", ParagraphStyle(
                 "ih", fontSize=9, fontName="Helvetica-Bold", textColor=BRAND_BLUE)),
             Paragraph(f"Date: {fmt_date(issue.issue_date)}  |  To: {issue.issued_to}  |  BOQ: {issue.boq.boq_id if issue.boq else '—'}", ParagraphStyle(
                 "im", fontSize=8, fontName="Helvetica", textColor=TEXT_MUTED)),
@@ -308,16 +308,18 @@ def project_full_pdf_report(request, project_id):
                     fontName="Helvetica-Bold" if bold else "Helvetica",
                     textColor=col, alignment=align))
 
-            cw2 = [(PAGE_W - 2*MARGIN)*p for p in [0.35, 0.1, 0.13, 0.13, 0.13, 0.16]]
+            cw2 = [(PAGE_W - 2*MARGIN)*p for p in [0.27, 0.08, 0.11, 0.11, 0.11, 0.11, 0.11, 0.10]]
             idata = [[hdr("Item"), hdr("Unit"), hdr("Issued"),
-                      hdr("Consumed"), hdr("Returned"), hdr("Balance")]]
+                      hdr("Consumed"), hdr("Returned"), hdr("Not Used"), hdr("Scrap"), hdr("Balance")]]
             for it in items:
                 idata.append([
-                    td(it.store_item.item_description),
+                    td(f"{it.store_item.item_description} ({'VRV' if it.store_item.is_vrv else 'Non-VRV'})"),
                     td(it.store_item.get_unit_display(), align=1),
                     td(f"{it.issued_quantity:.2f}", col=colors.HexColor("#2563EB"), align=2),
                     td(f"{it.consumed_quantity:.2f}", col=BRAND_ORANGE, align=2),
                     td(f"{it.returned_quantity:.2f}", col=BRAND_PURPLE, align=2),
+                    td(f"{it.unused_quantity:.2f}", col=colors.HexColor("#0891B2"), align=2),
+                    td(f"{it.scrap_quantity:.2f}", col=TEXT_MUTED, align=2),
                     td(f"{it.balance_quantity():.2f}", bold=True, col=BRAND_RED, align=2),
                 ])
             nr2 = len(idata)
@@ -326,7 +328,9 @@ def project_full_pdf_report(request, project_id):
                 td(f"{total_issued:.2f}", bold=True, col=colors.HexColor("#2563EB"), align=2),
                 td(f"{total_consumed:.2f}", bold=True, col=BRAND_ORANGE, align=2),
                 td(f"{total_returned:.2f}", bold=True, col=BRAND_PURPLE, align=2),
-                td(f"{total_issued - total_consumed - total_returned:.2f}", bold=True, col=BRAND_RED, align=2),
+                td(f"{total_unused:.2f}", bold=True, col=colors.HexColor("#0891B2"), align=2),
+                td(f"{total_scrap:.2f}", bold=True, col=TEXT_MUTED, align=2),
+                td(f"{total_issued - total_consumed - total_returned - total_unused - total_scrap:.2f}", bold=True, col=BRAND_RED, align=2),
             ])
             it2 = Table(idata, colWidths=cw2, repeatRows=1)
             alt2 = [("BACKGROUND", (0, r), (-1, r), TABLE_ROW_ALT)

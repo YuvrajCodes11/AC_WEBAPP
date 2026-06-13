@@ -49,6 +49,7 @@ Store Report
                         <th class="px-6 py-5 text-left">Size</th>
                         <th class="px-6 py-5 text-left">Remarks</th>
                         <th class="px-6 py-5 text-left">Unit</th>
+                        <th class="px-6 py-5 text-left">Type</th>
                         <th class="px-6 py-5 text-left">Stock</th>
                         <th class="px-6 py-5 text-left">Minimum</th>
                         <th class="px-6 py-5 text-left">Status</th>
@@ -66,6 +67,7 @@ Store Report
                         <td class="px-6 py-5">{{ item.size|default:"-" }}</td>
                         <td class="px-6 py-5">{{ item.remarks|default:"-" }}</td>
                         <td class="px-6 py-5">{{ item.get_unit_display }}</td>
+                        <td class="px-6 py-5">{% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}</td>
                         <td class="px-6 py-5 font-bold">{{ item.current_stock }}</td>
                         <td class="px-6 py-5">{{ item.minimum_stock }}</td>
                         <td class="px-6 py-5">
@@ -80,7 +82,7 @@ Store Report
                     {% empty %}
 
                     <tr>
-                        <td colspan="9" class="px-6 py-12 text-center text-gray-500">No store item found.</td>
+                        <td colspan="10" class="px-6 py-12 text-center text-gray-500">No store item found.</td>
                     </tr>
 
                     {% endfor %}

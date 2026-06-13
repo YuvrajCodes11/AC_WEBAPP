@@ -128,10 +128,10 @@ Add BOQ
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2">
-                            Select Project *
+                            Select Project (Optional)
                         </label>
 
-                        <select name="project" required class="nice-select project-select">
+                        <select name="project" class="nice-select project-select">
                             <option value="">Select Project</option>
 
                             {% for project in projects %}
@@ -245,6 +245,7 @@ Add BOQ
                                         {% endif %}
                                         | Category: {{ item.category.category_name }}
                                         | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
+                                        | {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
                                     </option>
                                     {% endfor %}
                                 </select>
@@ -256,7 +257,7 @@ Add BOQ
 
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-2">
-                                    Required Quantity *
+                                    BOQ Quantity *
                                 </label>
 
                                 <input type="number"
@@ -383,6 +384,7 @@ Add BOQ
                         {% endif %}
                         | Category: {{ item.category.category_name }}
                         | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
+                        | {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
                     </option>
                     {% endfor %}
                 </select>
@@ -394,7 +396,7 @@ Add BOQ
 
             <div>
                 <label class="block text-sm font-bold text-slate-700 mb-2">
-                    Required Quantity *
+                    BOQ Quantity *
                 </label>
 
                 <input type="number"
@@ -490,6 +492,40 @@ Add BOQ
         });
     }
 
+    function initializeCategorySearch() {
+        document.querySelectorAll(".category-filter").forEach(function(select) {
+            if (!select.tomselect) {
+                new TomSelect(select, {
+                    create: false,
+                    placeholder: "Search category...",
+                    searchField: ["text"]
+                });
+            }
+        });
+    }
+
+    function bindCategoryFilter(row) {
+        const category = row.querySelector(".category-filter");
+        const item = row.querySelector(".store-item-select");
+        if (!category || category.dataset.bound) return;
+
+        category.dataset.bound = "1";
+        category.addEventListener("change", function() {
+            const categoryId = category.value;
+            if (item.tomselect) item.tomselect.destroy();
+            Array.from(item.options).forEach(function(option) {
+                option.hidden = Boolean(option.value && categoryId && option.dataset.category !== categoryId);
+                option.disabled = option.hidden;
+            });
+            item.value = "";
+            initializeSingleStoreSearch(item);
+        });
+    }
+
+    function bindAllCategoryFilters() {
+        document.querySelectorAll(".boq-row").forEach(bindCategoryFilter);
+    }
+
     function addBOQRow() {
         const body = document.getElementById("boqItemsBody");
         const template = document.getElementById("boqRowTemplate");
@@ -502,6 +538,8 @@ Add BOQ
 
         const storeSelect = lastRow.querySelector(".store-item-select");
         initializeSingleStoreSearch(storeSelect);
+        initializeCategorySearch();
+        bindCategoryFilter(lastRow);
     }
 
     function removeBOQRow(button) {
@@ -532,6 +570,8 @@ Add BOQ
     document.addEventListener("DOMContentLoaded", function() {
         initializeProjectSearch();
         initializeStoreSearch();
+        initializeCategorySearch();
+        bindAllCategoryFilters();
     });
 </script>
 

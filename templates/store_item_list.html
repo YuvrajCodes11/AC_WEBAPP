@@ -202,6 +202,7 @@ Store Items
                             <th class="px-4 py-4 text-left">Category</th>
                             <th class="px-4 py-4 text-left">Size</th>
                             <th class="px-4 py-4 text-left">Unit</th>
+                            <th class="px-4 py-4 text-left">Type</th>
                             <th class="px-4 py-4 text-left">Opening</th>
                             <th class="px-4 py-4 text-left">Current</th>
                             <th class="px-4 py-4 text-left">Minimum</th>
@@ -261,6 +262,10 @@ Store Items
 
                             <td class="px-4 py-4">
                                 {{ item.get_unit_display }}
+                            </td>
+
+                            <td class="px-4 py-4 font-bold">
+                                {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
                             </td>
 
                             <td class="px-4 py-4">

@@ -144,6 +144,15 @@ Project Detail
         </div>
 
         <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm mb-8">
+            <h2 class="text-xl font-black text-slate-900 mb-5">Insurance</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div><p class="text-xs font-bold text-slate-400 uppercase">Start Date</p><p class="mt-2 font-bold">{{ project.insurance_start_date|date:"d M Y"|default:"-" }}</p></div>
+                <div><p class="text-xs font-bold text-slate-400 uppercase">End Date</p><p class="mt-2 font-bold">{{ project.insurance_end_date|date:"d M Y"|default:"-" }}</p></div>
+                <div><p class="text-xs font-bold text-slate-400 uppercase">Remaining Days</p><p class="mt-2 font-bold">{{ project.insurance_days_remaining|default:"-" }}</p></div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm mb-8">
 
             <h2 class="text-xl font-black text-slate-900 mb-5">
                 Project Dates

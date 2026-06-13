@@ -70,5 +70,10 @@ urlpatterns = [
         views.material_issue_customer_report,
         name="material_issue_customer_report"
     ),
+    path(
+        "scrap-report/",
+        views.scrap_report,
+        name="scrap_report"
+    ),
 
 ]

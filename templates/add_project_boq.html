@@ -64,7 +64,7 @@ Add Project BOQ
 
                                 {% for project in projects %}
                                 <option value="{{ project.id }}">
-                                    {{ project.customer_name }}{% if project.location %} - {{ project.location }}{% endif %}
+                                    {% if project.customer %}{{ project.customer.customer_name }}{% else %}No Customer{% endif %} - {{ project.site_name }}{% if project.location %} - {{ project.location }}{% endif %}
                                 </option>
                                 {% endfor %}
                             </select>

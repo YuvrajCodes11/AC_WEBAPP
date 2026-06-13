@@ -1,10 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Count, Sum
+from django.db.models import Count, Q
+from django.http import HttpResponse
 from django.utils import timezone
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from .models import CustomerComplaint
 from .forms import CustomerComplaintForm
+from customers.models import Customer, CustomerServiceSchedule
 
 
 def complaint_dashboard(request):
@@ -180,8 +187,7 @@ def yearly_visit_report(request):
         "customer__phone_number",
         "site_type",
     ).annotate(
-        total_visits=Count("id"),
-        total_technicians=Sum("no_of_technicians")
+        total_visits=Count("id")
     ).order_by(
         "customer__customer_name"
     )
@@ -192,3 +198,133 @@ def yearly_visit_report(request):
     }
 
     return render(request, "complaints/yearly_visit_report.html", context)
+
+
+def customer_service_history_report(request):
+    search = request.GET.get("search", "").strip()
+
+    customers = Customer.objects.prefetch_related(
+        "complaints",
+        "service_schedules",
+        "service_complaints",
+    ).all().order_by("customer_name")
+
+    if search:
+        customers = customers.filter(
+            Q(customer_id__icontains=search) |
+            Q(customer_name__icontains=search) |
+            Q(phone_number__icontains=search) |
+            Q(company_name__icontains=search)
+        )
+
+    report_data = []
+    for customer in customers:
+        complaints = CustomerComplaint.objects.filter(
+            customer=customer
+        ).order_by("-visit_date", "-id")
+
+        visits = CustomerServiceSchedule.objects.filter(
+            customer=customer
+        ).order_by("-service_date", "-id")
+
+        service_complaints = customer.service_complaints.all().order_by(
+            "-complaint_date", "-id"
+        )
+
+        if complaints.exists() or visits.exists() or service_complaints.exists():
+            report_data.append({
+                "customer": customer,
+                "total_complaints": complaints.count() + service_complaints.count(),
+                "total_visits": visits.count() + complaints.count(),
+                "complaints": complaints,
+                "visits": visits,
+                "service_complaints": service_complaints,
+            })
+
+    return render(request, "complaints/customer_service_history_report.html", {
+        "search": search,
+        "report_data": report_data,
+    })
+
+
+def customer_service_history_pdf(request, customer_id):
+    customer = get_object_or_404(Customer, id=customer_id)
+    complaints = CustomerComplaint.objects.filter(customer=customer).order_by("-visit_date")
+    visits = CustomerServiceSchedule.objects.filter(customer=customer).order_by("-service_date")
+    service_complaints = customer.service_complaints.all().order_by("-complaint_date")
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, title=f"Service History - {customer.customer_id}")
+    styles = getSampleStyleSheet()
+    elements = [
+        Paragraph("Puri Air Conditioning", styles["Title"]),
+        Paragraph("Customer Visit & Complaint History", styles["Heading2"]),
+        Spacer(1, 12),
+        Paragraph(
+            f"<b>{customer.customer_id} - {customer.customer_name}</b><br/>"
+            f"Phone: {customer.phone_number}<br/>"
+            f"Company: {customer.company_name or '-'}<br/>"
+            f"Address: {customer.address or '-'}",
+            styles["BodyText"],
+        ),
+        Spacer(1, 12),
+        Paragraph(
+            f"<b>Total Complaints:</b> {complaints.count() + service_complaints.count()} &nbsp;&nbsp; "
+            f"<b>Total Visits:</b> {visits.count() + complaints.count()}",
+            styles["BodyText"],
+        ),
+        Spacer(1, 12),
+        Paragraph("Visit History", styles["Heading3"]),
+    ]
+
+    visit_data = [["Date", "Type", "Status", "Notes"]]
+    for visit in visits:
+        visit_data.append([
+            visit.service_date.strftime("%d %b %Y"),
+            visit.get_service_type_display(),
+            visit.get_status_display(),
+            visit.remarks or "-",
+        ])
+    if len(visit_data) == 1:
+        visit_data.append(["-", "-", "-", "No visits"])
+
+    complaint_data = [["Date", "Complaint", "Status", "Service History", "Technician"]]
+    for complaint in complaints:
+        complaint_data.append([
+            complaint.visit_date.strftime("%d %b %Y"),
+            f"{complaint.complaint_id} - {complaint.complaint_title}",
+            complaint.get_status_display(),
+            complaint.work_done or complaint.complaint_description or "-",
+            "-",
+        ])
+    for complaint in service_complaints:
+        complaint_data.append([
+            complaint.complaint_date.strftime("%d %b %Y"),
+            complaint.complaint_id,
+            complaint.get_status_display(),
+            complaint.nature_of_complaint,
+            complaint.technician_name or "-",
+        ])
+    if len(complaint_data) == 1:
+        complaint_data.append(["-", "No complaints", "-", "-", "-"])
+
+    for data in (visit_data, complaint_data):
+        table = Table(data, repeatRows=1)
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0F4C81")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("FONTSIZE", (0, 0), (-1, -1), 7),
+            ("PADDING", (0, 0), (-1, -1), 4),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 12))
+        if data is visit_data:
+            elements.append(Paragraph("Complaint History", styles["Heading3"]))
+
+    doc.build(elements)
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="Service_History_{customer.customer_id}.pdf"'
+    return response

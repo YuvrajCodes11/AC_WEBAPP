@@ -116,6 +116,16 @@ class CustomerProject(models.Model):
         null=True
     )
 
+    insurance_start_date = models.DateField(
+        blank=True,
+        null=True
+    )
+
+    insurance_end_date = models.DateField(
+        blank=True,
+        null=True
+    )
+
     is_active = models.BooleanField(
         default=True
     )
@@ -160,6 +170,15 @@ class CustomerProject(models.Model):
                 "Actual completion date cannot be before start date."
             )
 
+        if (
+            self.insurance_start_date
+            and self.insurance_end_date
+            and self.insurance_end_date < self.insurance_start_date
+        ):
+            raise ValidationError(
+                "Insurance end date cannot be before insurance start date."
+            )
+
     def save(self, *args, **kwargs):
         self.clean()
 
@@ -192,6 +211,27 @@ class CustomerProject(models.Model):
 
     def get_capacity_display_text(self):
         return f"{self.capacity_value} {self.capacity_unit}"
+
+    def insurance_days_remaining(self):
+        from django.utils import timezone
+        if self.insurance_end_date:
+            today = timezone.localdate()
+            delta = (self.insurance_end_date - today).days
+            return delta
+        return None
+
+    def is_insurance_expiring_soon(self):
+        """Returns True if insurance expires within 7 days and has not expired."""
+        days = self.insurance_days_remaining()
+        if days is None:
+            return False
+        return 0 <= days <= 7
+
+    def is_insurance_active(self):
+        from django.utils import timezone
+        if not self.insurance_end_date:
+            return False
+        return self.insurance_end_date >= timezone.localdate()
 
     def is_on_hold(self):
         return self.project_status == "HOLD"

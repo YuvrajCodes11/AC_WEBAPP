@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 
 from .models import Profile
 
@@ -42,9 +43,29 @@ def dashboard(request):
 
     managers = Profile.objects.filter(role="MANAGER")
 
+    # Insurance expiry alerts: projects with insurance ending within 7 days
+    from projects.models import CustomerProject
+    today = timezone.localdate()
+    from datetime import timedelta
+    alert_date = today + timedelta(days=7)
+
+    insurance_alerts = CustomerProject.objects.select_related(
+        "customer"
+    ).filter(
+        is_active=True,
+        insurance_end_date__isnull=False,
+        insurance_end_date__gte=today,
+        insurance_end_date__lte=alert_date,
+    ).order_by("insurance_end_date")
+
+    # Annotate days remaining for template
+    for project in insurance_alerts:
+        project.insurance_days_left = (project.insurance_end_date - today).days
+
     return render(request, "dashboard.html", {
         "profile": profile,
-        "managers": managers
+        "managers": managers,
+        "insurance_alerts": insurance_alerts,
     })
 
 

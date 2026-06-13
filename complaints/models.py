@@ -82,6 +82,14 @@ class CustomerComplaint(models.Model):
             new_id = last_complaint.id + 1 if last_complaint else 1
             self.complaint_id = f"CMP{new_id:04d}"
 
+        if self.customer_id:
+            if self.customer.customer_category == "WARRANTY":
+                self.site_type = "WARRANTY"
+            elif self.customer.customer_category == "AMC":
+                self.site_type = "AMC"
+            else:
+                self.site_type = "GENERAL"
+
         super().save(*args, **kwargs)
 
     def __str__(self):

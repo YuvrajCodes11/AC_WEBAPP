@@ -75,7 +75,6 @@ Complaint List
                             <th class="p-4 text-left">Phone</th>
                             <th class="p-4 text-left">Site</th>
                             <th class="p-4 text-left">Visit Date</th>
-                            <th class="p-4 text-left">Technician</th>
                             <th class="p-4 text-left">Status</th>
                             <th class="p-4 text-left">Action</th>
                         </tr>
@@ -89,7 +88,6 @@ Complaint List
                             <td class="p-4">{{ complaint.customer.phone_number }}</td>
                             <td class="p-4">{{ complaint.get_site_type_display }}</td>
                             <td class="p-4">{{ complaint.visit_date }}</td>
-                            <td class="p-4">{{ complaint.no_of_technicians }}</td>
                             <td class="p-4">{{ complaint.get_status_display }}</td>
                             <td class="p-4 flex gap-3">
                                 <a href="{% url 'complaint_detail' complaint.id %}" class="text-[#0F4C81] font-bold">View</a>
@@ -98,7 +96,7 @@ Complaint List
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="8" class="p-8 text-center text-slate-500">
+                            <td colspan="7" class="p-8 text-center text-slate-500">
                                 No complaints found.
                             </td>
                         </tr>

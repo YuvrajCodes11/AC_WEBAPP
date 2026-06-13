@@ -130,7 +130,7 @@ Store Transactions
                                     {{ transaction.item.item_description }}
                                 </p>
                                 <p class="text-xs text-slate-500">
-                                    {{ transaction.item.item_code }}
+                                    {{ transaction.item.item_code }} | {% if transaction.item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
                                 </p>
                             </td>
 
@@ -146,6 +146,10 @@ Store Transactions
                                 {% elif transaction.transaction_type == "RETURN" %}
                                 <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
                                     Return
+                                </span>
+                                {% elif transaction.transaction_type == "SCRAP" %}
+                                <span class="px-3 py-1 rounded-full bg-slate-200 text-slate-700 text-xs font-bold">
+                                    Scrap
                                 </span>
                                 {% else %}
                                 <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">

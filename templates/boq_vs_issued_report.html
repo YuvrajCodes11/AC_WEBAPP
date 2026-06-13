@@ -36,7 +36,7 @@ BOQ vs Issued Report
                         <th class="px-6 py-5 text-left">BOQ</th>
                         <th class="px-6 py-5 text-left">Customer</th>
                         <th class="px-6 py-5 text-left">Project</th>
-                        <th class="px-6 py-5 text-left">Item</th>
+                        <th class="px-6 py-5 text-left">Material Item</th>
                         <th class="px-6 py-5 text-left">Size</th>
                         <th class="px-6 py-5 text-left">Unit</th>
                         <th class="px-6 py-5 text-left">BOQ Qty</th>
@@ -53,8 +53,8 @@ BOQ vs Issued Report
                     <tr class="hover:bg-blue-50">
                         <td class="px-6 py-5 font-bold text-[#0F4C81]">{{ row.boq.boq_id }}</td>
                         <td class="px-6 py-5">{{ row.customer.customer_name }}</td>
-                        <td class="px-6 py-5">{{ row.project.customer_name }}</td>
-                        <td class="px-6 py-5 font-bold">{{ row.store_item.item_description }}</td>
+                        <td class="px-6 py-5">{{ row.project.project_id }} - {{ row.project.site_name }}</td>
+                        <td class="px-6 py-5 font-bold">{{ row.store_item.item_description }} ({% if row.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %})</td>
                         <td class="px-6 py-5">{{ row.store_item.size|default:"-" }}</td>
                         <td class="px-6 py-5">{{ row.store_item.get_unit_display }}</td>
                         <td class="px-6 py-5 font-bold">{{ row.boq_qty }}</td>
@@ -99,7 +99,7 @@ BOQ vs Issued Report
                     <tr class="bg-orange-100 text-orange-800">
                         <th class="px-6 py-4 text-left">Issue</th>
                         <th class="px-6 py-4 text-left">Project</th>
-                        <th class="px-6 py-4 text-left">Item</th>
+                        <th class="px-6 py-4 text-left">Material Item</th>
                         <th class="px-6 py-4 text-left">Qty</th>
                         <th class="px-6 py-4 text-left">Alert</th>
                     </tr>
@@ -111,8 +111,8 @@ BOQ vs Issued Report
 
                     <tr>
                         <td class="px-6 py-4 font-bold">{{ item.issue.issue_id }}</td>
-                        <td class="px-6 py-4">{{ item.issue.project.customer_name }}</td>
-                        <td class="px-6 py-4">{{ item.store_item.item_description }}</td>
+                        <td class="px-6 py-4">{{ item.issue.project.project_id }} - {{ item.issue.project.site_name }}</td>
+                        <td class="px-6 py-4">{{ item.store_item.item_description }} ({% if item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %})</td>
                         <td class="px-6 py-4 font-bold">{{ item.quantity }}</td>
                         <td class="px-6 py-4 text-orange-700 font-bold">{{ item.alert_message }}</td>
                     </tr>

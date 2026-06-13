@@ -88,6 +88,14 @@
                                 <p class="text-xs font-bold text-yellow-500 uppercase">Returned</p>
                                 <p class="text-xl font-black text-yellow-700">{{ entry.total_returned }}</p>
                             </div>
+                            <div class="bg-slate-50 rounded-2xl px-4 py-3">
+                                <p class="text-xs font-bold text-cyan-600 uppercase">Not Used</p>
+                                <p class="text-xl font-black text-cyan-700">{{ entry.total_unused }}</p>
+                            </div>
+                            <div class="bg-slate-50 rounded-2xl px-4 py-3">
+                                <p class="text-xs font-bold text-slate-500 uppercase">Scrap</p>
+                                <p class="text-xl font-black text-slate-700">{{ entry.total_scrap }}</p>
+                            </div>
                             <div class="bg-red-50 rounded-2xl px-4 py-3">
                                 <p class="text-xs font-bold text-red-400 uppercase">Balance</p>
                                 <p class="text-xl font-black text-red-700">{{ entry.total_balance }}</p>
@@ -104,11 +112,14 @@
                                 <th class="px-6 py-4 text-left">#</th>
                                 <th class="px-6 py-4 text-left">Item</th>
                                 <th class="px-6 py-4 text-left">Category</th>
+                                <th class="px-6 py-4 text-left">Type</th>
                                 <th class="px-6 py-4 text-left">Size</th>
                                 <th class="px-6 py-4 text-left">Issue Date</th>
                                 <th class="px-6 py-4 text-right">Issued</th>
                                 <th class="px-6 py-4 text-right">Consumed</th>
                                 <th class="px-6 py-4 text-right">Returned</th>
+                                <th class="px-6 py-4 text-right">Not Used</th>
+                                <th class="px-6 py-4 text-right">Scrap</th>
                                 <th class="px-6 py-4 text-right">Balance</th>
                                 <th class="px-6 py-4 text-left">Unit</th>
                             </tr>
@@ -122,6 +133,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-slate-500">
                                     {{ item.store_item.category.category_name|default:"-" }}
+                                </td>
+                                <td class="px-6 py-4 text-slate-500">
+                                    {% if item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
                                 </td>
                                 <td class="px-6 py-4 text-slate-500">
                                     {{ item.store_item.size|default:"-" }}
@@ -138,8 +152,14 @@
                                 <td class="px-6 py-4 text-right font-bold text-yellow-600">
                                     {{ item.returned_quantity }}
                                 </td>
+                                <td class="px-6 py-4 text-right font-bold text-cyan-700">
+                                    {{ item.unused_quantity }}
+                                </td>
+                                <td class="px-6 py-4 text-right font-bold text-slate-700">
+                                    {{ item.scrap_quantity }}
+                                </td>
                                 <td class="px-6 py-4 text-right font-bold text-red-600">
-                                    {{ item.issued_quantity|add:"-"|add:item.consumed_quantity }}
+                                    {{ item.balance_quantity }}
                                 </td>
                                 <td class="px-6 py-4 text-slate-500">
                                     {{ item.store_item.get_unit_display }}

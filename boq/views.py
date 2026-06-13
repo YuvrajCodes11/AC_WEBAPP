@@ -88,62 +88,60 @@ def add_boq(request):
             rates = request.POST.getlist("rate")
             item_remarks = request.POST.getlist("item_remarks")
 
-            if not project_id:
-                error = "Please select project."
-
-            else:
+            project = None
+            if project_id:
                 project = get_object_or_404(CustomerProject, id=project_id)
 
-                boq = ProjectBOQ.objects.create(
-                    project=project,
-                    title=title or "Project BOQ",
-                    remarks=remarks,
-                    created_by=request.user,
+            boq = ProjectBOQ.objects.create(
+                project=project,
+                title=title or "Project BOQ",
+                remarks=remarks,
+                created_by=request.user,
+            )
+
+            item_added = False
+
+            for index, store_item_id in enumerate(store_item_ids):
+                if not store_item_id:
+                    continue
+
+                required_quantity = parse_decimal(
+                    required_quantities[index]
+                    if index < len(required_quantities)
+                    else "0"
                 )
 
-                item_added = False
+                rate = parse_decimal(
+                    rates[index]
+                    if index < len(rates)
+                    else "0"
+                )
 
-                for index, store_item_id in enumerate(store_item_ids):
-                    if not store_item_id:
-                        continue
+                if required_quantity <= 0:
+                    continue
 
-                    required_quantity = parse_decimal(
-                        required_quantities[index]
-                        if index < len(required_quantities)
-                        else "0"
-                    )
+                store_item = get_object_or_404(StoreItem, id=store_item_id)
 
-                    rate = parse_decimal(
-                        rates[index]
-                        if index < len(rates)
-                        else "0"
-                    )
+                remark = ""
+                if index < len(item_remarks):
+                    remark = item_remarks[index].strip()
 
-                    if required_quantity <= 0:
-                        continue
+                ProjectBOQItem.objects.create(
+                    boq=boq,
+                    store_item=store_item,
+                    required_quantity=required_quantity,
+                    rate=rate,
+                    remarks=remark,
+                )
 
-                    store_item = get_object_or_404(StoreItem, id=store_item_id)
+                item_added = True
 
-                    remark = ""
-                    if index < len(item_remarks):
-                        remark = item_remarks[index].strip()
-
-                    ProjectBOQItem.objects.create(
-                        boq=boq,
-                        store_item=store_item,
-                        required_quantity=required_quantity,
-                        rate=rate,
-                        remarks=remark,
-                    )
-
-                    item_added = True
-
-                if not item_added:
-                    boq.delete()
-                    error = "Please select at least one store item with quantity greater than 0."
-                else:
-                    messages.success(request, "BOQ created successfully.")
-                    return redirect("boq_detail", id=boq.id)
+            if not item_added:
+                boq.delete()
+                error = "Please select at least one store item with quantity greater than 0."
+            else:
+                messages.success(request, "BOQ created successfully.")
+                return redirect("boq_detail", id=boq.id)
 
         except Exception as e:
             error = str(e)
@@ -188,13 +186,7 @@ def boq_detail(request, id):
         total=Sum("issued_quantity")
     )["total"] or Decimal("0.00")
 
-    total_consumed_quantity = boq_items.aggregate(
-        total=Sum("consumed_quantity")
-    )["total"] or Decimal("0.00")
-
-    total_returned_quantity = boq_items.aggregate(
-        total=Sum("returned_quantity")
-    )["total"] or Decimal("0.00")
+    total_balance_quantity = total_required_quantity - total_issued_quantity
 
     return render(request, "boq_detail.html", {
         "boq": boq,
@@ -202,8 +194,7 @@ def boq_detail(request, id):
         "total_amount": total_amount,
         "total_required_quantity": total_required_quantity,
         "total_issued_quantity": total_issued_quantity,
-        "total_consumed_quantity": total_consumed_quantity,
-        "total_returned_quantity": total_returned_quantity,
+        "total_balance_quantity": total_balance_quantity if total_balance_quantity > 0 else Decimal("0.00"),
     })
 
 
@@ -226,25 +217,23 @@ def edit_boq(request, id):
             title = request.POST.get("title", "").strip()
             remarks = request.POST.get("remarks", "").strip()
 
-            if not project_id:
-                error = "Please select project."
-
-            else:
+            project = None
+            if project_id:
                 project = get_object_or_404(CustomerProject, id=project_id)
 
-                boq.project = project
-                boq.title = title or "Project BOQ"
-                boq.status = status or "DRAFT"
-                boq.remarks = remarks
+            boq.project = project
+            boq.title = title or "Project BOQ"
+            boq.status = status or "DRAFT"
+            boq.remarks = remarks
 
-                if boq.status == "APPROVED" and not boq.approved_by:
-                    boq.approved_by = request.user
-                    boq.approved_at = timezone.now()
+            if boq.status == "APPROVED" and not boq.approved_by:
+                boq.approved_by = request.user
+                boq.approved_at = timezone.now()
 
-                boq.save()
+            boq.save()
 
-                messages.success(request, "BOQ updated successfully.")
-                return redirect("boq_detail", id=boq.id)
+            messages.success(request, "BOQ updated successfully.")
+            return redirect("boq_detail", id=boq.id)
 
         except Exception as e:
             error = str(e)
@@ -340,18 +329,6 @@ def edit_boq_item(request, id):
 
                 boq_item.required_quantity = parse_decimal(
                     request.POST.get("required_quantity")
-                )
-
-                boq_item.issued_quantity = parse_decimal(
-                    request.POST.get("issued_quantity")
-                )
-
-                boq_item.consumed_quantity = parse_decimal(
-                    request.POST.get("consumed_quantity")
-                )
-
-                boq_item.returned_quantity = parse_decimal(
-                    request.POST.get("returned_quantity")
                 )
 
                 boq_item.rate = parse_decimal(

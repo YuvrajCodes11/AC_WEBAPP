@@ -73,6 +73,10 @@ Complaint Dashboard
                    class="text-[#0F4C81] font-black">
                     View Yearly Report →
                 </a>
+                <a href="{% url 'customer_service_history_report' %}"
+                   class="block mt-3 text-[#0F4C81] font-black">
+                    Customer History →
+                </a>
             </div>
 
         </div>
@@ -96,7 +100,6 @@ Complaint Dashboard
                             <th class="p-4 text-left">Customer</th>
                             <th class="p-4 text-left">Site Type</th>
                             <th class="p-4 text-left">Visit Date</th>
-                            <th class="p-4 text-left">Technicians</th>
                             <th class="p-4 text-left">Status</th>
                             <th class="p-4 text-left">Action</th>
                         </tr>
@@ -109,7 +112,6 @@ Complaint Dashboard
                             <td class="p-4">{{ complaint.customer.customer_name }}</td>
                             <td class="p-4">{{ complaint.get_site_type_display }}</td>
                             <td class="p-4">{{ complaint.visit_date }}</td>
-                            <td class="p-4">{{ complaint.no_of_technicians }}</td>
                             <td class="p-4">{{ complaint.get_status_display }}</td>
                             <td class="p-4">
                                 <a href="{% url 'complaint_detail' complaint.id %}"
@@ -120,7 +122,7 @@ Complaint Dashboard
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" class="p-6 text-center text-slate-500">
+                            <td colspan="6" class="p-6 text-center text-slate-500">
                                 No complaints found.
                             </td>
                         </tr>

@@ -12,8 +12,6 @@ class ProjectBOQItemInline(admin.TabularInline):
         "store_item",
         "required_quantity",
         "issued_quantity",
-        "consumed_quantity",
-        "returned_quantity",
         "rate",
         "remarks",
     )
@@ -63,11 +61,8 @@ class ProjectBOQItemAdmin(admin.ModelAdmin):
         "store_item",
         "required_quantity",
         "issued_quantity",
-        "consumed_quantity",
-        "returned_quantity",
         "rate",
         "balance_quantity",
-        "pending_collection_quantity",
         "total_amount",
     )
 

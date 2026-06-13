@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Scrap Report{% endblock %}
+{% block content %}
+<style>
+@media print {
+    .no-print, nav, aside, header, footer, button, a { display: none !important; }
+    body { background: white !important; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #000; padding: 6px; color: #000 !important; }
+}
+</style>
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="no-print bg-slate-900 text-white rounded-3xl p-8 mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-black">Scrap Report</h1>
+                <p class="text-slate-300 mt-2">Issued material marked as scrap.</p>
+            </div>
+            <button onclick="window.print()" class="bg-white text-slate-900 px-5 py-3 rounded-2xl font-bold">Print / PDF</button>
+        </div>
+        <form method="get" class="no-print bg-white border rounded-3xl p-4 mb-8 flex gap-3">
+            <input name="search" value="{{ search }}" placeholder="Search issue, project, customer, item or reason..."
+                   class="flex-1 border rounded-2xl px-4 py-3">
+            <button class="bg-[#0F4C81] text-white px-6 py-3 rounded-2xl font-bold">Search</button>
+        </form>
+        <div class="bg-white border rounded-3xl overflow-hidden">
+            <div class="p-5 border-b">
+                <strong>Total Scrap Quantity: {{ total_scrap }}</strong>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-4 text-left">Date</th>
+                            <th class="p-4 text-left">Issue</th>
+                            <th class="p-4 text-left">Customer / Project</th>
+                            <th class="p-4 text-left">Item</th>
+                            <th class="p-4 text-left">Type</th>
+                            <th class="p-4 text-right">Scrap Qty</th>
+                            <th class="p-4 text-left">Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in scrap_items %}
+                        <tr class="border-t">
+                            <td class="p-4">{{ item.scrap_date|date:"d M Y"|default:"-" }}</td>
+                            <td class="p-4 font-bold">{{ item.material_issue.issue_id }}</td>
+                            <td class="p-4">
+                                {% if item.material_issue.project.customer %}{{ item.material_issue.project.customer.customer_name }} | {% endif %}
+                                {{ item.material_issue.project.project_id }}
+                            </td>
+                            <td class="p-4">{{ item.store_item.item_code }} - {{ item.store_item.item_description }}</td>
+                            <td class="p-4">{% if item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}</td>
+                            <td class="p-4 text-right font-black">{{ item.scrap_quantity }}</td>
+                            <td class="p-4">{{ item.scrap_reason|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="p-10 text-center text-slate-500">No scrap records found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

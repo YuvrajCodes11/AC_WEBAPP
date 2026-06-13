@@ -138,6 +138,18 @@ Add Material Issue
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2">
+                            Heading *
+                        </label>
+
+                        <input type="text"
+                               name="heading"
+                               value="Material Issue"
+                               required
+                               class="nice-input">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">
                             Project *
                         </label>
 
@@ -167,7 +179,7 @@ Add Material Issue
                             <option value="">Search & Select BOQ</option>
 
                             {% for boq in boqs %}
-                            <option value="{{ boq.id }}">
+                            <option value="{{ boq.id }}" data-project="{% if boq.project %}{{ boq.project.id }}{% endif %}">
                                 {{ boq.boq_id }}
                                 {% if boq.project %}
                                     | {{ boq.project.project_id }} - {{ boq.project.site_name }}
@@ -300,6 +312,7 @@ Add Material Issue
                                             - {{ item.size }}
                                         {% endif %}
                                         | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
+                                        {% if item.is_vrv %}| VRV{% else %}| Non-VRV{% endif %}
                                     </option>
                                     {% endfor %}
                                 </select>
@@ -315,14 +328,15 @@ Add Material Issue
                                     <option value="">Search & Select BOQ Item</option>
 
                                     {% for boq_item in boq_items %}
-                                    <option value="{{ boq_item.id }}">
+                                    <option value="{{ boq_item.id }}" data-project="{% if boq_item.boq.project %}{{ boq_item.boq.project.id }}{% endif %}" data-boq="{{ boq_item.boq.id }}">
                                         {% if boq_item.boq %}
                                             {{ boq_item.boq.boq_id }} |
                                         {% endif %}
                                         {{ boq_item.store_item.item_code }} - {{ boq_item.store_item.item_description }}
                                         {% if boq_item.required_quantity %}
-                                            | Required: {{ boq_item.required_quantity }}
+                                            | Required: {{ boq_item.required_quantity }} | Balance: {{ boq_item.balance_quantity }}
                                         {% endif %}
+                                        {% if boq_item.store_item.is_vrv %}| VRV{% else %}| Non-VRV{% endif %}
                                     </option>
                                     {% endfor %}
                                 </select>
@@ -419,6 +433,24 @@ Add Material Issue
         });
     }
 
+    function filterBoqItems() {
+        const projectId = document.querySelector(".project-select").value;
+        const boqId = document.querySelector(".boq-select").value;
+
+        document.querySelectorAll(".boq-item-select").forEach(function(select) {
+            if (select.tomselect) select.tomselect.destroy();
+            Array.from(select.options).forEach(function(option) {
+                const validProject = !option.value || option.dataset.project === projectId;
+                const validBoq = !option.value || !boqId || option.dataset.boq === boqId;
+                option.hidden = !(validProject && validBoq);
+                option.disabled = option.hidden;
+            });
+            if (select.selectedOptions[0] && select.selectedOptions[0].disabled) select.value = "";
+        });
+
+        initializeSingleSelect(".boq-item-select", "Search BOQ item...");
+    }
+
     function addRow() {
         const itemRows = document.getElementById("itemRows");
         const firstRow = itemRows.querySelector(".item-row");
@@ -444,6 +476,7 @@ Add Material Issue
         itemRows.appendChild(clone);
 
         initializeAllSearchDropdowns();
+        filterBoqItems();
     }
 
     function removeRow(btn) {
@@ -460,6 +493,49 @@ Add Material Issue
 
     document.addEventListener("DOMContentLoaded", function() {
         initializeAllSearchDropdowns();
+
+        const projectSelect = document.querySelector(".project-select");
+        const boqSelect = document.querySelector(".boq-select");
+        const allBoqOptions = Array.from(boqSelect.options).map(function(option) {
+            return {
+                value: option.value,
+                text: option.textContent.trim(),
+                project: option.getAttribute("data-project") || ""
+            };
+        });
+
+        function filterBoqsForProject() {
+            const projectId = projectSelect.value;
+            const selectedBoqId = boqSelect.value;
+
+            if (boqSelect.tomselect) {
+                boqSelect.tomselect.clearOptions();
+                boqSelect.tomselect.addOption({value: "", text: "Search & Select BOQ"});
+            }
+
+            allBoqOptions.forEach(function(option) {
+                if (!option.value || option.project === projectId) {
+                    if (boqSelect.tomselect) {
+                        boqSelect.tomselect.addOption({value: option.value, text: option.text});
+                    }
+                }
+            });
+
+            const selectedStillValid = allBoqOptions.some(function(option) {
+                return option.value === selectedBoqId && option.project === projectId;
+            });
+            if (selectedBoqId && selectedStillValid) {
+                if (boqSelect.tomselect) boqSelect.tomselect.setValue(selectedBoqId, true);
+            } else if (boqSelect.tomselect) {
+                boqSelect.tomselect.clear(true);
+            }
+        }
+
+        projectSelect.addEventListener("change", filterBoqsForProject);
+        projectSelect.addEventListener("change", filterBoqItems);
+        boqSelect.addEventListener("change", filterBoqItems);
+        filterBoqsForProject();
+        filterBoqItems();
     });
 </script>
 

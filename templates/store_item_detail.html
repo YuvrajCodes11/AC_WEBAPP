@@ -104,6 +104,10 @@ Store Item Detail
                 </div>
 
                 <div>
+                    <p><strong>Item Type:</strong> {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}</p>
+                </div>
+
+                <div>
                     <p><strong>Minimum Stock:</strong> {{ item.minimum_stock }}</p>
                 </div>
 

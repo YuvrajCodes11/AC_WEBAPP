@@ -28,6 +28,7 @@ class StoreItemAdmin(admin.ModelAdmin):
         "category",
         "item_description",
         "size",
+        "is_vrv",
         "unit",
         "opening_stock",
         "current_stock",
@@ -41,6 +42,7 @@ class StoreItemAdmin(admin.ModelAdmin):
 
     list_filter = (
         "category",
+        "is_vrv",
         "unit",
         "created_at",
     )
@@ -73,6 +75,7 @@ class StoreTransactionAdmin(admin.ModelAdmin):
         "stock_after",
         "project",
         "boq",
+        "material_issue_item",
         "issued_to",
         "created_by",
         "created_at",

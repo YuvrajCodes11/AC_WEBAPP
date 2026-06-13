@@ -30,7 +30,9 @@ class ProjectBOQ(models.Model):
     project = models.ForeignKey(
         CustomerProject,
         on_delete=models.CASCADE,
-        related_name="boqs"
+        related_name="boqs",
+        blank=True,
+        null=True
     )
 
     title = models.CharField(
@@ -95,7 +97,8 @@ class ProjectBOQ(models.Model):
         return total
 
     def __str__(self):
-        return f"{self.boq_id} - {self.project.project_id}"
+        project_str = self.project.project_id if self.project else "No Project"
+        return f"{self.boq_id} - {project_str}"
 
 
 class ProjectBOQItem(models.Model):

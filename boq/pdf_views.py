@@ -61,10 +61,11 @@ def boq_pdf_report(request, id):
     elements = []
 
     # ── Header ──────────────────────────────────────────────────────────────
+    project_label = boq.project.project_id if boq.project else "No Project"
     elements += build_header_block(
         styles,
         title="BOQ Report",
-        subtitle=f"{boq.boq_id}  |  {boq.project.project_id}",
+        subtitle=f"{boq.boq_id}  |  {project_label}",
     )
 
     # ── BOQ Summary row ─────────────────────────────────────────────────────
@@ -105,20 +106,23 @@ def boq_pdf_report(request, id):
     # ── Project & Customer details ───────────────────────────────────────────
     elements += section_header("Project Information", styles)
     proj = boq.project
-    cust = proj.customer
+    cust = proj.customer if proj else None
 
-    project_pairs = [
-        ("Project ID",      proj.project_id),
-        ("Site Name",       proj.site_name),
-        ("Location",        proj.location or "—"),
-        ("Status",          proj.get_project_status_display()),
-        ("Capacity",        proj.get_capacity_display_text()),
-        ("Project Value",   fmt_money(proj.project_value)),
-        ("Start Date",      fmt_date(proj.start_date)),
-        ("Expected End",    fmt_date(proj.expected_completion_date)),
-        ("Actual End",      fmt_date(proj.actual_completion_date)),
-        ("Site Address",    proj.site_address or "—"),
-    ]
+    if proj:
+        project_pairs = [
+            ("Project ID",      proj.project_id),
+            ("Site Name",       proj.site_name),
+            ("Location",        proj.location or "—"),
+            ("Status",          proj.get_project_status_display()),
+            ("Capacity",        proj.get_capacity_display_text()),
+            ("Project Value",   fmt_money(proj.project_value)),
+            ("Start Date",      fmt_date(proj.start_date)),
+            ("Expected End",    fmt_date(proj.expected_completion_date)),
+            ("Actual End",      fmt_date(proj.actual_completion_date)),
+            ("Site Address",    proj.site_address or "—"),
+        ]
+    else:
+        project_pairs = [("Project", "No project linked")]
     elements.append(kv_table(project_pairs, styles))
     elements.append(Spacer(1, 6))
 
@@ -163,15 +167,13 @@ def boq_pdf_report(request, id):
     elements += section_header("Material Items", styles)
 
     col_widths = [
-        (PAGE_W - 2*MARGIN)*0.24,   # Item
-        (PAGE_W - 2*MARGIN)*0.09,   # Unit
-        (PAGE_W - 2*MARGIN)*0.09,   # Required
-        (PAGE_W - 2*MARGIN)*0.09,   # Issued
-        (PAGE_W - 2*MARGIN)*0.09,   # Consumed
-        (PAGE_W - 2*MARGIN)*0.09,   # Returned
-        (PAGE_W - 2*MARGIN)*0.09,   # Balance
+        (PAGE_W - 2*MARGIN)*0.34,   # Item
+        (PAGE_W - 2*MARGIN)*0.10,   # Unit
+        (PAGE_W - 2*MARGIN)*0.12,   # BOQ Qty
+        (PAGE_W - 2*MARGIN)*0.12,   # Issued
+        (PAGE_W - 2*MARGIN)*0.12,   # Balance
         (PAGE_W - 2*MARGIN)*0.10,   # Rate
-        (PAGE_W - 2*MARGIN)*0.12,   # Amount
+        (PAGE_W - 2*MARGIN)*0.10,   # Amount
     ]
 
     def hdr(txt):
@@ -191,10 +193,8 @@ def boq_pdf_report(request, id):
     table_data = [[
         hdr("Item Description"),
         hdr("Unit"),
-        hdr("Required"),
+        hdr("BOQ Qty"),
         hdr("Issued"),
-        hdr("Consumed"),
-        hdr("Returned"),
         hdr("Balance"),
         hdr("Rate (₹)"),
         hdr("Amount (₹)"),
@@ -202,8 +202,6 @@ def boq_pdf_report(request, id):
 
     grand_required = Decimal("0")
     grand_issued   = Decimal("0")
-    grand_consumed = Decimal("0")
-    grand_returned = Decimal("0")
     grand_amount   = Decimal("0")
 
     for i, item in enumerate(boq_items):
@@ -211,14 +209,13 @@ def boq_pdf_report(request, id):
         amount   = item.total_amount()
         grand_required += item.required_quantity
         grand_issued   += item.issued_quantity
-        grand_consumed += item.consumed_quantity
-        grand_returned += item.returned_quantity
         grand_amount   += amount
 
         desc_text = item.store_item.item_description
         code_text = item.store_item.item_code or ""
         if item.store_item.size:
             code_text += f" | {item.store_item.size}"
+        code_text += " | VRV" if item.store_item.is_vrv else " | Non-VRV"
 
         desc_para = Paragraph(
             f"<b>{desc_text}</b><br/><font size='6.5' color='#64748B'>{code_text}</font>",
@@ -232,10 +229,6 @@ def boq_pdf_report(request, id):
             cell(f"{item.required_quantity:.2f}", align="RIGHT"),
             cell(f"{item.issued_quantity:.2f}", align="RIGHT",
                  colour=colors.HexColor("#2563EB")),
-            cell(f"{item.consumed_quantity:.2f}", align="RIGHT",
-                 colour=BRAND_ORANGE),
-            cell(f"{item.returned_quantity:.2f}", align="RIGHT",
-                 colour=BRAND_PURPLE),
             cell(f"{balance:.2f}", bold=True, align="RIGHT",
                  colour=BRAND_RED),
             cell(f"{item.rate:.2f}", align="RIGHT"),
@@ -253,11 +246,8 @@ def boq_pdf_report(request, id):
         cell(f"{grand_required:.2f}", bold=True, align="RIGHT"),
         cell(f"{grand_issued:.2f}", bold=True, align="RIGHT",
              colour=colors.HexColor("#2563EB")),
-        cell(f"{grand_consumed:.2f}", bold=True, align="RIGHT",
-             colour=BRAND_ORANGE),
-        cell(f"{grand_returned:.2f}", bold=True, align="RIGHT",
-             colour=BRAND_PURPLE),
-        cell(""),
+        cell(f"{max(grand_required - grand_issued, Decimal('0')):.2f}", bold=True, align="RIGHT",
+             colour=BRAND_RED),
         cell(""),
         cell(f"{grand_amount:.2f}", bold=True, align="RIGHT",
              colour=BRAND_GREEN),
@@ -297,10 +287,9 @@ def boq_pdf_report(request, id):
     total_items = boq_items.count()
     summary_rows = [
         ["Total Material Items", str(total_items)],
-        ["Total Required Quantity", f"{grand_required:.2f}"],
+        ["Total BOQ Quantity", f"{grand_required:.2f}"],
         ["Total Issued Quantity",   f"{grand_issued:.2f}"],
-        ["Total Consumed Quantity", f"{grand_consumed:.2f}"],
-        ["Total Returned Quantity", f"{grand_returned:.2f}"],
+        ["Total Remaining Quantity", f"{max(grand_required - grand_issued, Decimal('0')):.2f}"],
         ["", ""],
         ["GRAND TOTAL (BOQ Value)", fmt_money(grand_amount)],
     ]
@@ -337,7 +326,7 @@ def boq_pdf_report(request, id):
         elements.append(Paragraph(boq.remarks, styles["note_text"]))
         elements.append(Spacer(1, 6))
 
-    if proj.remarks:
+    if proj and proj.remarks:
         elements += section_header("Project Remarks", styles)
         elements.append(Paragraph(proj.remarks, styles["note_text"]))
         elements.append(Spacer(1, 6))
@@ -357,6 +346,6 @@ def boq_pdf_report(request, id):
 
     response = HttpResponse(buffer, content_type="application/pdf")
     response["Content-Disposition"] = (
-        f'attachment; filename="BOQ_Report_{boq.boq_id}_{boq.project.project_id}.pdf"'
+        f'attachment; filename="BOQ_Report_{boq.boq_id}_{project_label}.pdf"'
     )
     return response

@@ -161,15 +161,15 @@ BOQ List
 
                             <td class="px-4 py-4">
                                 <p class="font-black text-slate-900">
-                                    {{ boq.project.project_id }}
+                                    {% if boq.project %}{{ boq.project.project_id }}{% else %}-{% endif %}
                                 </p>
                                 <p class="text-xs text-slate-500">
-                                    {{ boq.project.site_name|default:"-" }}
+                                    {% if boq.project %}{{ boq.project.site_name|default:"-" }}{% else %}No Project Linked{% endif %}
                                 </p>
                             </td>
 
                             <td class="px-4 py-4">
-                                {% if boq.project.customer %}
+                                {% if boq.project and boq.project.customer %}
                                 <p class="font-bold text-slate-800">
                                     {{ boq.project.customer.customer_name }}
                                 </p>

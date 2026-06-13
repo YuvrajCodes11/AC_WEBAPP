@@ -5,7 +5,7 @@ from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 
 from projects.models import CustomerProject
@@ -283,6 +283,7 @@ def add_store_item(request):
                     serial_number=serial_number or None,
                     remarks=remarks,
                     unit=unit,
+                    is_vrv=True if request.POST.get("is_vrv") == "on" else False,
                     opening_stock=opening_stock,
                     current_stock=opening_stock,
                     minimum_stock=minimum_stock,
@@ -331,6 +332,7 @@ def edit_store_item(request, id):
             item.size = request.POST.get("size", "").strip()
             item.serial_number = request.POST.get("serial_number", "").strip() or None
             item.remarks = request.POST.get("remarks", "").strip()
+            item.is_vrv = True if request.POST.get("is_vrv") == "on" else False
             item.unit = request.POST.get("unit")
 
             item.opening_stock = Decimal(
@@ -348,6 +350,7 @@ def edit_store_item(request, id):
             in_qty = Decimal("0")
             out_qty = Decimal("0")
             return_qty = Decimal("0")
+            scrap_qty = Decimal("0")
             adjustment_qty = Decimal("0")
 
             transactions = StoreTransaction.objects.filter(item=item)
@@ -362,8 +365,17 @@ def edit_store_item(request, id):
                 elif txn.transaction_type == "RETURN":
                     return_qty += txn.quantity
 
+                elif txn.transaction_type == "SCRAP" and not txn.material_issue_item_id:
+                    scrap_qty += txn.quantity
+
                 elif txn.transaction_type == "ADJUSTMENT":
                     adjustment_qty += txn.quantity
+
+            issued_qty = item.material_issue_items.filter(
+                is_stock_updated=True
+            ).aggregate(
+                total=Sum("issued_quantity")
+            )["total"] or Decimal("0")
 
             item.current_stock = (
                 item.opening_stock
@@ -371,6 +383,8 @@ def edit_store_item(request, id):
                 + return_qty
                 + adjustment_qty
                 - out_qty
+                - scrap_qty
+                - issued_qty
             )
 
             if item.current_stock < 0:

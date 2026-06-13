@@ -6,37 +6,24 @@ Add BOQ Item
 
 {% block content %}
 
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+
 <div class="min-h-screen bg-slate-50 px-4 py-8">
 
     <div class="max-w-5xl mx-auto">
 
         <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
-
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-
                 <div>
-                    <h1 class="text-4xl font-black text-white">
-                        Add BOQ Item
-                    </h1>
-
-                    <p class="text-blue-100 mt-2">
-                        Add material item to BOQ {{ boq.boq_id }}.
-                    </p>
+                    <h1 class="text-4xl font-black text-white">Add BOQ Item</h1>
+                    <p class="text-blue-100 mt-2">Add material item to BOQ {{ boq.boq_id }}.</p>
                 </div>
-
-                <a href="{% url 'boq_detail' boq.id %}"
-                   class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
-                    Back
-                </a>
-
+                <a href="{% url 'boq_detail' boq.id %}" class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">Back</a>
             </div>
-
         </div>
 
         {% if error %}
-        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl">
-            {{ error }}
-        </div>
+        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl">{{ error }}</div>
         {% endif %}
 
         <form method="POST">
@@ -44,63 +31,48 @@ Add BOQ Item
 
             <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
 
+                <div class="mb-5">
+                    <label class="block font-bold mb-2">Filter by Category</label>
+                    <select id="category-filter" class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                     <div>
-                        <label class="block font-bold mb-2">
-                            Store Item *
-                        </label>
-
-                        <select name="store_item"
-                                required
-                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
-                            <option value="">Select Store Item</option>
-
+                        <label class="block font-bold mb-2">Store Item *</label>
+                        <select name="store_item" id="store-item-select" required class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                            <option value="">Search by name, code or category...</option>
                             {% for item in store_items %}
-                            <option value="{{ item.id }}">
-                                {{ item.item_code }} - {{ item.item_description }}
+                            <option value="{{ item.id }}" data-category="{{ item.category.id }}">
+                                [{{ item.category.category_name }}] {{ item.item_code }} - {{ item.item_description }}
                                 {% if item.size %} - {{ item.size }}{% endif %}
                                 | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
+                                {% if item.is_vrv %}| VRV{% else %}| Non-VRV{% endif %}
                             </option>
                             {% endfor %}
                         </select>
                     </div>
 
                     <div>
-                        <label class="block font-bold mb-2">
-                            Required Quantity *
-                        </label>
-
-                        <input type="number"
-                               name="required_quantity"
-                               step="0.01"
-                               min="0"
-                               value="0"
-                               required
+                        <label class="block font-bold mb-2">BOQ Quantity *</label>
+                        <input type="number" name="required_quantity" step="0.01" min="0" value="0" required
                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
 
                     <div>
-                        <label class="block font-bold mb-2">
-                            Rate
-                        </label>
-
-                        <input type="number"
-                               name="rate"
-                               step="0.01"
-                               min="0"
-                               value="0"
+                        <label class="block font-bold mb-2">Rate</label>
+                        <input type="number" name="rate" step="0.01" min="0" value="0"
                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
 
                     <div>
-                        <label class="block font-bold mb-2">
-                            Remarks
-                        </label>
-
-                        <input type="text"
-                               name="remarks"
-                               placeholder="Item remarks"
+                        <label class="block font-bold mb-2">Remarks</label>
+                        <input type="text" name="remarks" placeholder="Item remarks"
                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
 
@@ -109,17 +81,8 @@ Add BOQ Item
             </div>
 
             <div class="mt-6 flex gap-3">
-
-                <button type="submit"
-                        class="bg-[#0F4C81] text-white px-8 py-4 rounded-2xl font-black">
-                    Save Item
-                </button>
-
-                <a href="{% url 'boq_detail' boq.id %}"
-                   class="bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-black">
-                    Cancel
-                </a>
-
+                <button type="submit" class="bg-[#0F4C81] text-white px-8 py-4 rounded-2xl font-black">Save Item</button>
+                <a href="{% url 'boq_detail' boq.id %}" class="bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-black">Cancel</a>
             </div>
 
         </form>
@@ -127,5 +90,39 @@ Add BOQ Item
     </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script>
+    var categorySelect = new TomSelect('#category-filter', {
+        create: false, placeholder: 'Search category...'
+    });
+
+    var itemSelect = new TomSelect('#store-item-select', {
+        create: false,
+        maxOptions: 5000,
+        placeholder: 'Search item name, code or category...',
+        searchField: ['text']
+    });
+
+    document.getElementById('category-filter').addEventListener('change', function() {
+        var catId = this.value;
+        var storeSelect = document.getElementById('store-item-select');
+        var options = storeSelect.querySelectorAll('option');
+        if (itemSelect) { itemSelect.destroy(); }
+        options.forEach(function(opt) {
+            if (!opt.value) return;
+            if (!catId || opt.getAttribute('data-category') === catId) {
+                opt.style.display = '';
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+        itemSelect = new TomSelect('#store-item-select', {
+            create: false, maxOptions: 5000,
+            placeholder: 'Search item name, code or category...',
+            searchField: ['text']
+        });
+    });
+</script>
 
 {% endblock %}

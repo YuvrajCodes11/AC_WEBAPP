@@ -78,6 +78,11 @@ class StoreItem(models.Model):
         null=True
     )
 
+    is_vrv = models.BooleanField(
+        default=False,
+        help_text="Check if this item is VRV type. Leave unchecked for Non-VRV."
+    )
+
     unit = models.CharField(
         max_length=20,
         choices=UNIT_CHOICES,
@@ -172,6 +177,7 @@ class StoreTransaction(models.Model):
         ("IN", "Stock In"),
         ("OUT", "Stock Out"),
         ("RETURN", "Material Return"),
+        ("SCRAP", "Scrap"),
         ("ADJUSTMENT", "Stock Adjustment"),
     )
 
@@ -218,6 +224,14 @@ class StoreTransaction(models.Model):
 
     boq = models.ForeignKey(
         "boq.ProjectBOQ",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="store_transactions"
+    )
+
+    material_issue_item = models.ForeignKey(
+        "material_issue.MaterialIssueItem",
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
@@ -311,7 +325,11 @@ class StoreTransaction(models.Model):
         if self.purpose == "SERVICE" and not self.service_customer_name:
             raise ValidationError("Please enter service customer name.")
 
-        if self.transaction_type == "OUT" and self.item.current_stock < self.quantity:
+        if (
+            self.transaction_type in ("OUT", "SCRAP")
+            and not (self.transaction_type == "SCRAP" and self.material_issue_item_id)
+            and self.item.current_stock < self.quantity
+        ):
             raise ValidationError(
                 f"Not enough stock for {self.item.item_description}. "
                 f"Available stock: {self.item.current_stock}"
@@ -339,6 +357,9 @@ class StoreTransaction(models.Model):
             elif self.transaction_type == "RETURN":
                 self.item.current_stock += qty
 
+            elif self.transaction_type == "SCRAP" and not self.material_issue_item_id:
+                self.item.current_stock -= qty
+
             elif self.transaction_type == "ADJUSTMENT":
                 self.item.current_stock += qty
 
@@ -361,6 +382,9 @@ class StoreTransaction(models.Model):
 
             elif self.transaction_type == "RETURN":
                 self.item.current_stock -= qty
+
+            elif self.transaction_type == "SCRAP" and not self.material_issue_item_id:
+                self.item.current_stock += qty
 
             elif self.transaction_type == "ADJUSTMENT":
                 self.item.current_stock -= qty

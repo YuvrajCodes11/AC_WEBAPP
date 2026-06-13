@@ -43,7 +43,6 @@ Yearly Visit Report
                             <th class="p-4 text-left">Phone</th>
                             <th class="p-4 text-left">Site Type</th>
                             <th class="p-4 text-left">Total Visits</th>
-                            <th class="p-4 text-left">Total Technicians</th>
                         </tr>
                     </thead>
 
@@ -55,11 +54,10 @@ Yearly Visit Report
                             <td class="p-4">{{ report.customer__phone_number }}</td>
                             <td class="p-4">{{ report.site_type }}</td>
                             <td class="p-4 font-black">{{ report.total_visits }}</td>
-                            <td class="p-4 font-black">{{ report.total_technicians }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" class="p-8 text-center text-slate-500">
+                            <td colspan="5" class="p-8 text-center text-slate-500">
                                 No report data found.
                             </td>
                         </tr>

@@ -104,6 +104,11 @@ Transaction Detail
                 </div>
 
                 <div>
+                    <strong>Item Type:</strong><br>
+                    {% if transaction.item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
+                </div>
+
+                <div>
                     <strong>Quantity:</strong><br>
                     {{ transaction.quantity }}
                 </div>

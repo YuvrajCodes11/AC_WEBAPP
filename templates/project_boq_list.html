@@ -115,7 +115,7 @@ Project BOQ List
                                 Project
                             </p>
                             <h3 class="mt-1 text-sm font-black text-slate-900">
-                                {{ boq.project.customer_name }}
+                                {% if boq.project.customer %}{{ boq.project.customer.customer_name }}{% else %}No Customer{% endif %}
                             </h3>
                             <p class="mt-1 text-xs text-slate-500">
                                 {{ boq.project.location|default:"-" }}
