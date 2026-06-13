@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Store Items
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+
+            <div>
+
+                <h1 class="text-4xl font-black text-[#0F4C81]">
+                    Store Items
+                </h1>
+
+                <p class="mt-2 text-gray-500">
+                    Category-wise item stock with size, remarks and unit.
+                </p>
+
+            </div>
+
+            <div class="flex gap-3">
+
+                <a href="{% url 'store_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">
+                    Store
+                </a>
+
+                <a href="{% url 'add_item' %}" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">
+                    Add Item
+                </a>
+
+            </div>
+
+        </div>
+
+        <form method="GET" class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <input
+                type="text"
+                name="search"
+                value="{{ search }}"
+                placeholder="Search item, size, category..."
+                class="md:col-span-2 border border-gray-200 focus:border-[#0F4C81] focus:ring-4 focus:ring-blue-100 outline-none px-5 py-4 rounded-2xl"
+            >
+
+            <select name="category" class="border border-gray-200 px-5 py-4 rounded-2xl">
+
+                <option value="">All Categories</option>
+
+                {% for category in categories %}
+
+                <option value="{{ category.id }}" {% if category_id == category.id|stringformat:"s" %}selected{% endif %}>
+                    {{ category.category_name }}
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+            <button class="md:col-span-3 bg-[#0F4C81] text-white py-3 rounded-2xl font-bold">
+                Search
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="mt-8 bg-white rounded-[2rem] shadow-xl border border-blue-100 overflow-hidden">
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full min-w-[1100px]">
+
+                <thead>
+
+                    <tr class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] text-white">
+
+                        <th class="px-6 py-5 text-left">Code</th>
+                        <th class="px-6 py-5 text-left">Category</th>
+                        <th class="px-6 py-5 text-left">Description</th>
+                        <th class="px-6 py-5 text-left">Size</th>
+                        <th class="px-6 py-5 text-left">Serial No.</th>
+                        <th class="px-6 py-5 text-left">Remarks</th>
+                        <th class="px-6 py-5 text-left">Unit</th>
+                        <th class="px-6 py-5 text-left">Stock</th>
+                        <th class="px-6 py-5 text-left">Status</th>
+                        <th class="px-6 py-5 text-left">Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                    {% for item in items %}
+
+                    <tr class="hover:bg-blue-50">
+
+                        <td class="px-6 py-5 font-bold text-[#0F4C81]">
+                            {{ item.item_code }}
+                        </td>
+
+                        <td class="px-6 py-5">
+                            {{ item.category.category_name }}
+                        </td>
+
+                        <td class="px-6 py-5 font-bold">
+                            {{ item.item_description }}
+                        </td>
+
+                        <td class="px-6 py-5">
+                            {{ item.size|default:"-" }}
+                        </td>
+
+                        <td class="px-6 py-5 font-mono text-sm text-blue-700">
+                            {{ item.serial_number|default:"-" }}
+                        </td>
+
+                        <td class="px-6 py-5">
+                            {{ item.remarks|default:"-" }}
+                        </td>
+
+                        <td class="px-6 py-5">
+                            {{ item.get_unit_display }}
+                        </td>
+
+                        <td class="px-6 py-5 font-bold">
+                            {{ item.current_stock }}
+                        </td>
+
+                        <td class="px-6 py-5">
+
+                            {% if item.current_stock <= item.minimum_stock %}
+
+                            <span class="bg-red-100 text-red-700 px-4 py-2 rounded-xl font-bold">
+                                Low Stock
+                            </span>
+
+                            {% else %}
+
+                            <span class="bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold">
+                                Available
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="px-6 py-5">
+
+                            {% if profile.role == "CEO" %}
+
+                            <a href="{% url 'edit_item' item.id %}" class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold">
+                                Edit
+                            </a>
+
+                            <a href="{% url 'delete_item' item.id %}" onclick="return confirm('Delete this item?')" class="bg-red-600 text-white px-4 py-2 rounded-xl font-bold ml-2">
+                                Delete
+                            </a>
+
+                            {% else %}
+
+                            <span class="bg-gray-100 text-gray-500 px-4 py-2 rounded-xl font-bold">
+                                View Only
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                            No store item added yet.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

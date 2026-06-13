@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}
+AMC Detail
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+
+            <div>
+                <h1 class="text-4xl font-black text-[#0F4C81]">
+                    {{ amc.amc_id }}
+                </h1>
+
+                <p class="mt-2 text-gray-500">
+                    {{ amc.customer.customer_name }}
+                </p>
+
+                <p class="mt-1 text-gray-500">
+                    {{ amc.contract_start_date }} to {{ amc.contract_end_date }}
+                </p>
+            </div>
+
+            <div class="flex gap-3">
+
+                <a href="{% url 'amc_list' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">
+                    AMC List
+                </a>
+
+                <a href="{% url 'add_amc_visit' amc.id %}" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">
+                    Add Visit
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mt-8">
+
+            <div class="bg-blue-50 p-5 rounded-2xl">
+                <p class="text-gray-500 font-bold">Contract Value</p>
+                <h3 class="mt-2 text-xl font-black">₹ {{ amc.contract_value }}</h3>
+            </div>
+
+            <div class="bg-blue-50 p-5 rounded-2xl">
+                <p class="text-gray-500 font-bold">Services / Year</p>
+                <h3 class="mt-2 text-xl font-black">{{ amc.services_per_year }}</h3>
+            </div>
+
+            <div class="bg-blue-50 p-5 rounded-2xl">
+                <p class="text-gray-500 font-bold">Frequency</p>
+                <h3 class="mt-2 text-xl font-black">{{ amc.get_service_frequency_display }}</h3>
+            </div>
+
+            <div class="bg-blue-50 p-5 rounded-2xl">
+                <p class="text-gray-500 font-bold">Status</p>
+                <h3 class="mt-2 text-xl font-black">{{ amc.get_status_display }}</h3>
+            </div>
+
+        </div>
+
+        <div class="mt-6 bg-gray-50 p-5 rounded-2xl">
+            <p class="text-gray-500 font-bold">Technician</p>
+            <p class="mt-2 text-gray-800">{{ amc.technician_name|default:"-" }}</p>
+        </div>
+
+        <div class="mt-6 bg-gray-50 p-5 rounded-2xl">
+            <p class="text-gray-500 font-bold">Remarks</p>
+            <p class="mt-2 text-gray-800">{{ amc.remarks|default:"-" }}</p>
+        </div>
+
+    </div>
+
+    <div class="mt-8 bg-white rounded-[2rem] shadow-xl border border-blue-100 overflow-hidden">
+
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+
+            <h2 class="text-2xl font-black text-[#0F4C81]">
+                AMC Visits
+            </h2>
+
+            <a href="{% url 'add_amc_visit' amc.id %}" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">
+                Add Visit
+            </a>
+
+        </div>
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full min-w-[1000px]">
+
+                <thead>
+                    <tr class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] text-white">
+                        <th class="px-6 py-5 text-left">Visit ID</th>
+                        <th class="px-6 py-5 text-left">Visit Date</th>
+                        <th class="px-6 py-5 text-left">Technician</th>
+                        <th class="px-6 py-5 text-left">Status</th>
+                        <th class="px-6 py-5 text-left">Next Visit</th>
+                        <th class="px-6 py-5 text-left">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                    {% for visit in visits %}
+
+                    <tr class="hover:bg-blue-50">
+
+                        <td class="px-6 py-5 font-bold text-[#0F4C81]">
+                            {{ visit.visit_id }}
+                        </td>
+
+                        <td class="px-6 py-5">
+                            {{ visit.visit_date }}
+                        </td>
+
+                        <td class="px-6 py-5">
+                            {{ visit.technician_name|default:"-" }}
+                        </td>
+
+                        <td class="px-6 py-5">
+
+                            {% if visit.status == "COMPLETED" %}
+
+                            <span class="bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold">
+                                Completed
+                            </span>
+
+                            {% elif visit.status == "PENDING" %}
+
+                            <span class="bg-red-100 text-red-700 px-4 py-2 rounded-xl font-bold">
+                                Pending
+                            </span>
+
+                            {% else %}
+
+                            <span class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-bold">
+                                {{ visit.get_status_display }}
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="px-6 py-5">
+                            {{ visit.next_visit_date|default:"-" }}
+                        </td>
+
+                        <td class="px-6 py-5">
+
+                            <a href="{% url 'edit_amc_visit' visit.id %}" class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold">
+                                Edit
+                            </a>
+
+                            {% if profile.role == "CEO" %}
+
+                            <a href="{% url 'delete_amc_visit' visit.id %}" onclick="return confirm('Delete this visit?')" class="bg-red-600 text-white px-4 py-2 rounded-xl font-bold ml-2">
+                                Delete
+                            </a>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                            No AMC visit added yet.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Store Item Detail
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+                    <h1 class="text-4xl font-black text-white">
+                        {{ item.item_description }}
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        {{ item.item_code }}
+                    </p>
+                </div>
+
+                <a href="{% url 'store_item_list' %}"
+                   class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
+                    Back
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+
+            <div class="bg-white rounded-3xl border p-5 shadow-sm">
+                <p class="text-slate-500 text-sm">Opening Stock</p>
+                <h2 class="text-3xl font-black text-[#0F4C81] mt-2">
+                    {{ item.opening_stock }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border p-5 shadow-sm">
+                <p class="text-slate-500 text-sm">Current Stock</p>
+                <h2 class="text-3xl font-black text-green-600 mt-2">
+                    {{ item.current_stock }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border p-5 shadow-sm">
+                <p class="text-slate-500 text-sm">Used Quantity</p>
+                <h2 class="text-3xl font-black text-orange-600 mt-2">
+                    {{ item.used_quantity }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border p-5 shadow-sm">
+                <p class="text-slate-500 text-sm">Used %</p>
+                <h2 class="text-3xl font-black text-red-600 mt-2">
+                    {{ item.used_percentage }}%
+                </h2>
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-3xl border shadow-sm p-6 mb-8">
+
+            <h2 class="text-2xl font-black text-[#0F4C81] mb-5">
+                Item Information
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <div>
+                    <p><strong>Category:</strong> {{ item.category.category_name }}</p>
+                </div>
+
+                <div>
+                    <p><strong>Item Code:</strong> {{ item.item_code }}</p>
+                </div>
+
+                <div>
+                    <p><strong>Item Description:</strong> {{ item.item_description }}</p>
+                </div>
+
+                <div>
+                    <p><strong>Size:</strong> {{ item.size|default:"-" }}</p>
+                </div>
+
+                <div>
+                    <p><strong>Serial Number:</strong>
+                        {% if item.serial_number %}
+                        <span class="font-mono text-blue-700">{{ item.serial_number }}</span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div>
+                    <p><strong>Unit:</strong> {{ item.get_unit_display }}</p>
+                </div>
+
+                <div>
+                    <p><strong>Minimum Stock:</strong> {{ item.minimum_stock }}</p>
+                </div>
+
+                <div>
+                    <p><strong>Alert Percentage:</strong> {{ item.alert_percentage }}%</p>
+                </div>
+
+                <div>
+                    <p><strong>Status:</strong>
+
+                        {% if item.is_low_stock %}
+                        <span class="text-red-600 font-bold">
+                            LOW STOCK
+                        </span>
+                        {% else %}
+                        <span class="text-green-600 font-bold">
+                            AVAILABLE
+                        </span>
+                        {% endif %}
+
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="mt-5">
+                <strong>Remarks:</strong>
+                <br>
+                {{ item.remarks|default:"-" }}
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+
+            <div class="p-5 border-b">
+
+                <h2 class="text-2xl font-black text-[#0F4C81]">
+                    Transaction History
+                </h2>
+
+            </div>
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full">
+
+                    <thead class="bg-slate-100">
+
+                        <tr>
+                            <th class="p-4 text-left">Transaction ID</th>
+                            <th class="p-4 text-left">Type</th>
+                            <th class="p-4 text-left">Purpose</th>
+                            <th class="p-4 text-left">Quantity</th>
+                            <th class="p-4 text-left">Stock Before</th>
+                            <th class="p-4 text-left">Stock After</th>
+                            <th class="p-4 text-left">Date</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for txn in transactions %}
+
+                        <tr class="border-t">
+
+                            <td class="p-4 font-bold">
+                                {{ txn.transaction_id }}
+                            </td>
+
+                            <td class="p-4">
+                                {{ txn.get_transaction_type_display }}
+                            </td>
+
+                            <td class="p-4">
+                                {{ txn.get_purpose_display }}
+                            </td>
+
+                            <td class="p-4">
+                                {{ txn.quantity }}
+                            </td>
+
+                            <td class="p-4">
+                                {{ txn.stock_before }}
+                            </td>
+
+                            <td class="p-4">
+                                {{ txn.stock_after }}
+                            </td>
+
+                            <td class="p-4">
+                                {{ txn.created_at|date:"d M Y" }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="7" class="p-8 text-center text-slate-500">
+                                No transactions found.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

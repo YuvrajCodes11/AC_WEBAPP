@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Complete Service Schedule{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-2xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+            <p class="text-blue-100 text-xs font-bold uppercase tracking-widest">Service Schedule</p>
+            <h1 class="text-3xl font-black text-white mt-2">Mark Service Completed</h1>
+            <p class="text-blue-100 mt-2">
+                {{ schedule.customer.customer_name }} &nbsp;|&nbsp;
+                {{ schedule.get_service_type_display }} &nbsp;|&nbsp;
+                {{ schedule.service_date|date:"d M Y" }}
+            </p>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="mb-6">
+                    <label class="block font-bold mb-2 text-slate-700">Complaint Title</label>
+                    <input type="text" name="complaint_title"
+                           value="{{ schedule.complaint_title|default:'' }}"
+                           placeholder="e.g. Cooling issue resolved"
+                           class="w-full border border-slate-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-[#0F4C81]">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block font-bold mb-2 text-slate-700">Complaint Description</label>
+                    <textarea name="complaint_description" rows="4"
+                              placeholder="Describe the service work done..."
+                              class="w-full border border-slate-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-[#0F4C81]">{{ schedule.complaint_description|default:'' }}</textarea>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block font-bold mb-2 text-slate-700">Remarks</label>
+                    <textarea name="remarks" rows="3"
+                              placeholder="Any additional remarks..."
+                              class="w-full border border-slate-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-[#0F4C81]">{{ schedule.remarks|default:'' }}</textarea>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block font-bold mb-2 text-slate-700">Complaint Register (optional)</label>
+                    <input type="file" name="complaint_register"
+                           class="w-full border border-slate-200 rounded-2xl px-4 py-3">
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="submit"
+                            class="bg-green-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-green-700">
+                        ✓ Mark Completed
+                    </button>
+                    <a href="{% url 'customer_service_schedule_list' %}"
+                       class="bg-slate-100 text-slate-700 px-8 py-3 rounded-2xl font-bold">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Project BOQ List
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <div class="bg-gradient-to-br from-[#0F4C81] via-[#1B6CA8] to-[#89CFF0] rounded-[2rem] shadow-xl p-6 md:p-8 mb-8">
+
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+
+                <div>
+                    <p class="inline-flex bg-white/20 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest">
+                        Store Project BOQ
+                    </p>
+
+                    <h1 class="mt-4 text-3xl md:text-5xl font-black text-white">
+                        Project BOQ List
+                    </h1>
+
+                    <p class="mt-3 text-blue-50 text-sm md:text-base">
+                        Manage project material requirements, consumption notes, stage notes and project status.
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+
+                    <a href="{% url 'store_dashboard' %}"
+                       class="bg-white/20 hover:bg-white text-white hover:text-[#0F4C81] px-5 py-3 rounded-2xl text-sm font-bold transition">
+                        Dashboard
+                    </a>
+
+                    <a href="{% url 'add_project_boq' %}"
+                       class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl text-sm font-bold hover:bg-blue-50 transition">
+                        Add Project BOQ
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-5 mb-8">
+
+            <form method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+                <div class="md:col-span-6">
+                    <input type="text"
+                           name="search"
+                           value="{{ search }}"
+                           placeholder="Search by BOQ ID, project, location or title"
+                           class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                </div>
+
+                <div class="md:col-span-4">
+                    <select name="status"
+                            class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                        <option value="">All Status</option>
+
+                        {% for key, value in status_choices %}
+                        <option value="{{ key }}" {% if status == key %}selected{% endif %}>
+                            {{ value }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <button type="submit"
+                            class="w-full bg-[#0F4C81] text-white px-5 py-3 rounded-2xl text-sm font-black hover:bg-[#0b3d68] transition">
+                        Search
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+        <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+
+            <div class="px-6 py-5 border-b border-slate-100">
+                <h2 class="text-2xl font-black text-[#0F4C81]">
+                    BOQ Records
+                </h2>
+                <p class="mt-1 text-sm text-slate-500">
+                    Project-wise material requirement records.
+                </p>
+            </div>
+
+            <div class="p-5 space-y-4">
+
+                {% for boq in boqs %}
+
+                <div class="border border-slate-200 rounded-3xl p-5 hover:shadow-sm transition">
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+
+                        <div class="lg:col-span-2">
+                            <p class="text-xs font-black text-slate-400 uppercase">
+                                BOQ ID
+                            </p>
+                            <h3 class="mt-1 text-base font-black text-amber-600">
+                                {{ boq.boq_id }}
+                            </h3>
+                        </div>
+
+                        <div class="lg:col-span-3">
+                            <p class="text-xs font-black text-slate-400 uppercase">
+                                Project
+                            </p>
+                            <h3 class="mt-1 text-sm font-black text-slate-900">
+                                {{ boq.project.customer_name }}
+                            </h3>
+                            <p class="mt-1 text-xs text-slate-500">
+                                {{ boq.project.location|default:"-" }}
+                            </p>
+                        </div>
+
+                        <div class="lg:col-span-2">
+                            <p class="text-xs font-black text-slate-400 uppercase">
+                                Title
+                            </p>
+                            <p class="mt-1 text-sm font-bold text-slate-700">
+                                {{ boq.title|default:"Project BOQ" }}
+                            </p>
+                        </div>
+
+                        <div class="lg:col-span-2">
+                            <p class="text-xs font-black text-slate-400 uppercase">
+                                Status
+                            </p>
+
+                            {% if boq.status == "COMMISSIONED" %}
+                            <span class="inline-flex mt-1 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-black border border-green-100">
+                                Commissioned
+                            </span>
+                            {% elif boq.status == "HOLD" %}
+                            <span class="inline-flex mt-1 px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-black border border-red-100">
+                                Project Hold
+                            </span>
+                            {% elif boq.status == "APPROVED" %}
+                            <span class="inline-flex mt-1 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-black border border-blue-100">
+                                Approved
+                            </span>
+                            {% else %}
+                            <span class="inline-flex mt-1 px-3 py-1 rounded-full bg-slate-50 text-slate-700 text-xs font-black border border-slate-200">
+                                {{ boq.get_status_display }}
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="lg:col-span-1">
+                            <p class="text-xs font-black text-slate-400 uppercase">
+                                Date
+                            </p>
+                            <p class="mt-1 text-sm font-bold text-slate-700">
+                                {{ boq.created_at|date:"d M Y" }}
+                            </p>
+                        </div>
+
+                        <div class="lg:col-span-2 lg:text-right flex flex-wrap lg:justify-end gap-2">
+
+                            <a href="{% url 'project_boq_detail' boq.id %}"
+                               class="inline-flex px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition">
+                                View
+                            </a>
+
+                            <a href="{% url 'delete_project_boq' boq.id %}"
+                               onclick="return confirm('Are you sure you want to delete this BOQ?')"
+                               class="inline-flex px-4 py-2 rounded-xl bg-red-50 text-red-700 text-xs font-bold hover:bg-red-100 transition">
+                                Delete
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="text-center py-14">
+
+                    <div class="w-16 h-16 mx-auto rounded-3xl bg-amber-50 flex items-center justify-center text-amber-600 text-2xl font-black">
+                        B
+                    </div>
+
+                    <h3 class="mt-5 text-xl font-black text-slate-800">
+                        No Project BOQ Found
+                    </h3>
+
+                    <p class="mt-2 text-sm text-slate-500">
+                        Create a new BOQ from project material requirement.
+                    </p>
+
+                    <a href="{% url 'add_project_boq' %}"
+                       class="inline-flex mt-5 bg-[#0F4C81] text-white px-5 py-3 rounded-2xl text-sm font-bold hover:bg-[#0b3d68] transition">
+                        Add Project BOQ
+                    </a>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

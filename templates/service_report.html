@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Service Report
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8 print:hidden">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+            <div>
+                <h1 class="text-4xl font-black text-[#0F4C81]">Service Report</h1>
+                <p class="mt-2 text-gray-500">Complaint register and technician report.</p>
+            </div>
+
+            <div class="flex gap-3">
+                <a href="{% url 'reports_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">Reports</a>
+                <a href="{% url 'export_service_report' %}" class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">Export CSV</a>
+                <button onclick="window.print()" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">Print</button>
+            </div>
+        </div>
+
+        <form method="GET" class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <select name="status" class="border border-gray-200 px-5 py-4 rounded-2xl">
+                <option value="">All Status</option>
+                <option value="PENDING" {% if status == "PENDING" %}selected{% endif %}>Pending</option>
+                <option value="IN_PROGRESS" {% if status == "IN_PROGRESS" %}selected{% endif %}>In Progress</option>
+                <option value="COMPLETED" {% if status == "COMPLETED" %}selected{% endif %}>Completed</option>
+                <option value="HOLD" {% if status == "HOLD" %}selected{% endif %}>Hold</option>
+                <option value="CANCELLED" {% if status == "CANCELLED" %}selected{% endif %}>Cancelled</option>
+            </select>
+
+            <select name="service_type" class="border border-gray-200 px-5 py-4 rounded-2xl">
+                <option value="">All Type</option>
+                <option value="AMC" {% if service_type == "AMC" %}selected{% endif %}>AMC</option>
+                <option value="WARRANTY" {% if service_type == "WARRANTY" %}selected{% endif %}>Warranty</option>
+                <option value="PAID" {% if service_type == "PAID" %}selected{% endif %}>Paid Service</option>
+                <option value="GENERAL" {% if service_type == "GENERAL" %}selected{% endif %}>General</option>
+            </select>
+
+            <button class="bg-[#0F4C81] text-white py-3 rounded-2xl font-bold">Filter</button>
+
+        </form>
+
+    </div>
+
+    <div class="mt-8 bg-white rounded-[2rem] shadow-xl border border-blue-100 overflow-hidden">
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full min-w-[1200px]">
+
+                <thead>
+                    <tr class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] text-white">
+                        <th class="px-6 py-5 text-left">Complaint ID</th>
+                        <th class="px-6 py-5 text-left">Date</th>
+                        <th class="px-6 py-5 text-left">Customer</th>
+                        <th class="px-6 py-5 text-left">Contact</th>
+                        <th class="px-6 py-5 text-left">Type</th>
+                        <th class="px-6 py-5 text-left">Complaint</th>
+                        <th class="px-6 py-5 text-left">Technician</th>
+                        <th class="px-6 py-5 text-left">Status</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                    {% for complaint in complaints %}
+
+                    <tr class="hover:bg-blue-50">
+                        <td class="px-6 py-5 font-bold text-[#0F4C81]">{{ complaint.complaint_id }}</td>
+                        <td class="px-6 py-5">{{ complaint.complaint_date }}</td>
+                        <td class="px-6 py-5 font-bold">{{ complaint.customer.customer_name }}</td>
+                        <td class="px-6 py-5">{{ complaint.contact_number }}</td>
+                        <td class="px-6 py-5">{{ complaint.get_service_type_display }}</td>
+                        <td class="px-6 py-5">{{ complaint.nature_of_complaint }}</td>
+                        <td class="px-6 py-5">{{ complaint.technician_name|default:"-" }}</td>
+                        <td class="px-6 py-5">{{ complaint.get_status_display }}</td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">No service data found.</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

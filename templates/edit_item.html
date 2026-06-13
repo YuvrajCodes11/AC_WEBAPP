@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Edit Store Item
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-5xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8">
+
+        <h1 class="text-4xl font-black text-[#0F4C81]">
+            Edit Store Item
+        </h1>
+
+        <form method="POST" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
+
+            {% csrf_token %}
+
+            <select name="category" class="border p-4 rounded-2xl" required>
+
+                {% for category in categories %}
+
+                <option value="{{ category.id }}" {% if item.category.id == category.id %}selected{% endif %}>
+                    {{ category.category_name }}
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+            <input name="item_description" value="{{ item.item_description }}" class="border p-4 rounded-2xl" required>
+
+            <input name="size" value="{{ item.size }}" class="border p-4 rounded-2xl">
+
+            <input name="remarks" value="{{ item.remarks }}" class="border p-4 rounded-2xl">
+
+            <select name="unit" class="border p-4 rounded-2xl" required>
+                <option value="NOS" {% if item.unit == "NOS" %}selected{% endif %}>Nos</option>
+                <option value="MTR" {% if item.unit == "MTR" %}selected{% endif %}>Meter</option>
+                <option value="RFT" {% if item.unit == "RFT" %}selected{% endif %}>Rft</option>
+                <option value="MTR_AND_RFT" {% if item.unit == "MTR_AND_RFT" %}selected{% endif %}>MTR and RFT</option>
+                <option value="KG" {% if item.unit == "KG" %}selected{% endif %}>Kg</option>
+                <option value="PKT" {% if item.unit == "PKT" %}selected{% endif %}>Packet</option>
+                <option value="NOS_PKT" {% if item.unit == "NOS_PKT" %}selected{% endif %}>Nos / Packet</option>
+                <option value="LTR" {% if item.unit == "LTR" %}selected{% endif %}>Liter</option>
+                <option value="SQMTR" {% if item.unit == "SQMTR" %}selected{% endif %}>Sq. Meter</option>
+                <option value="ROLL" {% if item.unit == "ROLL" %}selected{% endif %}>Roll</option>
+                <option value="BOX" {% if item.unit == "BOX" %}selected{% endif %}>Box</option>
+                <option value="COIL" {% if item.unit == "COIL" %}selected{% endif %}>Coil</option>
+            </select>
+
+            <input type="number" step="0.01" name="current_stock" value="{{ item.current_stock }}" class="border p-4 rounded-2xl" required>
+
+            <input type="number" step="0.01" name="minimum_stock" value="{{ item.minimum_stock }}" class="border p-4 rounded-2xl" required>
+
+            <button class="md:col-span-2 bg-green-600 text-white py-4 rounded-2xl font-bold">
+                Update Item
+            </button>
+
+        </form>
+
+        <a href="{% url 'item_list' %}" class="inline-block mt-5 text-[#0F4C81] font-bold">
+            Back to Items
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

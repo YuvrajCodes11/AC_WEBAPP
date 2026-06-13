@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Reports Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+            <h1 class="text-4xl font-black text-white">
+                Reports Dashboard
+            </h1>
+            <p class="text-blue-100 mt-2">
+                Complete ERP summary for customers, projects, BOQ, store and material issues.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+
+            <div class="bg-white rounded-3xl p-5 border shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase">Customers</p>
+                <h2 class="text-3xl font-black text-[#0F4C81] mt-2">{{ total_customers }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase">Projects</p>
+                <h2 class="text-3xl font-black text-blue-600 mt-2">{{ total_projects }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase">BOQs</p>
+                <h2 class="text-3xl font-black text-green-600 mt-2">{{ total_boqs }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase">Material Issues</p>
+                <h2 class="text-3xl font-black text-orange-600 mt-2">{{ total_material_issues }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase">Store Items</p>
+                <h2 class="text-3xl font-black text-cyan-600 mt-2">{{ total_store_items }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border shadow-sm">
+                <p class="text-xs font-bold text-red-500 uppercase">Low Stock</p>
+                <h2 class="text-3xl font-black text-red-600 mt-2">{{ low_stock_items }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border shadow-sm">
+                <p class="text-xs font-bold text-amber-500 uppercase">Warranty Customers</p>
+                <h2 class="text-3xl font-black text-amber-600 mt-2">{{ warranty_customers }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border shadow-sm">
+                <p class="text-xs font-bold text-emerald-500 uppercase">AMC Customers</p>
+                <h2 class="text-3xl font-black text-emerald-600 mt-2">{{ amc_customers }}</h2>
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+                <div class="p-5 border-b">
+                    <h2 class="text-xl font-black text-[#0F4C81]">
+                        Recent Projects
+                    </h2>
+                </div>
+
+                <div class="p-5 space-y-3">
+                    {% for project in recent_projects %}
+                    <div class="border rounded-2xl p-4">
+                        <p class="font-black text-slate-900">
+                            {{ project.project_id }} - {{ project.site_name }}
+                        </p>
+                        <p class="text-sm text-slate-500">
+                            {{ project.customer.customer_name|default:"No Customer" }}
+                        </p>
+                    </div>
+                    {% empty %}
+                    <p class="text-slate-500">No recent projects found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+                <div class="p-5 border-b">
+                    <h2 class="text-xl font-black text-[#0F4C81]">
+                        Recent Material Issues
+                    </h2>
+                </div>
+
+                <div class="p-5 space-y-3">
+                    {% for issue in recent_material_issues %}
+                    <div class="border rounded-2xl p-4">
+                        <p class="font-black text-slate-900">
+                            {{ issue.issue_id }}
+                        </p>
+                        <p class="text-sm text-slate-500">
+                            {{ issue.project.project_id }} - {{ issue.project.site_name }}
+                        </p>
+                    </div>
+                    {% empty %}
+                    <p class="text-slate-500">No material issues found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

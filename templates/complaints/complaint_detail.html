@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Complaint Detail
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+    <div class="max-w-5xl mx-auto">
+
+        <div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+
+            <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] px-8 py-7">
+                <h1 class="text-3xl font-black text-white">
+                    {{ complaint.complaint_id }}
+                </h1>
+                <p class="text-blue-100 mt-2">
+                    {{ complaint.customer.customer_name }}
+                </p>
+            </div>
+
+            <div class="p-8 space-y-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                    <div class="bg-slate-50 rounded-3xl p-5 border">
+                        <p class="text-sm text-slate-500 font-bold">Total Complaints</p>
+                        <h2 class="text-3xl font-black">{{ total_complaints }}</h2>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-3xl p-5 border">
+                        <p class="text-sm text-slate-500 font-bold">Total Visits</p>
+                        <h2 class="text-3xl font-black">{{ total_visits }}</h2>
+                    </div>
+
+                    <div class="bg-blue-50 rounded-3xl p-5 border border-blue-200">
+                        <p class="text-sm text-blue-600 font-bold">Warranty Visits</p>
+                        <h2 class="text-3xl font-black text-blue-700">{{ warranty_visits }}</h2>
+                    </div>
+
+                    <div class="bg-amber-50 rounded-3xl p-5 border border-amber-200">
+                        <p class="text-sm text-amber-600 font-bold">AMC Visits</p>
+                        <h2 class="text-3xl font-black text-amber-700">{{ amc_visits }}</h2>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
+
+                    <div>
+                        <p class="font-bold text-slate-500">Customer</p>
+                        <p class="font-black">{{ complaint.customer.customer_name }}</p>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-slate-500">Phone</p>
+                        <p class="font-black">{{ complaint.customer.phone_number }}</p>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-slate-500">Site Type</p>
+                        <p class="font-black">{{ complaint.get_site_type_display }}</p>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-slate-500">Visit Date</p>
+                        <p class="font-black">{{ complaint.visit_date }}</p>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-slate-500">Technicians</p>
+                        <p class="font-black">{{ complaint.no_of_technicians }}</p>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-slate-500">Status</p>
+                        <p class="font-black">{{ complaint.get_status_display }}</p>
+                    </div>
+
+                </div>
+
+                <div>
+                    <p class="font-bold text-slate-500">Complaint Title</p>
+                    <p>{{ complaint.complaint_title }}</p>
+                </div>
+
+                <div>
+                    <p class="font-bold text-slate-500">Complaint Description</p>
+                    <p>{{ complaint.complaint_description|default:"-" }}</p>
+                </div>
+
+                <div>
+                    <p class="font-bold text-slate-500">Work Done</p>
+                    <p>{{ complaint.work_done|default:"-" }}</p>
+                </div>
+
+                <div>
+                    <p class="font-bold text-slate-500">Remarks</p>
+                    <p>{{ complaint.remarks|default:"-" }}</p>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <a href="{% url 'complaint_list' %}"
+                       class="px-6 py-3 rounded-2xl border font-bold">
+                        Back
+                    </a>
+
+                    <a href="{% url 'edit_complaint' complaint.id %}"
+                       class="px-6 py-3 rounded-2xl bg-[#0F4C81] text-white font-black">
+                        Edit
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

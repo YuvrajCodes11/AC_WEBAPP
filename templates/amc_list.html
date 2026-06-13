@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}
+AMC Contracts
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Top Action Hub -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">AMC Contracts</h1>
+            <p class="mt-2 text-sm text-slate-500 max-w-2xl">
+                Manage annual maintenance contracts, track service frequencies, and monitor expiry alerts.
+            </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 transition-all">
+                <svg class="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                Dashboard
+            </a>
+            <a href="{% url 'add_amc' %}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-white bg-[#0F4C81] rounded-xl shadow-md shadow-blue-900/10 hover:bg-[#0b3d68] hover:shadow-lg hover:shadow-blue-900/20 transition-all">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Add AMC
+            </a>
+        </div>
+    </div>
+
+    <!-- Smart Alerts -->
+    <div class="flex flex-col gap-3 mb-8">
+        {% if expiring_count > 0 %}
+        <div class="flex items-center gap-3 bg-amber-50/80 border border-amber-200/60 text-amber-900 px-5 py-4 rounded-2xl shadow-sm">
+            <div class="p-2 bg-amber-100 rounded-full">
+                <svg class="w-5 h-5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <div>
+                <p class="text-sm font-bold">AMC Expiry Alert</p>
+                <p class="text-sm text-amber-700 mt-0.5">{{ expiring_count }} contract(s) expire within 30 days.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if pending_visit_count > 0 %}
+        <div class="flex items-center gap-3 bg-rose-50/80 border border-rose-200/60 text-rose-900 px-5 py-4 rounded-2xl shadow-sm">
+            <div class="p-2 bg-rose-100 rounded-full">
+                <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </div>
+            <div>
+                <p class="text-sm font-bold">Pending Visit Alert</p>
+                <p class="text-sm text-rose-700 mt-0.5">{{ pending_visit_count }} AMC visit(s) are currently pending.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Search & Filters Container -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-3 mb-8">
+        <form method="GET" class="flex flex-col lg:flex-row gap-3">
+            <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input 
+                    type="text" 
+                    name="search" 
+                    value="{{ search|default:'' }}" 
+                    placeholder="Search AMC ID, customer, technician..." 
+                    class="w-full text-sm border-none bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#0F4C81]/20 outline-none pl-11 pr-4 py-3.5 rounded-xl transition-all"
+                >
+            </div>
+
+            <div class="w-full lg:w-56">
+                <select 
+                    name="status" 
+                    class="w-full text-sm border-none bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#0F4C81]/20 outline-none px-4 py-3.5 rounded-xl transition-all cursor-pointer font-medium text-slate-600"
+                >
+                    <option value="">All Statuses</option>
+                    <option value="ACTIVE" {% if status == "ACTIVE" %}selected{% endif %}>Active</option>
+                    <option value="EXPIRED" {% if status == "EXPIRED" %}selected{% endif %}>Expired</option>
+                    <option value="HOLD" {% if status == "HOLD" %}selected{% endif %}>On Hold</option>
+                    <option value="CANCELLED" {% if status == "CANCELLED" %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 lg:flex-none inline-flex items-center justify-center px-8 py-3.5 text-sm font-semibold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-all shadow-sm">
+                    Search
+                </button>
+                {% if search or status %}
+                <a href="{{ request.path }}" class="flex-1 lg:flex-none inline-flex items-center justify-center px-6 py-3.5 text-sm font-semibold text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-700 transition-all shadow-sm" title="Clear Filters">
+                    Clear
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Modern Data Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden flex flex-col">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-slate-500">
+                <thead class="text-xs uppercase font-bold text-slate-400 bg-slate-50/50 border-b border-slate-100">
+                    <tr>
+                        <th class="px-6 py-4.5 tracking-wider">AMC ID</th>
+                        <th class="px-6 py-4.5 tracking-wider">Customer</th>
+                        <th class="px-6 py-4.5 tracking-wider">Duration</th>
+                        <th class="px-6 py-4.5 tracking-wider">Value</th>
+                        <th class="px-6 py-4.5 tracking-wider">Frequency</th>
+                        <th class="px-6 py-4.5 tracking-wider">Technician</th>
+                        <th class="px-6 py-4.5 tracking-wider">Status</th>
+                        <th class="px-6 py-4.5 tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50 bg-white">
+                    {% for amc in amcs %}
+                    <tr class="hover:bg-slate-50/60 transition-colors duration-150 group">
+                        
+                        <!-- ID -->
+                        <td class="px-6 py-5 font-mono text-xs font-semibold text-slate-400 whitespace-nowrap">
+                            {{ amc.amc_id }}
+                        </td>
+
+                        <!-- Customer (Click to Edit with Title Case) -->
+                        <td class="px-6 py-5 whitespace-nowrap">
+                            {% if profile.role == "CEO" %}
+                            <a href="{% url 'edit_amc' amc.id %}" class="inline-flex items-center gap-2 group/edit cursor-pointer">
+                                <span class="font-bold text-slate-900 group-hover/edit:text-[#0F4C81] transition-colors">
+                                    {{ amc.customer.customer_name|title }}
+                                </span>
+                                <!-- Hidden Pencil Icon that appears on hover -->
+                                <svg class="w-3.5 h-3.5 text-[#0F4C81] opacity-0 group-hover/edit:opacity-100 transition-opacity duration-200 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </a>
+                            {% else %}
+                            <span class="font-bold text-slate-900">
+                                {{ amc.customer.customer_name|title }}
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Duration -->
+                        <td class="px-6 py-5 text-slate-600 whitespace-nowrap">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-xs text-slate-400 font-medium">Start: {{ amc.contract_start_date|date:"M d, Y" }}</span>
+                                <span class="font-semibold text-slate-700">End: {{ amc.contract_end_date|date:"M d, Y" }}</span>
+                            </div>
+                        </td>
+
+                        <!-- Value -->
+                        <td class="px-6 py-5 font-bold text-emerald-600 whitespace-nowrap">
+                            ₹{{ amc.contract_value|default:"0" }}
+                        </td>
+
+                        <!-- Frequency -->
+                        <td class="px-6 py-5 font-medium text-slate-600 whitespace-nowrap">
+                            {{ amc.get_service_frequency_display }}
+                        </td>
+
+                        <!-- Technician (Also converted to Title case for consistency) -->
+                        <td class="px-6 py-5 text-slate-600 whitespace-nowrap">
+                            {{ amc.technician_name|default:"—"|title }}
+                        </td>
+
+                        <!-- Status Badge -->
+                        <td class="px-6 py-5 whitespace-nowrap">
+                            {% if amc.status == "ACTIVE" %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                                Active
+                            </span>
+                            {% elif amc.status == "EXPIRED" %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold bg-rose-50 text-rose-700 border border-rose-200/60">
+                                Expired
+                            </span>
+                            {% elif amc.status == "HOLD" %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold bg-amber-50 text-amber-700 border border-amber-200/60">
+                                On Hold
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold bg-slate-100 text-slate-600 border border-slate-200/60">
+                                {{ amc.get_status_display }}
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Modern Action Buttons (Edit removed, View and Delete remaining) -->
+                        <td class="px-6 py-5 text-right whitespace-nowrap">
+                            <div class="inline-flex items-center justify-end gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                                
+                                <!-- View Button (Always visible) -->
+                                <a href="{% url 'amc_detail' amc.id %}" class="p-2 text-slate-400 hover:text-[#0F4C81] hover:bg-blue-50 rounded-lg transition-colors duration-200" title="View Details">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </a>
+
+                                {% if profile.role == "CEO" %}
+                                <!-- Delete Button -->
+                                <a href="{% url 'delete_amc' amc.id %}" onclick="return confirm('Are you sure you want to permanently delete this AMC contract?')" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors duration-200" title="Delete Contract">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </a>
+                                {% endif %}
+
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="px-6 py-24 text-center">
+                            <div class="flex flex-col items-center justify-center space-y-3">
+                                <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-2 border border-slate-100">
+                                    <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                </div>
+                                <span class="text-base font-semibold text-slate-700">No AMC contracts found</span>
+                                <span class="text-sm max-w-sm text-slate-400">There are currently no contracts matching your criteria, or none have been added yet.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination Component -->
+        {% if amcs.has_other_pages %}
+        <div class="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between">
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-slate-500">
+                        Showing page <span class="font-medium text-slate-900">{{ amcs.number }}</span> of <span class="font-medium text-slate-900">{{ amcs.paginator.num_pages }}</span>
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-lg shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if amcs.has_previous %}
+                        <a href="?page={{ amcs.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-l-lg border border-slate-200 bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 transition-colors">
+                            <span class="sr-only">Previous</span>
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </a>
+                        {% endif %}
+                        
+                        <span class="relative inline-flex items-center px-4 py-2 border border-slate-200 bg-white text-sm font-bold text-slate-700">
+                            {{ amcs.number }}
+                        </span>
+
+                        {% if amcs.has_next %}
+                        <a href="?page={{ amcs.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-r-lg border border-slate-200 bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 transition-colors">
+                            <span class="sr-only">Next</span>
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

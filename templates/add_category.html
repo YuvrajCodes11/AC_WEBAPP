@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Add Category
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8">
+
+        <h1 class="text-4xl font-black text-[#0F4C81]">
+            Add Category
+        </h1>
+
+        {% if error %}
+        <div class="mt-6 bg-red-100 text-red-700 p-4 rounded-2xl font-bold">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="mt-6 bg-green-100 text-green-700 p-4 rounded-2xl font-bold">
+            {{ success }}
+        </div>
+        {% endif %}
+
+        <form method="POST" class="mt-8 space-y-5">
+
+            {% csrf_token %}
+
+            <input
+                type="text"
+                name="category_name"
+                placeholder="Category Name"
+                class="w-full border p-4 rounded-2xl"
+                required
+            >
+
+            <button class="w-full bg-[#0F4C81] text-white py-4 rounded-2xl font-bold">
+                Save Category
+            </button>
+
+        </form>
+
+        <a href="{% url 'category_list' %}" class="inline-block mt-5 text-[#0F4C81] font-bold">
+            Back to Categories
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,548 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Store Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+
+            <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
+
+                <div>
+                    <h1 class="text-4xl font-black text-white">
+                        Store Dashboard
+                    </h1>
+
+                    <p class="text-blue-100 mt-2 text-base">
+                        HVAC Material & Inventory Management
+                    </p>
+                </div>
+
+                <div class="flex gap-3 flex-wrap">
+
+                    <a href="{% url 'add_store_category' %}"
+                       class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold shadow hover:bg-blue-50 transition">
+                        + Category
+                    </a>
+
+                    <a href="{% url 'add_store_item' %}"
+                       class="bg-green-500 text-white px-5 py-3 rounded-2xl font-bold shadow hover:bg-green-600 transition">
+                        + Item
+                    </a>
+
+                    <a href="{% url 'add_store_transaction' %}"
+                       class="bg-orange-500 text-white px-5 py-3 rounded-2xl font-bold shadow hover:bg-orange-600 transition">
+                        + Transaction
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
+
+            <div class="bg-white rounded-3xl p-6 shadow-sm border hover:shadow-lg transition">
+                <p class="text-slate-500 text-sm font-bold">
+                    Categories
+                </p>
+                <h2 class="text-4xl font-black text-[#0F4C81] mt-2">
+                    {{ total_categories }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 shadow-sm border hover:shadow-lg transition">
+                <p class="text-slate-500 text-sm font-bold">
+                    Store Items
+                </p>
+                <h2 class="text-4xl font-black text-green-600 mt-2">
+                    {{ total_items }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 shadow-sm border hover:shadow-lg transition">
+                <p class="text-slate-500 text-sm font-bold">
+                    Low Stock
+                </p>
+                <h2 class="text-4xl font-black text-red-600 mt-2">
+                    {{ low_stock_count }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 shadow-sm border hover:shadow-lg transition">
+                <p class="text-slate-500 text-sm font-bold">
+                    85% Used
+                </p>
+                <h2 class="text-4xl font-black text-orange-600 mt-2">
+                    {{ stock_85_used_count }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 shadow-sm border hover:shadow-lg transition">
+                <p class="text-slate-500 text-sm font-bold">
+                    Transactions
+                </p>
+                <h2 class="text-4xl font-black text-purple-600 mt-2">
+                    {{ total_transactions }}
+                </h2>
+            </div>
+
+        </div>
+
+        <!-- Search -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border mb-8">
+
+            <form method="GET" class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+
+                <div class="lg:col-span-9">
+
+                    <label class="block text-sm font-black text-slate-700 mb-2">
+                        Search Dashboard
+                    </label>
+
+                    <input type="text"
+                           name="search"
+                           value="{{ search }}"
+                           placeholder="Search by Complete Item Description, Item Code, Category, Size, Low Stock, 85% Used, Transaction..."
+                           class="w-full px-5 py-4 rounded-2xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0F4C81] font-medium">
+
+                </div>
+
+                <div class="lg:col-span-3 flex gap-3 lg:mt-7">
+
+                    <button type="submit"
+                            class="w-full bg-[#0F4C81] text-white px-6 py-4 rounded-2xl font-black hover:bg-[#0b3a63] transition shadow">
+                        Search
+                    </button>
+
+                    {% if search %}
+                    <a href="{% url 'store_dashboard' %}"
+                       class="w-full bg-slate-200 text-slate-700 px-6 py-4 rounded-2xl font-black text-center hover:bg-slate-300 transition">
+                        Clear
+                    </a>
+                    {% endif %}
+
+                </div>
+
+            </form>
+
+            {% if search %}
+            <div class="mt-4 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-3">
+                <p class="text-sm text-slate-600">
+                    Showing dashboard results for:
+                    <span class="font-black text-[#0F4C81]">
+                        {{ search }}
+                    </span>
+                </p>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Quick Menu -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+
+            <a href="{% url 'store_category_list' %}"
+               class="bg-white border rounded-3xl p-6 shadow-sm hover:shadow-lg transition">
+
+                <h3 class="text-xl font-black text-[#0F4C81]">
+                    Categories
+                </h3>
+
+                <p class="text-slate-500 mt-2">
+                    Manage HVAC material categories.
+                </p>
+
+            </a>
+
+            <a href="{% url 'store_item_list' %}"
+               class="bg-white border rounded-3xl p-6 shadow-sm hover:shadow-lg transition">
+
+                <h3 class="text-xl font-black text-green-600">
+                    Store Items
+                </h3>
+
+                <p class="text-slate-500 mt-2">
+                    Manage inventory items, item size and stock.
+                </p>
+
+            </a>
+
+            <a href="{% url 'store_transaction_list' %}"
+               class="bg-white border rounded-3xl p-6 shadow-sm hover:shadow-lg transition">
+
+                <h3 class="text-xl font-black text-orange-600">
+                    Transactions
+                </h3>
+
+                <p class="text-slate-500 mt-2">
+                    Stock IN / OUT / Return History.
+                </p>
+
+            </a>
+
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div class="bg-white rounded-3xl shadow-sm border overflow-hidden mb-8">
+
+            <div class="bg-red-50 px-6 py-5 border-b flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+
+                <div>
+                    <h2 class="text-xl font-black text-red-600">
+                        Low Stock Alert
+                    </h2>
+
+                    <p class="text-sm text-red-500 mt-1 font-medium">
+                        Items where current stock is less than or equal to minimum stock.
+                    </p>
+                </div>
+
+                <span class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-black">
+                    {{ low_stock_count }} Items
+                </span>
+
+            </div>
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full">
+
+                    <thead class="bg-slate-100">
+
+                        <tr>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Code</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Complete Item Description</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Category</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Size</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Current Stock</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Minimum Stock</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Unit</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Status</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in low_stock_list %}
+
+                        <tr class="border-b hover:bg-red-50 transition">
+
+                            <td class="p-4 font-black text-[#0F4C81] whitespace-nowrap">
+                                {{ item.item_code }}
+                            </td>
+
+                            <td class="p-4 min-w-[300px]">
+
+                                <p class="font-black text-slate-900 uppercase">
+                                    {{ item.item_description }}
+                                    {% if item.size %}
+                                        - {{ item.size }}
+                                    {% endif %}
+                                </p>
+
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Item Name:
+                                    <span class="font-bold text-slate-700">
+                                        {{ item.item_description }}
+                                    </span>
+                                </p>
+
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Complete Item Description:
+                                    <span class="font-bold text-red-600">
+                                        {{ item.item_description }}{% if item.size %} - {{ item.size }}{% endif %}
+                                    </span>
+                                </p>
+
+                                {% if item.remarks %}
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Remarks: {{ item.remarks }}
+                                </p>
+                                {% endif %}
+
+                            </td>
+
+                            <td class="p-4 font-medium text-slate-700">
+                                {{ item.category.category_name }}
+                            </td>
+
+                            <td class="p-4 font-bold">
+                                {{ item.size|default:"Not Mentioned" }}
+                            </td>
+
+                            <td class="p-4 text-red-600 font-black">
+                                {{ item.current_stock }}
+                            </td>
+
+                            <td class="p-4 font-bold">
+                                {{ item.minimum_stock }}
+                            </td>
+
+                            <td class="p-4">
+                                {{ item.get_unit_display }}
+                            </td>
+
+                            <td class="p-4">
+                                <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-black">
+                                    Low Stock
+                                </span>
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="8" class="p-8 text-center text-slate-500 font-medium">
+                                No low stock items found.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- 85% Used Alert -->
+        <div class="bg-white rounded-3xl shadow-sm border overflow-hidden mb-8">
+
+            <div class="bg-orange-50 px-6 py-5 border-b flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+
+                <div>
+                    <h2 class="text-xl font-black text-orange-600">
+                        85% Stock Used Alert
+                    </h2>
+
+                    <p class="text-sm text-orange-500 mt-1 font-medium">
+                        Items where stock usage has crossed the configured alert percentage.
+                    </p>
+                </div>
+
+                <span class="bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-sm font-black">
+                    {{ stock_85_used_count }} Items
+                </span>
+
+            </div>
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full">
+
+                    <thead class="bg-slate-100">
+
+                        <tr>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Code</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Complete Item Description</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Category</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Size</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Opening Stock</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Current Stock</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Used %</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Unit</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in stock_85_used_list %}
+
+                        <tr class="border-b hover:bg-orange-50 transition">
+
+                            <td class="p-4 font-black text-[#0F4C81] whitespace-nowrap">
+                                {{ item.item_code }}
+                            </td>
+
+                            <td class="p-4 min-w-[300px]">
+
+                                <p class="font-black text-slate-900 uppercase">
+                                    {{ item.item_description }}
+                                    {% if item.size %}
+                                        - {{ item.size }}
+                                    {% endif %}
+                                </p>
+
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Complete Item Description:
+                                    <span class="font-bold text-orange-600">
+                                        {{ item.item_description }}{% if item.size %} - {{ item.size }}{% endif %}
+                                    </span>
+                                </p>
+
+                                {% if item.remarks %}
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Remarks: {{ item.remarks }}
+                                </p>
+                                {% endif %}
+
+                            </td>
+
+                            <td class="p-4 font-medium text-slate-700">
+                                {{ item.category.category_name }}
+                            </td>
+
+                            <td class="p-4 font-bold">
+                                {{ item.size|default:"Not Mentioned" }}
+                            </td>
+
+                            <td class="p-4">
+                                {{ item.opening_stock }}
+                            </td>
+
+                            <td class="p-4 font-bold">
+                                {{ item.current_stock }}
+                            </td>
+
+                            <td class="p-4">
+                                <span class="px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-black">
+                                    {{ item.used_percentage }}%
+                                </span>
+                            </td>
+
+                            <td class="p-4">
+                                {{ item.get_unit_display }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="8" class="p-8 text-center text-slate-500 font-medium">
+                                No 85% used stock items found.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="bg-white rounded-3xl shadow-sm border overflow-hidden">
+
+            <div class="bg-slate-50 px-6 py-5 border-b flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+
+                <div>
+                    <h2 class="text-xl font-black text-[#0F4C81]">
+                        Recent Transactions
+                    </h2>
+
+                    <p class="text-sm text-slate-500 mt-1 font-medium">
+                        Latest stock IN, OUT and return activity.
+                    </p>
+                </div>
+
+                <a href="{% url 'store_transaction_list' %}"
+                   class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-[#0b3a63] transition">
+                    View All
+                </a>
+
+            </div>
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full">
+
+                    <thead class="bg-slate-100">
+
+                        <tr>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Transaction ID</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Item</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Type</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Purpose</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Qty</th>
+                            <th class="text-left p-4 text-sm font-black text-slate-700">Date</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for txn in recent_transactions %}
+
+                        <tr class="border-b hover:bg-slate-50 transition">
+
+                            <td class="p-4 font-black text-[#0F4C81] whitespace-nowrap">
+                                {{ txn.transaction_id }}
+                            </td>
+
+                            <td class="p-4 min-w-[280px]">
+
+                                <p class="font-black text-slate-900 uppercase">
+                                    {{ txn.item.item_description }}
+                                    {% if txn.item.size %}
+                                        - {{ txn.item.size }}
+                                    {% endif %}
+                                </p>
+
+                                <p class="text-xs text-slate-500 mt-1">
+                                    {{ txn.item.category.category_name }}
+                                </p>
+
+                            </td>
+
+                            <td class="p-4">
+                                <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-black">
+                                    {{ txn.get_transaction_type_display }}
+                                </span>
+                            </td>
+
+                            <td class="p-4 font-medium text-slate-700">
+                                {{ txn.get_purpose_display }}
+                            </td>
+
+                            <td class="p-4 font-black">
+                                {{ txn.quantity }} {{ txn.item.get_unit_display }}
+                            </td>
+
+                            <td class="p-4 text-slate-600 whitespace-nowrap">
+                                {{ txn.created_at|date:"d M Y" }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-500 font-medium">
+                                No transactions found.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

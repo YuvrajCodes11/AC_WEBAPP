@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Print Material Issue
+{% endblock %}
+
+{% block content %}
+
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+        }
+
+        .print-area {
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        @page {
+            size: A4;
+            margin: 12mm;
+        }
+    }
+</style>
+
+<div class="min-h-screen bg-slate-100 px-4 py-8">
+
+    <div class="max-w-5xl mx-auto">
+
+        <div class="no-print flex justify-between items-center mb-6">
+
+            <a href="{% url 'material_issue_detail' material_issue.id %}"
+               class="bg-slate-200 text-slate-700 px-5 py-3 rounded-2xl font-bold">
+                Back
+            </a>
+
+            <button onclick="window.print()"
+                    class="bg-[#0F4C81] text-white px-6 py-3 rounded-2xl font-black">
+                Print Slip
+            </button>
+
+        </div>
+
+        <div class="print-area bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+
+            <div class="text-center border-b border-slate-300 pb-5">
+
+                <h1 class="text-3xl font-black text-[#0F4C81]">
+                    Puri Air Conditioning
+                </h1>
+
+                <p class="text-sm font-bold text-slate-600 mt-1">
+                    HVAC Solutions & Cooling Management System
+                </p>
+
+                <h2 class="text-xl font-black text-slate-900 mt-5 uppercase">
+                    Material Issue Slip
+                </h2>
+
+            </div>
+
+            <div class="grid grid-cols-2 gap-5 mt-6 text-sm">
+
+                <div>
+                    <p><strong>Issue ID:</strong> {{ material_issue.issue_id }}</p>
+                    <p><strong>Issue Date:</strong> {{ material_issue.issue_date|date:"d M Y" }}</p>
+                    <p><strong>Status:</strong> {{ material_issue.get_status_display }}</p>
+                </div>
+
+                <div>
+                    <p><strong>Issued By:</strong> {{ material_issue.issued_by.username|default:"-" }}</p>
+                    <p><strong>Issued To:</strong> {{ material_issue.issued_to }}</p>
+                    <p><strong>Received By:</strong> {{ material_issue.received_by|default:"-" }}</p>
+                </div>
+
+            </div>
+
+            <div class="grid grid-cols-2 gap-5 mt-5 text-sm">
+
+                <div>
+                    <p><strong>Project ID:</strong> {{ material_issue.project.project_id }}</p>
+                    <p><strong>Site Name:</strong> {{ material_issue.project.site_name }}</p>
+                    <p><strong>Location:</strong> {{ material_issue.project.location|default:"-" }}</p>
+                </div>
+
+                <div>
+                    <p>
+                        <strong>Customer:</strong>
+                        {% if material_issue.project.customer %}
+                            {{ material_issue.project.customer.customer_name }}
+                        {% else %}
+                            No Customer
+                        {% endif %}
+                    </p>
+
+                    <p>
+                        <strong>BOQ:</strong>
+                        {% if material_issue.boq %}
+                            {{ material_issue.boq.boq_id }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </p>
+
+                    <p><strong>Remarks:</strong> {{ material_issue.remarks|default:"-" }}</p>
+                </div>
+
+            </div>
+
+            <div class="mt-8">
+
+                <table class="w-full text-sm border border-slate-300">
+
+                    <thead>
+                        <tr class="bg-slate-100">
+                            <th class="border border-slate-300 px-3 py-2 text-left">S.No</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Item Code</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Item Description</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Size</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Unit</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Issued Qty</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Consumed</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Returned</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left">Balance</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in issue_items %}
+                        <tr>
+                            <td class="border border-slate-300 px-3 py-2">{{ forloop.counter }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.store_item.item_code }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.store_item.item_description }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.store_item.size|default:"-" }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.store_item.get_unit_display }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.issued_quantity }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.consumed_quantity }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.returned_quantity }}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.balance_quantity }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="border border-slate-300 px-3 py-6 text-center">
+                                No material item found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="grid grid-cols-3 gap-8 mt-16 text-center text-sm">
+
+                <div>
+                    <div class="border-t border-slate-400 pt-2">
+                        Store Incharge Signature
+                    </div>
+                </div>
+
+                <div>
+                    <div class="border-t border-slate-400 pt-2">
+                        Site Engineer Signature
+                    </div>
+                </div>
+
+                <div>
+                    <div class="border-t border-slate-400 pt-2">
+                        Receiver Signature
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-8 text-center text-xs text-slate-500">
+                This is a system-generated material issue slip.
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

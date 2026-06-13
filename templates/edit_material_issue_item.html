@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Edit Material Issue Item
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-5xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                <div>
+                    <h1 class="text-4xl font-black text-white">
+                        Edit Material Item
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        Update consumed, returned and balance quantity.
+                    </p>
+                </div>
+
+                <a href="{% url 'material_issue_detail' issue_item.material_issue.id %}"
+                   class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
+                    Back
+                </a>
+
+            </div>
+
+        </div>
+
+        {% if error %}
+        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Store Item
+                        </label>
+
+                        <input type="text"
+                               value="{{ issue_item.store_item.item_code }} - {{ issue_item.store_item.item_description }}"
+                               readonly
+                               class="w-full bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            BOQ Item
+                        </label>
+
+                        <input type="text"
+                               value="{% if issue_item.boq_item %}{{ issue_item.boq_item.boq.boq_id }} - {{ issue_item.boq_item.store_item.item_description }}{% else %}No BOQ Item{% endif %}"
+                               readonly
+                               class="w-full bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Issued Quantity
+                        </label>
+
+                        <input type="number"
+                               value="{{ issue_item.issued_quantity }}"
+                               readonly
+                               class="w-full bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Balance Quantity
+                        </label>
+
+                        <input type="text"
+                               value="{{ issue_item.balance_quantity }}"
+                               readonly
+                               class="w-full bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Consumed Quantity
+                        </label>
+
+                        <input type="number"
+                               name="consumed_quantity"
+                               step="0.01"
+                               min="0"
+                               value="{{ issue_item.consumed_quantity }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Returned Quantity
+                        </label>
+
+                        <input type="number"
+                               name="returned_quantity"
+                               step="0.01"
+                               min="0"
+                               value="{{ issue_item.returned_quantity }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                </div>
+
+                <div class="mt-5">
+                    <label class="block font-bold mb-2">
+                        Remarks
+                    </label>
+
+                    <textarea name="remarks"
+                              rows="4"
+                              class="w-full border border-slate-300 rounded-2xl px-4 py-3">{{ issue_item.remarks }}</textarea>
+                </div>
+
+            </div>
+
+            <div class="mt-6 flex gap-3">
+
+                <button type="submit"
+                        class="bg-[#0F4C81] text-white px-8 py-4 rounded-2xl font-black">
+                    Update Item
+                </button>
+
+                <a href="{% url 'material_issue_detail' issue_item.material_issue.id %}"
+                   class="bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-black">
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

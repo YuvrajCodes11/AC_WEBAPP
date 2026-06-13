@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}
+BOQ vs Issued Report
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8 print:hidden">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+            <div>
+                <h1 class="text-4xl font-black text-[#0F4C81]">BOQ vs Issued Report</h1>
+                <p class="mt-2 text-gray-500">Compare BOQ quantity with actual issued material.</p>
+            </div>
+
+            <div class="flex gap-3">
+                <a href="{% url 'reports_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">Reports</a>
+                <a href="{% url 'export_boq_vs_issued_report' %}" class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">Export CSV</a>
+                <button onclick="window.print()" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">Print</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-8 bg-white rounded-[2rem] shadow-xl border border-blue-100 overflow-hidden">
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full min-w-[1200px]">
+
+                <thead>
+                    <tr class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] text-white">
+                        <th class="px-6 py-5 text-left">BOQ</th>
+                        <th class="px-6 py-5 text-left">Customer</th>
+                        <th class="px-6 py-5 text-left">Project</th>
+                        <th class="px-6 py-5 text-left">Item</th>
+                        <th class="px-6 py-5 text-left">Size</th>
+                        <th class="px-6 py-5 text-left">Unit</th>
+                        <th class="px-6 py-5 text-left">BOQ Qty</th>
+                        <th class="px-6 py-5 text-left">Issued Qty</th>
+                        <th class="px-6 py-5 text-left">Extra Qty</th>
+                        <th class="px-6 py-5 text-left">Status</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                    {% for row in rows %}
+
+                    <tr class="hover:bg-blue-50">
+                        <td class="px-6 py-5 font-bold text-[#0F4C81]">{{ row.boq.boq_id }}</td>
+                        <td class="px-6 py-5">{{ row.customer.customer_name }}</td>
+                        <td class="px-6 py-5">{{ row.project.customer_name }}</td>
+                        <td class="px-6 py-5 font-bold">{{ row.store_item.item_description }}</td>
+                        <td class="px-6 py-5">{{ row.store_item.size|default:"-" }}</td>
+                        <td class="px-6 py-5">{{ row.store_item.get_unit_display }}</td>
+                        <td class="px-6 py-5 font-bold">{{ row.boq_qty }}</td>
+                        <td class="px-6 py-5 font-bold">{{ row.issued_qty }}</td>
+                        <td class="px-6 py-5 font-bold text-red-600">{{ row.extra_qty }}</td>
+                        <td class="px-6 py-5">
+                            {% if row.status == "Exceeded" %}
+                            <span class="bg-red-100 text-red-700 px-4 py-2 rounded-xl font-bold">Exceeded</span>
+                            {% else %}
+                            <span class="bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold">Within BOQ</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="10" class="px-6 py-12 text-center text-gray-500">No BOQ data found.</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="mt-8 bg-white rounded-[2rem] shadow-xl border border-orange-100 overflow-hidden">
+
+        <div class="p-6 border-b border-gray-100">
+            <h2 class="text-2xl font-black text-orange-700">New Items Not In BOQ</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full min-w-[900px]">
+
+                <thead>
+                    <tr class="bg-orange-100 text-orange-800">
+                        <th class="px-6 py-4 text-left">Issue</th>
+                        <th class="px-6 py-4 text-left">Project</th>
+                        <th class="px-6 py-4 text-left">Item</th>
+                        <th class="px-6 py-4 text-left">Qty</th>
+                        <th class="px-6 py-4 text-left">Alert</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                    {% for item in new_items %}
+
+                    <tr>
+                        <td class="px-6 py-4 font-bold">{{ item.issue.issue_id }}</td>
+                        <td class="px-6 py-4">{{ item.issue.project.customer_name }}</td>
+                        <td class="px-6 py-4">{{ item.store_item.item_description }}</td>
+                        <td class="px-6 py-4 font-bold">{{ item.quantity }}</td>
+                        <td class="px-6 py-4 text-orange-700 font-bold">{{ item.alert_message }}</td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-gray-500">No new BOQ item alert.</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

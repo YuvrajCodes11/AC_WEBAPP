@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Project Detail
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-6xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                <div>
+                    <p class="text-blue-100 text-sm font-bold uppercase tracking-wider">
+                        Project Details
+                    </p>
+
+                    <h1 class="text-4xl font-black text-white mt-2">
+                        {{ project.project_id }}
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        {{ project.site_name|default:"New Project Site" }}
+                    </p>
+                </div>
+
+                <div class="flex gap-3">
+
+                    <a href="{% url 'project_list' %}"
+                       class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
+                        Back
+                    </a>
+
+                    <a href="{% url 'edit_project' project.id %}"
+                       class="bg-slate-900 text-white px-5 py-3 rounded-2xl font-bold">
+                        Edit
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase">
+                    Customer
+                </p>
+
+                <h2 class="mt-2 text-2xl font-black text-slate-900">
+                    {{ project.get_customer_name }}
+                </h2>
+
+                <p class="mt-2 text-sm text-slate-500">
+                    Phone: {{ project.get_customer_phone }}
+                </p>
+
+                {% if project.customer %}
+                <p class="mt-1 text-sm text-slate-500">
+                    Company: {{ project.customer.company_name|default:"N/A" }}
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase">
+                    Capacity
+                </p>
+
+                <h2 class="mt-2 text-2xl font-black text-slate-900">
+                    {{ project.capacity_value }} {{ project.capacity_unit }}
+                </h2>
+
+                <p class="mt-2 text-sm text-slate-500">
+                    Project Value: ₹{{ project.project_value }}
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase">
+                    Status
+                </p>
+
+                <h2 class="mt-2 text-2xl font-black text-slate-900">
+                    {{ project.get_project_status_display }}
+                </h2>
+
+                {% if project.is_active %}
+                <p class="mt-2 inline-flex px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-bold border border-green-200">
+                    Active
+                </p>
+                {% else %}
+                <p class="mt-2 inline-flex px-3 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">
+                    Inactive
+                </p>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm mb-8">
+
+            <h2 class="text-xl font-black text-slate-900 mb-5">
+                Site Information
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">
+                        Site Name
+                    </p>
+                    <p class="text-sm font-bold text-slate-800">
+                        {{ project.site_name|default:"New Project Site" }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">
+                        Location
+                    </p>
+                    <p class="text-sm font-bold text-slate-800">
+                        {{ project.location|default:"Muzaffarpur" }}
+                    </p>
+                </div>
+
+                <div class="md:col-span-2">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">
+                        Site Address
+                    </p>
+                    <p class="text-sm text-slate-700 leading-relaxed">
+                        {{ project.site_address|default:"No address added" }}
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm mb-8">
+
+            <h2 class="text-xl font-black text-slate-900 mb-5">
+                Project Dates
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                <div class="bg-slate-50 rounded-2xl p-4">
+                    <p class="text-xs font-bold text-slate-400 uppercase">
+                        Start Date
+                    </p>
+                    <p class="mt-2 text-sm font-bold text-slate-800">
+                        {{ project.start_date|date:"d M Y"|default:"Not added" }}
+                    </p>
+                </div>
+
+                <div class="bg-slate-50 rounded-2xl p-4">
+                    <p class="text-xs font-bold text-slate-400 uppercase">
+                        Expected Completion
+                    </p>
+                    <p class="mt-2 text-sm font-bold text-slate-800">
+                        {{ project.expected_completion_date|date:"d M Y"|default:"Not added" }}
+                    </p>
+                </div>
+
+                <div class="bg-slate-50 rounded-2xl p-4">
+                    <p class="text-xs font-bold text-slate-400 uppercase">
+                        Actual Completion
+                    </p>
+                    <p class="mt-2 text-sm font-bold text-slate-800">
+                        {{ project.actual_completion_date|date:"d M Y"|default:"Not added" }}
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <h3 class="text-lg font-black text-slate-900 mb-3">
+                    Material Consumed Notes
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    {{ project.material_consumed_notes|default:"No notes added" }}
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <h3 class="text-lg font-black text-slate-900 mb-3">
+                    Material Collection Notes
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    {{ project.material_collection_notes|default:"No notes added" }}
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <h3 class="text-lg font-black text-slate-900 mb-3">
+                    Project Stage Notes
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    {{ project.project_stage_notes|default:"No notes added" }}
+                </p>
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+
+            <h2 class="text-xl font-black text-slate-900 mb-4">
+                Record Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                <div class="bg-slate-50 rounded-2xl p-4">
+                    <p class="text-xs font-bold text-slate-400 uppercase">
+                        Created By
+                    </p>
+                    <p class="mt-2 text-sm font-bold text-slate-800">
+                        {{ project.created_by.username|default:"System" }}
+                    </p>
+                </div>
+
+                <div class="bg-slate-50 rounded-2xl p-4">
+                    <p class="text-xs font-bold text-slate-400 uppercase">
+                        Created
+                    </p>
+                    <p class="mt-2 text-sm font-bold text-slate-800">
+                        {{ project.created_at|date:"d M Y" }}
+                    </p>
+                </div>
+
+                <div class="bg-slate-50 rounded-2xl p-4">
+                    <p class="text-xs font-bold text-slate-400 uppercase">
+                        Updated
+                    </p>
+                    <p class="mt-2 text-sm font-bold text-slate-800">
+                        {{ project.updated_at|date:"d M Y" }}
+                    </p>
+                </div>
+
+                <div class="bg-slate-50 rounded-2xl p-4">
+                    <p class="text-xs font-bold text-slate-400 uppercase">
+                        Project ID
+                    </p>
+                    <p class="mt-2 text-sm font-bold text-slate-800">
+                        {{ project.project_id }}
+                    </p>
+                </div>
+
+            </div>
+
+            {% if project.remarks %}
+            <div class="mt-6 pt-5 border-t border-slate-100">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-2">
+                    Remarks
+                </p>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    {{ project.remarks }}
+                </p>
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

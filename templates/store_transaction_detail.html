@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Transaction Detail
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-5xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+                    <h1 class="text-4xl font-black text-white">
+                        Transaction Detail
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        {{ transaction.transaction_id }}
+                    </p>
+                </div>
+
+                <a href="{% url 'store_transaction_list' %}"
+                   class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
+                    Back
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+
+            <div class="bg-white rounded-3xl border p-5 shadow-sm">
+                <p class="text-slate-500 text-sm">Quantity</p>
+                <h2 class="text-3xl font-black text-[#0F4C81]">
+                    {{ transaction.quantity }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border p-5 shadow-sm">
+                <p class="text-slate-500 text-sm">Stock Before</p>
+                <h2 class="text-3xl font-black text-orange-600">
+                    {{ transaction.stock_before }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border p-5 shadow-sm">
+                <p class="text-slate-500 text-sm">Stock After</p>
+                <h2 class="text-3xl font-black text-green-600">
+                    {{ transaction.stock_after }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border p-5 shadow-sm">
+                <p class="text-slate-500 text-sm">Type</p>
+                <h2 class="text-xl font-black text-purple-600">
+                    {{ transaction.get_transaction_type_display }}
+                </h2>
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-3xl border shadow-sm p-6">
+
+            <h2 class="text-2xl font-black text-[#0F4C81] mb-6">
+                Transaction Information
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <div>
+                    <strong>Transaction ID:</strong><br>
+                    {{ transaction.transaction_id }}
+                </div>
+
+                <div>
+                    <strong>Transaction Type:</strong><br>
+                    {{ transaction.get_transaction_type_display }}
+                </div>
+
+                <div>
+                    <strong>Purpose:</strong><br>
+                    {{ transaction.get_purpose_display }}
+                </div>
+
+                <div>
+                    <strong>Item:</strong><br>
+                    {{ transaction.item.item_description }}
+                </div>
+
+                <div>
+                    <strong>Item Code:</strong><br>
+                    {{ transaction.item.item_code }}
+                </div>
+
+                <div>
+                    <strong>Category:</strong><br>
+                    {{ transaction.item.category.category_name }}
+                </div>
+
+                <div>
+                    <strong>Quantity:</strong><br>
+                    {{ transaction.quantity }}
+                </div>
+
+                <div>
+                    <strong>Issued To:</strong><br>
+                    {{ transaction.issued_to|default:"-" }}
+                </div>
+
+                <div>
+                    <strong>Stock Before:</strong><br>
+                    {{ transaction.stock_before }}
+                </div>
+
+                <div>
+                    <strong>Stock After:</strong><br>
+                    {{ transaction.stock_after }}
+                </div>
+
+                <div>
+                    <strong>Project:</strong><br>
+                    {% if transaction.project %}
+                        {{ transaction.project.project_id }} -
+                        {{ transaction.project.site_name }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+
+                <div>
+                    <strong>BOQ:</strong><br>
+                    {% if transaction.boq %}
+                        {{ transaction.boq.boq_id }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+
+                <div>
+                    <strong>AMC Customer:</strong><br>
+                    {{ transaction.amc_customer_name|default:"-" }}
+                </div>
+
+                <div>
+                    <strong>Warranty Customer:</strong><br>
+                    {{ transaction.warranty_customer_name|default:"-" }}
+                </div>
+
+                <div>
+                    <strong>Service Customer:</strong><br>
+                    {{ transaction.service_customer_name|default:"-" }}
+                </div>
+
+                <div>
+                    <strong>Created By:</strong><br>
+                    {{ transaction.created_by }}
+                </div>
+
+                <div>
+                    <strong>Created At:</strong><br>
+                    {{ transaction.created_at|date:"d M Y h:i A" }}
+                </div>
+
+            </div>
+
+            <div class="mt-6">
+
+                <strong>Description:</strong>
+
+                <div class="mt-2 p-4 bg-slate-50 rounded-2xl">
+                    {{ transaction.description|default:"No description provided." }}
+                </div>
+
+            </div>
+
+            {% if transaction.invoice_file %}
+            <div class="mt-6">
+
+                <strong>Invoice / Attachment:</strong>
+
+                <div class="mt-2">
+                    <a href="{{ transaction.invoice_file.url }}"
+                       target="_blank"
+                       class="inline-flex bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">
+                        View Attachment
+                    </a>
+                </div>
+
+            </div>
+            {% endif %}
+
+        </div>
+
+        <div class="mt-6 flex gap-3">
+
+            <a href="{% url 'delete_store_transaction' transaction.id %}"
+               onclick="return confirm('Delete transaction? Stock will be reversed.')"
+               class="bg-red-600 text-white px-6 py-3 rounded-2xl font-bold">
+                Delete Transaction
+            </a>
+
+            <a href="{% url 'store_transaction_list' %}"
+               class="bg-slate-200 text-slate-700 px-6 py-3 rounded-2xl font-bold">
+                Back To List
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Application Training
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8">
+
+        <p class="inline-block bg-blue-100 text-[#0F4C81] px-4 py-2 rounded-full text-sm font-bold">
+            ERP Training Guide
+        </p>
+
+        <h1 class="mt-5 text-4xl font-black text-[#0F4C81]">
+            Puri Air Conditioning ERP Training
+        </h1>
+
+        <p class="mt-3 text-gray-600 text-lg">
+            This page explains how to enter sample data in every module step by step.
+        </p>
+
+    </div>
+
+    <div class="mt-8 bg-green-50 border border-green-200 rounded-3xl p-6">
+
+        <h2 class="text-2xl font-black text-green-700">
+            Correct Data Entry Order
+        </h2>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm font-bold text-gray-700">
+            <p>1. Add Customer</p>
+            <p>2. Add Project</p>
+            <p>3. Add Store Category</p>
+            <p>4. Add Store Item</p>
+            <p>5. Add Stock In Transaction</p>
+            <p>6. Create BOQ</p>
+            <p>7. Add BOQ Item</p>
+            <p>8. Create Material Issue</p>
+            <p>9. Add Material Issue Item</p>
+            <p>10. Check Reports</p>
+        </div>
+
+    </div>
+
+    <div class="mt-8 space-y-6">
+
+        <!-- CUSTOMER -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                1. Customer Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                First add customer details. Customer is required before creating project, AMC, service and reports.
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Customer Category:</strong> AMC Customer</p>
+                <p><strong>Customer Name:</strong> Indo Canadian Transport Co.</p>
+                <p><strong>Company Name:</strong> Indo Canadian Transport Co.</p>
+                <p><strong>Phone Number:</strong> 9876543210</p>
+                <p><strong>WhatsApp Number:</strong> 9876543210</p>
+                <p><strong>Email:</strong> info@indocanadian.com</p>
+                <p><strong>GST Number:</strong> 03ABCDE1234F1Z5</p>
+                <p><strong>Address:</strong> Industrial Area, Mohali</p>
+                <p><strong>City:</strong> Mohali</p>
+                <p><strong>State:</strong> Punjab</p>
+                <p><strong>Pincode:</strong> 160055</p>
+                <p><strong>Warranty Start:</strong> 01-06-2026</p>
+                <p><strong>Warranty End:</strong> 31-05-2027</p>
+                <p><strong>AMC Start:</strong> 01-06-2026</p>
+                <p><strong>AMC End:</strong> 31-05-2027</p>
+            </div>
+        </div>
+
+        <!-- PROJECT -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                2. Project Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                After customer entry, create project under that customer.
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Customer:</strong> Indo Canadian Transport Co.</p>
+                <p><strong>Site Name:</strong> Mohali Warehouse HVAC Installation</p>
+                <p><strong>Location:</strong> Mohali</p>
+                <p><strong>Site Address:</strong> Industrial Area Phase 8B, Mohali</p>
+                <p><strong>Capacity:</strong> 15.85</p>
+                <p><strong>Capacity Unit:</strong> TR</p>
+                <p><strong>Project Value:</strong> 750000</p>
+                <p><strong>Start Date:</strong> 01-06-2026</p>
+                <p><strong>Expected Completion:</strong> 30-06-2026</p>
+                <p><strong>Project Status:</strong> Ongoing</p>
+            </div>
+        </div>
+
+        <!-- STORE CATEGORY -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                3. Store Category Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                Store category is used to group store items.
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Category Name:</strong> Copper Pipe</p>
+            </div>
+        </div>
+
+        <!-- STORE ITEM -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                4. Store Item Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                Store item is actual material available in store.
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Category:</strong> Copper Pipe</p>
+                <p><strong>Item Description:</strong> Copper Pipe</p>
+                <p><strong>Size:</strong> 1/4 Soft Pipe</p>
+                <p><strong>Unit:</strong> MTR and RFT</p>
+                <p><strong>Opening Stock:</strong> 500</p>
+                <p><strong>Minimum Stock:</strong> 100</p>
+                <p><strong>Remarks:</strong> Used for HVAC indoor to outdoor connection</p>
+            </div>
+        </div>
+
+        <!-- STOCK IN -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                5. Store Stock In Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                Stock In is used when new material is purchased and added to store.
+            </p>
+
+            <div class="mt-4 bg-green-50 p-4 rounded-2xl text-green-700 space-y-2">
+                <p><strong>Item:</strong> Copper Pipe - 1/4 Soft Pipe</p>
+                <p><strong>Transaction Type:</strong> Stock In</p>
+                <p><strong>Purpose:</strong> Purchase</p>
+                <p><strong>Quantity:</strong> 200</p>
+                <p><strong>Description:</strong> Purchased new copper pipe stock</p>
+            </div>
+        </div>
+
+        <!-- STOCK OUT -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                6. Store Stock Out Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                Stock Out is used when material is issued from store.
+            </p>
+
+            <div class="mt-4 bg-red-50 p-4 rounded-2xl text-red-700 space-y-2">
+                <p><strong>Item:</strong> Copper Pipe - 1/4 Soft Pipe</p>
+                <p><strong>Transaction Type:</strong> Stock Out</p>
+                <p><strong>Purpose:</strong> Project Work</p>
+                <p><strong>Project:</strong> Mohali Warehouse HVAC Installation</p>
+                <p><strong>Quantity:</strong> 50</p>
+                <p><strong>Issued To:</strong> Munish Kumar</p>
+                <p><strong>Description:</strong> Material issued for site installation</p>
+            </div>
+        </div>
+
+        <!-- BOQ -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                7. BOQ Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                BOQ means Bill of Quantity. It stores required project material.
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Project:</strong> Mohali Warehouse HVAC Installation</p>
+                <p><strong>BOQ Title:</strong> HVAC Installation BOQ</p>
+                <p><strong>Status:</strong> Draft</p>
+                <p><strong>Remarks:</strong> Material planning for first phase installation</p>
+            </div>
+        </div>
+
+        <!-- BOQ ITEM -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                8. BOQ Item Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                BOQ item defines how much material is required for the project.
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Store Item:</strong> Copper Pipe - 1/4 Soft Pipe</p>
+                <p><strong>Required Quantity:</strong> 200</p>
+                <p><strong>Rate:</strong> 250</p>
+                <p><strong>Total Amount:</strong> 50000</p>
+                <p><strong>Remarks:</strong> Required for AC piping work</p>
+            </div>
+        </div>
+
+        <!-- MATERIAL ISSUE -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                9. Material Issue Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                Material Issue records material sent from store to project site.
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Project:</strong> Mohali Warehouse HVAC Installation</p>
+                <p><strong>BOQ:</strong> HVAC Installation BOQ</p>
+                <p><strong>Issued To:</strong> Munish Kumar</p>
+                <p><strong>Received By:</strong> Site Engineer</p>
+                <p><strong>Status:</strong> Issued</p>
+                <p><strong>Remarks:</strong> First material issue for installation</p>
+            </div>
+        </div>
+
+        <!-- MATERIAL ISSUE ITEM -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                10. Material Issue Item Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                Material issue item records the exact quantity issued to site.
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Store Item:</strong> Copper Pipe - 1/4 Soft Pipe</p>
+                <p><strong>BOQ Item:</strong> Copper Pipe - 1/4 Soft Pipe</p>
+                <p><strong>Issued Quantity:</strong> 50</p>
+                <p><strong>Consumed Quantity:</strong> 40</p>
+                <p><strong>Returned Quantity:</strong> 5</p>
+                <p><strong>Balance Quantity:</strong> 5</p>
+                <p><strong>Remarks:</strong> 40 used, 5 returned, 5 pending at site</p>
+            </div>
+        </div>
+
+        <!-- CUSTOMER ALERT -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                11. Customer Alert Example
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                Customer alerts show pending services, warranty expiry and AMC expiry.
+            </p>
+
+            <div class="mt-4 bg-yellow-50 p-4 rounded-2xl text-yellow-800 space-y-2">
+                <p><strong>Customer:</strong> Indo Canadian Transport Co.</p>
+                <p><strong>Alert Type:</strong> AMC Expiring</p>
+                <p><strong>AMC End Date:</strong> 31-05-2027</p>
+                <p><strong>Action:</strong> Call customer and discuss renewal</p>
+            </div>
+        </div>
+
+        <!-- SERVICE -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                12. Service Complaint Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                Service complaint is used for AMC, warranty, paid service and general complaints.
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Customer:</strong> Indo Canadian Transport Co.</p>
+                <p><strong>Service Type:</strong> AMC</p>
+                <p><strong>Complaint:</strong> AC cooling issue at site</p>
+                <p><strong>Technician:</strong> Rajesh Kumar</p>
+                <p><strong>Status:</strong> Pending</p>
+                <p><strong>Remarks:</strong> Technician assigned for site visit</p>
+            </div>
+        </div>
+
+        <!-- AMC -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                13. AMC Contract Entry
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                AMC contract is used to manage annual service and renewal.
+            </p>
+
+            <div class="mt-4 bg-blue-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Customer:</strong> Indo Canadian Transport Co.</p>
+                <p><strong>AMC Start Date:</strong> 01-06-2026</p>
+                <p><strong>AMC End Date:</strong> 31-05-2027</p>
+                <p><strong>Contract Value:</strong> 75000</p>
+                <p><strong>Services Per Year:</strong> 4</p>
+                <p><strong>Frequency:</strong> Quarterly</p>
+                <p><strong>Technician:</strong> Rajesh Kumar</p>
+            </div>
+        </div>
+
+        <!-- REPORT -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-blue-100">
+            <h2 class="text-xl font-black text-[#0F4C81]">
+                14. Reports Example
+            </h2>
+
+            <p class="mt-3 text-gray-700">
+                Reports show complete ERP summary and help management take decisions.
+            </p>
+
+            <div class="mt-4 bg-slate-50 p-4 rounded-2xl text-gray-700 space-y-2">
+                <p><strong>Report Type:</strong> BOQ vs Material Issue Report</p>
+                <p><strong>Project:</strong> Mohali Warehouse HVAC Installation</p>
+                <p><strong>BOQ Required:</strong> 200</p>
+                <p><strong>Issued Quantity:</strong> 50</p>
+                <p><strong>Balance Quantity:</strong> 150</p>
+                <p><strong>Use:</strong> Check material planning vs actual issued material</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Customer List
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <div class="bg-gradient-to-br from-[#0F4C81] via-[#1B6CA8] to-[#89CFF0] rounded-[2rem] shadow-xl p-6 md:p-8 mb-8">
+
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+
+                <div>
+                    <p class="inline-flex bg-white/20 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest">
+                        Customer Management
+                    </p>
+
+                    <h1 class="mt-4 text-3xl md:text-5xl font-black text-white">
+                        Customer List
+                    </h1>
+
+                    <p class="mt-3 text-blue-50 text-sm md:text-base">
+                        Manage general, warranty and AMC customers with service reminders.
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+
+                    <a href="{% url 'add_customer' %}"
+                       class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl text-sm font-bold hover:bg-blue-50 transition">
+                        Add Customer
+                    </a>
+
+                    <a href="{% url 'customer_service_schedule_list' %}"
+                       class="bg-slate-900 text-white px-5 py-3 rounded-2xl text-sm font-bold hover:bg-slate-800 transition">
+                        Service Schedule
+                    </a>
+
+                    <a href="{% url 'export_customers_csv' %}"
+                       class="bg-white/20 hover:bg-white text-white hover:text-[#0F4C81] px-5 py-3 rounded-2xl text-sm font-bold transition">
+                        Export CSV
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-5 mb-8">
+
+            <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+                <p class="text-xs font-black text-slate-400 uppercase">Total</p>
+                <h2 class="mt-3 text-3xl font-black text-[#0F4C81]">{{ total_customers }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-green-100 p-5 shadow-sm">
+                <p class="text-xs font-black text-green-600 uppercase">Active</p>
+                <h2 class="mt-3 text-3xl font-black text-green-600">{{ active_customers }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-red-100 p-5 shadow-sm">
+                <p class="text-xs font-black text-red-600 uppercase">Inactive</p>
+                <h2 class="mt-3 text-3xl font-black text-red-600">{{ inactive_customers }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-blue-100 p-5 shadow-sm">
+                <p class="text-xs font-black text-blue-600 uppercase">Warranty</p>
+                <h2 class="mt-3 text-3xl font-black text-blue-600">{{ warranty_customers }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-amber-100 p-5 shadow-sm">
+                <p class="text-xs font-black text-amber-600 uppercase">AMC</p>
+                <h2 class="mt-3 text-3xl font-black text-amber-600">{{ amc_customers }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-orange-100 p-5 shadow-sm">
+                <p class="text-xs font-black text-orange-600 uppercase">Pending Service</p>
+                <h2 class="mt-3 text-3xl font-black text-orange-600">{{ pending_services }}</h2>
+            </div>
+
+        </div>
+
+        {% if expiring_warranty_customers or expiring_amc_customers %}
+        <div class="bg-white rounded-[2rem] border border-red-100 shadow-sm p-5 mb-8">
+
+            <h2 class="text-2xl font-black text-red-600 mb-4">
+                AMC / Warranty Expiry Alerts
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                {% for customer in expiring_warranty_customers %}
+                <div class="border border-blue-100 bg-blue-50 rounded-3xl p-5">
+                    <p class="text-xs font-black text-blue-600 uppercase">Warranty Expiring Soon</p>
+                    <h3 class="mt-2 text-lg font-black text-slate-900">
+                        {{ customer.customer_name }}
+                    </h3>
+                    <p class="text-sm text-slate-600 mt-1">
+                        {{ customer.phone_number }} | End Date: {{ customer.warranty_end_date|date:"d M Y" }}
+                    </p>
+                </div>
+                {% endfor %}
+
+                {% for customer in expiring_amc_customers %}
+                <div class="border border-amber-100 bg-amber-50 rounded-3xl p-5">
+                    <p class="text-xs font-black text-amber-600 uppercase">AMC Expiring Soon</p>
+                    <h3 class="mt-2 text-lg font-black text-slate-900">
+                        {{ customer.customer_name }}
+                    </h3>
+                    <p class="text-sm text-slate-600 mt-1">
+                        {{ customer.phone_number }} | End Date: {{ customer.amc_end_date|date:"d M Y" }}
+                    </p>
+                </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+        {% endif %}
+
+        <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-5 mb-8">
+
+            <form method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+                <div class="md:col-span-5">
+                    <input type="text"
+                           name="search"
+                           value="{{ search }}"
+                           placeholder="Search customer, phone, city, GST, email..."
+                           class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                </div>
+
+                <div class="md:col-span-3">
+                    <select name="category"
+                            class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                        <option value="">All Categories</option>
+                        <option value="GENERAL" {% if category == "GENERAL" %}selected{% endif %}>General Customer</option>
+                        <option value="WARRANTY" {% if category == "WARRANTY" %}selected{% endif %}>Warranty Customer</option>
+                        <option value="AMC" {% if category == "AMC" %}selected{% endif %}>AMC Customer</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <select name="status"
+                            class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                        <option value="">All Status</option>
+                        <option value="ACTIVE" {% if status == "ACTIVE" %}selected{% endif %}>Active</option>
+                        <option value="INACTIVE" {% if status == "INACTIVE" %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <button type="submit"
+                            class="w-full bg-[#0F4C81] text-white px-5 py-3 rounded-2xl text-sm font-black hover:bg-[#0b3d68] transition">
+                        Search
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+        <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+
+            <div class="px-6 py-5 border-b border-slate-100">
+                <h2 class="text-2xl font-black text-[#0F4C81]">
+                    Customer Records
+                </h2>
+            </div>
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full text-sm">
+
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">ID</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">Customer</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">Contact</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">Category</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">Warranty</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">AMC</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">Status</th>
+                            <th class="px-4 py-4 text-right text-xs font-black text-slate-500 uppercase">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for customer in customers %}
+
+                        <tr class="border-b border-slate-100 hover:bg-slate-50">
+
+                            <td class="px-4 py-4 font-black text-[#0F4C81]">
+                                {{ customer.customer_id }}
+                            </td>
+
+                            <td class="px-4 py-4">
+                                <p class="font-black text-slate-900">{{ customer.customer_name }}</p>
+                                <p class="text-xs text-slate-500">{{ customer.company_name|default:"-" }}</p>
+                                <p class="text-xs text-slate-500">{{ customer.city|default:"-" }}</p>
+                            </td>
+
+                            <td class="px-4 py-4">
+                                <p class="font-bold text-slate-800">{{ customer.phone_number }}</p>
+                                <p class="text-xs text-slate-500">{{ customer.whatsapp_number|default:"-" }}</p>
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {% if customer.customer_category == "AMC" %}
+                                <span class="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-black border border-amber-100">
+                                    AMC
+                                </span>
+                                {% elif customer.customer_category == "WARRANTY" %}
+                                <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-black border border-blue-100">
+                                    Warranty
+                                </span>
+                                {% else %}
+                                <span class="px-3 py-1 rounded-full bg-slate-50 text-slate-700 text-xs font-black border border-slate-200">
+                                    General
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-4 py-4 text-slate-700">
+                                {% if customer.warranty_start_date and customer.warranty_end_date %}
+                                <p class="text-xs font-bold">
+                                    {{ customer.warranty_start_date|date:"d M Y" }}
+                                </p>
+                                <p class="text-xs font-bold">
+                                    to {{ customer.warranty_end_date|date:"d M Y" }}
+                                </p>
+                                {% else %}
+                                <span class="text-slate-400">-</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-4 py-4 text-slate-700">
+                                {% if customer.amc_start_date and customer.amc_end_date %}
+                                <p class="text-xs font-bold">
+                                    {{ customer.amc_start_date|date:"d M Y" }}
+                                </p>
+                                <p class="text-xs font-bold">
+                                    to {{ customer.amc_end_date|date:"d M Y" }}
+                                </p>
+                                {% else %}
+                                <span class="text-slate-400">-</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {% if customer.is_active %}
+                                <span class="px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-black border border-green-100">
+                                    Active
+                                </span>
+                                {% else %}
+                                <span class="px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-black border border-red-100">
+                                    Inactive
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-4 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+
+                                    <a href="{% url 'customer_detail' customer.id %}"
+                                       class="px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">
+                                        Folder
+                                    </a>
+
+                                    {% if profile.role == "CEO" %}
+                                    <a href="{% url 'edit_customer' customer.id %}"
+                                       class="px-3 py-2 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold">
+                                        Edit
+                                    </a>
+
+                                    <a href="{% url 'delete_customer' customer.id %}"
+                                       onclick="return confirm('Are you sure you want to delete this customer?')"
+                                       class="px-3 py-2 rounded-xl bg-red-50 text-red-700 text-xs font-bold">
+                                        Delete
+                                    </a>
+                                    {% endif %}
+
+                                </div>
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="8" class="px-4 py-14 text-center">
+                                <h3 class="text-xl font-black text-slate-800">
+                                    No Customer Found
+                                </h3>
+                                <p class="text-sm text-slate-500 mt-2">
+                                    Add your first customer to start tracking service reminders.
+                                </p>
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

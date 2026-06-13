@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Service Schedule
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-6 mb-8">
+
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+
+                <div>
+                    <h1 class="text-4xl font-black text-white">
+                        Service Schedule
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        AMC & Warranty Service Tracking
+                    </p>
+                </div>
+
+                <a href="{% url 'customer_list' %}"
+                   class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
+                    Back to Customers
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 p-5 mb-8">
+
+            <form method="GET">
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                    <input type="text"
+                           name="search"
+                           value="{{ search }}"
+                           placeholder="Search Customer"
+                           class="border border-slate-300 rounded-2xl px-4 py-3">
+
+                    <select name="service_type"
+                            class="border border-slate-300 rounded-2xl px-4 py-3">
+
+                        <option value="">All Service Types</option>
+
+                        {% for key,value in service_type_choices %}
+                        <option value="{{ key }}"
+                                {% if service_type == key %}selected{% endif %}>
+                            {{ value }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+
+                    <select name="status"
+                            class="border border-slate-300 rounded-2xl px-4 py-3">
+
+                        <option value="">All Status</option>
+
+                        {% for key,value in status_choices %}
+                        <option value="{{ key }}"
+                                {% if status == key %}selected{% endif %}>
+                            {{ value }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+
+                    <button type="submit"
+                            class="bg-[#0F4C81] text-white rounded-2xl font-bold">
+                        Search
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden">
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full">
+
+                    <thead class="bg-slate-100">
+
+                        <tr>
+
+                            <th class="px-4 py-4 text-left">
+                                Customer
+                            </th>
+
+                            <th class="px-4 py-4 text-left">
+                                Type
+                            </th>
+
+                            <th class="px-4 py-4 text-left">
+                                Service Date
+                            </th>
+
+                            <th class="px-4 py-4 text-left">
+                                Status
+                            </th>
+
+                            <th class="px-4 py-4 text-left">
+                                Completed Date
+                            </th>
+
+                            <th class="px-4 py-4 text-left">
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for schedule in schedules %}
+
+                        <tr class="border-b">
+
+                            <td class="px-4 py-4">
+
+                                <div class="font-bold">
+                                    {{ schedule.customer.customer_name }}
+                                </div>
+
+                                <div class="text-sm text-slate-500">
+                                    {{ schedule.customer.customer_id }}
+                                </div>
+
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ schedule.get_service_type_display }}
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ schedule.service_date|date:"d M Y" }}
+                            </td>
+
+                            <td class="px-4 py-4">
+
+                                {% if schedule.status == "COMPLETED" %}
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
+                                    Completed
+                                </span>
+
+                                {% elif schedule.status == "MISSED" %}
+                                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">
+                                    Missed
+                                </span>
+
+                                {% else %}
+                                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">
+                                    Pending
+                                </span>
+                                {% endif %}
+
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ schedule.completed_date|date:"d M Y"|default:"-" }}
+                            </td>
+
+                            <td class="px-4 py-4">
+
+                                {% if schedule.status == "PENDING" %}
+
+                                <div class="flex gap-2">
+
+                                    <a href="{% url 'complete_service_schedule' schedule.id %}"
+                                       class="bg-green-600 text-white px-3 py-2 rounded-xl text-xs font-bold">
+                                        Complete
+                                    </a>
+
+                                    <a href="{% url 'mark_service_missed' schedule.id %}"
+                                       class="bg-red-600 text-white px-3 py-2 rounded-xl text-xs font-bold">
+                                        Missed
+                                    </a>
+
+                                </div>
+
+                                {% else %}
+                                -
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="6" class="text-center py-10">
+                                No Service Schedule Found
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

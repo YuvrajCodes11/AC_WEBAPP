@@ -1,0 +1,444 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Material Issues
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <!-- HEADER -->
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                <div>
+                    <p class="text-blue-100 text-xs font-bold uppercase tracking-widest">
+                        HVAC Material Control
+                    </p>
+
+                    <h1 class="text-4xl font-black text-white mt-2">
+                        Material Issue Management
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        Customer-wise and site-wise material issue, return and balance tracking.
+                    </p>
+                </div>
+
+                <div class="flex gap-3 flex-wrap">
+
+                    <a href="{% url 'dashboard' %}"
+                       class="bg-white/20 text-white px-5 py-3 rounded-2xl font-bold">
+                        Dashboard
+                    </a>
+
+                    <a href="{% url 'material_issue_customer_report' %}"
+                       class="bg-white/20 text-white px-5 py-3 rounded-2xl font-bold">
+                        Customer Report
+                    </a>
+
+                    <a href="{% url 'add_material_issue' %}"
+                       class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
+                        + New Issue
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- STATS -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+
+            <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase">Total</p>
+                <h2 class="text-3xl font-black text-slate-900 mt-2">
+                    {{ total_issues }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase">Draft</p>
+                <h2 class="text-3xl font-black text-slate-700 mt-2">
+                    {{ draft_issues }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border border-blue-100 shadow-sm">
+                <p class="text-xs font-bold text-blue-500 uppercase">Issued</p>
+                <h2 class="text-3xl font-black text-blue-600 mt-2">
+                    {{ issued_issues }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border border-green-100 shadow-sm">
+                <p class="text-xs font-bold text-green-500 uppercase">Returned</p>
+                <h2 class="text-3xl font-black text-green-600 mt-2">
+                    {{ returned_issues }}
+                </h2>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 border border-red-100 shadow-sm">
+                <p class="text-xs font-bold text-red-500 uppercase">Cancelled</p>
+                <h2 class="text-3xl font-black text-red-600 mt-2">
+                    {{ cancelled_issues }}
+                </h2>
+            </div>
+
+        </div>
+
+        <!-- SEARCH -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 mb-8">
+
+            <form method="GET"
+                  class="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+                <div class="md:col-span-8">
+                    <label class="block text-xs font-black text-slate-600 mb-2">
+                        Search Material Issue
+                    </label>
+
+                    <input type="text"
+                           name="search"
+                           value="{{ search }}"
+                           placeholder="Search Issue ID, Project ID, Site Name, Customer, BOQ, Issued To..."
+                           class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-black text-slate-600 mb-2">
+                        Status
+                    </label>
+
+                    <select name="status"
+                            class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+
+                        <option value="">
+                            All Status
+                        </option>
+
+                        {% for key,value in status_choices %}
+                        <option value="{{ key }}"
+                                {% if status == key %}selected{% endif %}>
+                            {{ value }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <div class="md:col-span-2 flex items-end">
+                    <button type="submit"
+                            class="w-full bg-[#0F4C81] text-white rounded-2xl px-4 py-3 font-bold">
+                        Search
+                    </button>
+                </div>
+
+            </form>
+
+            {% if search or status %}
+            <div class="mt-4 flex justify-end">
+                <a href="{% url 'material_issue_list' %}"
+                   class="text-sm font-bold text-red-600 hover:underline">
+                    Clear Filter
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- LIST -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+
+            <div class="px-5 py-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+                <div>
+                    <h2 class="text-xl font-black text-slate-900">
+                        Customer / Site Material Issue List
+                    </h2>
+
+                    <p class="text-sm text-slate-500 mt-1">
+                        Full data of individual customer with issued, returned and balance material quantity.
+                    </p>
+                </div>
+
+                <button onclick="window.print()"
+                        class="px-5 py-3 rounded-2xl bg-slate-900 text-white text-sm font-bold">
+                    Print List
+                </button>
+
+            </div>
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full text-sm">
+
+                    <thead class="bg-slate-100">
+
+                        <tr>
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Issue ID
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Customer / Site
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                BOQ
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Material Summary
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Issued To / Received By
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Date
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Status
+                            </th>
+
+                            <th class="px-4 py-4 text-right text-xs font-black uppercase no-print">
+                                Action
+                            </th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for issue in material_issues %}
+
+                        <tr class="border-t">
+
+                            <td class="px-4 py-4 font-black text-[#0F4C81] whitespace-nowrap">
+                                {{ issue.issue_id }}
+                            </td>
+
+                            <td class="px-4 py-4 min-w-[260px]">
+
+                                <p class="font-black text-slate-900">
+                                    {{ issue.project.customer.customer_name }}
+                                </p>
+
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Project ID:
+                                    <span class="font-bold">
+                                        {{ issue.project.project_id }}
+                                    </span>
+                                </p>
+
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Site:
+                                    <span class="font-bold">
+                                        {{ issue.project.site_name|default:"-" }}
+                                    </span>
+                                </p>
+
+                            </td>
+
+                            <td class="px-4 py-4 whitespace-nowrap">
+
+                                {% if issue.boq %}
+                                    {{ issue.boq.boq_id }}
+                                {% else %}
+                                    -
+                                {% endif %}
+
+                            </td>
+
+                            <td class="px-4 py-4 min-w-[300px]">
+
+                                <div class="grid grid-cols-1 gap-2">
+
+                                    <div class="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
+                                        <p class="text-xs text-blue-500 font-bold">
+                                            Total Material Sent
+                                        </p>
+                                        <p class="font-black text-blue-700">
+                                            {{ issue.total_issued_quantity }}
+                                        </p>
+                                    </div>
+
+                                    <div class="bg-green-50 border border-green-100 rounded-xl px-3 py-2">
+                                        <p class="text-xs text-green-500 font-bold">
+                                            Total Material Returned
+                                        </p>
+                                        <p class="font-black text-green-700">
+                                            {{ issue.total_returned_quantity }}
+                                        </p>
+                                    </div>
+
+                                    <div class="bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
+                                        <p class="text-xs text-orange-500 font-bold">
+                                            Balance Material
+                                        </p>
+                                        <p class="font-black text-orange-700">
+                                            {{ issue.total_balance_quantity }}
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+                            <td class="px-4 py-4 min-w-[180px]">
+
+                                <p class="font-bold text-slate-900">
+                                    Issued To: {{ issue.issued_to|default:"-" }}
+                                </p>
+
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Received By:
+                                    <span class="font-bold">
+                                        {{ issue.received_by|default:"-" }}
+                                    </span>
+                                </p>
+
+                            </td>
+
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                {{ issue.issue_date|date:"d M Y" }}
+                            </td>
+
+                            <td class="px-4 py-4">
+
+                                {% if issue.status == "ISSUED" %}
+                                    <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
+                                        Issued
+                                    </span>
+
+                                {% elif issue.status == "RETURNED" %}
+                                    <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">
+                                        Returned
+                                    </span>
+
+                                {% elif issue.status == "PARTIAL_RETURN" %}
+                                    <span class="px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold">
+                                        Partial Return
+                                    </span>
+
+                                {% elif issue.status == "CANCELLED" %}
+                                    <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold">
+                                        Cancelled
+                                    </span>
+
+                                {% else %}
+                                    <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
+                                        Draft
+                                    </span>
+                                {% endif %}
+
+                            </td>
+
+                            <td class="px-4 py-4 no-print">
+
+                                <div class="flex justify-end gap-2">
+
+                                    <a href="{% url 'material_issue_detail' issue.id %}"
+                                       class="px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">
+                                        View
+                                    </a>
+
+                                    <a href="{% url 'material_issue_print' issue.id %}"
+                                       class="px-3 py-2 rounded-xl bg-green-100 text-green-700 text-xs font-bold">
+                                        Print
+                                    </a>
+
+                                    <a href="{% url 'project_full_pdf_report' issue.project.id %}"
+                                       target="_blank"
+                                       class="px-3 py-2 rounded-xl bg-purple-100 text-purple-700 text-xs font-bold">
+                                        ⬇ Project PDF
+                                    </a>
+
+                                    <a href="{% url 'edit_material_issue' issue.id %}"
+                                       class="px-3 py-2 rounded-xl bg-blue-100 text-blue-700 text-xs font-bold">
+                                        Edit
+                                    </a>
+
+                                    <a href="{% url 'delete_material_issue' issue.id %}"
+                                       onclick="return confirm('Delete Material Issue?')"
+                                       class="px-3 py-2 rounded-xl bg-red-100 text-red-700 text-xs font-bold">
+                                        Delete
+                                    </a>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="8"
+                                class="text-center py-16">
+
+                                <h2 class="text-2xl font-black text-slate-700">
+                                    No Material Issue Found
+                                </h2>
+
+                                <a href="{% url 'add_material_issue' %}"
+                                   class="inline-block mt-5 bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">
+                                    Create First Material Issue
+                                </a>
+
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+    @media print {
+        .no-print,
+        nav,
+        aside,
+        header,
+        footer,
+        button,
+        a {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+        }
+
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+        }
+
+        th,
+        td {
+            border: 1px solid #000 !important;
+            padding: 8px !important;
+            color: #000 !important;
+        }
+    }
+</style>
+
+{% endblock %}

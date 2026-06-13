@@ -1,0 +1,538 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Add BOQ
+{% endblock %}
+
+{% block content %}
+
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+
+<style>
+    .nice-select,
+    .nice-input,
+    .nice-textarea {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 1rem;
+        padding: 0.85rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        background: #ffffff;
+        outline: none;
+    }
+
+    .boq-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.5rem;
+        padding: 1.25rem;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+    }
+
+    .ts-wrapper.single .ts-control {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 1rem !important;
+        padding: 0.65rem 1rem !important;
+        min-height: 50px !important;
+        font-size: 0.875rem !important;
+        font-weight: 600 !important;
+        background: white !important;
+    }
+
+    .ts-wrapper.focus .ts-control {
+        border-color: #0F4C81 !important;
+        box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.18) !important;
+    }
+
+    .ts-dropdown {
+        border-radius: 1rem !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 20px 35px rgba(15, 23, 42, 0.18) !important;
+        z-index: 99999 !important;
+    }
+
+    .ts-dropdown .option {
+        padding: 12px 14px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+    }
+
+    .ts-dropdown .active {
+        background: #eff6ff !important;
+        color: #0F4C81 !important;
+    }
+</style>
+
+<div class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <div class="bg-gradient-to-br from-[#0F4C81] via-[#1B6CA8] to-[#89CFF0] rounded-[2rem] shadow-xl p-6 md:p-8 mb-8">
+
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+
+                <div>
+                    <p class="inline-flex bg-white/20 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest">
+                        HVAC BOQ Management
+                    </p>
+
+                    <h1 class="mt-4 text-3xl md:text-5xl font-black text-white">
+                        Add Project BOQ
+                    </h1>
+
+                    <p class="mt-3 text-blue-50 text-sm md:text-base">
+                        Create material requirement list for a project using searchable store items.
+                    </p>
+                </div>
+
+                <a href="{% url 'boq_list' %}"
+                   class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl text-sm font-bold hover:bg-blue-50 transition text-center">
+                    Back to BOQ List
+                </a>
+
+            </div>
+
+        </div>
+
+        {% if error %}
+        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl font-bold">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="mb-6 px-5 py-4 rounded-2xl font-bold
+                {% if message.tags == 'success' %}
+                    bg-green-50 border border-green-200 text-green-700
+                {% else %}
+                    bg-red-50 border border-red-200 text-red-700
+                {% endif %}
+            ">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" class="space-y-8">
+            {% csrf_token %}
+
+            <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6">
+
+                <h2 class="text-2xl font-black text-[#0F4C81] mb-6">
+                    BOQ Details
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">
+                            Select Project *
+                        </label>
+
+                        <select name="project" required class="nice-select project-select">
+                            <option value="">Select Project</option>
+
+                            {% for project in projects %}
+                            <option value="{{ project.id }}">
+                                {{ project.project_id }} - {{ project.site_name }}
+                                {% if project.customer %}
+                                    | {{ project.customer.customer_name }}
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">
+                            BOQ Title
+                        </label>
+
+                        <input type="text"
+                               name="title"
+                               value="Project BOQ"
+                               class="nice-input">
+                    </div>
+
+                </div>
+
+                <div class="mt-5">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        Remarks
+                    </label>
+
+                    <textarea name="remarks"
+                              rows="3"
+                              placeholder="Add BOQ remarks..."
+                              class="nice-textarea"></textarea>
+                </div>
+
+            </div>
+
+            <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-visible">
+
+                <div class="px-6 py-5 bg-slate-900 text-white flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-t-[2rem]">
+
+                    <div>
+                        <h2 class="text-2xl font-black">
+                            BOQ Material Items
+                        </h2>
+
+                        <p class="mt-1 text-sm text-slate-300">
+                            Search item by code, name, size, category or stock.
+                        </p>
+                    </div>
+
+                    <button type="button"
+                            onclick="addBOQRow()"
+                            class="bg-white text-slate-900 px-5 py-3 rounded-2xl text-sm font-black hover:bg-slate-100 transition">
+                        Add More Item
+                    </button>
+
+                </div>
+
+                <div id="boqItemsBody" class="p-6 space-y-5">
+
+                    <div class="boq-row boq-card">
+
+                        <div class="flex items-center justify-between gap-4 mb-5">
+                            <h3 class="text-lg font-black text-slate-900">
+                                Material Item
+                            </h3>
+
+                            <button type="button"
+                                    onclick="removeBOQRow(this)"
+                                    class="px-4 py-2 rounded-xl bg-red-50 text-red-700 text-xs font-black hover:bg-red-100 transition">
+                                Delete
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Category
+                                </label>
+
+                                <select class="nice-select category-filter">
+                                    <option value="">All Categories</option>
+
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">
+                                        {{ category.category_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Store Item *
+                                </label>
+
+                                <select name="store_item"
+                                        class="store-item-select">
+                                    <option value="">Search & Select Store Item</option>
+
+                                    {% for item in store_items %}
+                                    <option value="{{ item.id }}"
+                                            data-category="{{ item.category.id }}">
+                                        {{ item.item_code }} - {{ item.item_description }}
+                                        {% if item.size %}
+                                            - {{ item.size }}
+                                        {% endif %}
+                                        | Category: {{ item.category.category_name }}
+                                        | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Required Quantity *
+                                </label>
+
+                                <input type="number"
+                                       name="required_quantity"
+                                       step="0.01"
+                                       min="0"
+                                       value="0"
+                                       class="nice-input required-qty"
+                                       oninput="calculateAmount(this)">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Rate
+                                </label>
+
+                                <input type="number"
+                                       name="rate"
+                                       step="0.01"
+                                       min="0"
+                                       value="0"
+                                       class="nice-input item-rate"
+                                       oninput="calculateAmount(this)">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Amount
+                                </label>
+
+                                <input type="text"
+                                       value="0.00"
+                                       readonly
+                                       class="nice-input amount-box bg-slate-100 text-slate-600">
+                            </div>
+
+                        </div>
+
+                        <div class="mt-5">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                Item Remarks
+                            </label>
+
+                            <input type="text"
+                                   name="item_remarks"
+                                   placeholder="Item remarks"
+                                   class="nice-input">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-3 md:justify-end">
+
+                <a href="{% url 'boq_list' %}"
+                   class="px-6 py-3 rounded-2xl border border-slate-300 text-slate-700 text-sm font-black text-center hover:bg-slate-100 transition">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="px-6 py-3 rounded-2xl bg-[#0F4C81] text-white text-sm font-black hover:bg-[#0b3d68] transition">
+                    Save BOQ
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<template id="boqRowTemplate">
+    <div class="boq-row boq-card">
+
+        <div class="flex items-center justify-between gap-4 mb-5">
+            <h3 class="text-lg font-black text-slate-900">
+                Material Item
+            </h3>
+
+            <button type="button"
+                    onclick="removeBOQRow(this)"
+                    class="px-4 py-2 rounded-xl bg-red-50 text-red-700 text-xs font-black hover:bg-red-100 transition">
+                Delete
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">
+                    Category
+                </label>
+
+                <select class="nice-select category-filter">
+                    <option value="">All Categories</option>
+
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">
+                        {{ category.category_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">
+                    Store Item *
+                </label>
+
+                <select name="store_item"
+                        class="store-item-select">
+                    <option value="">Search & Select Store Item</option>
+
+                    {% for item in store_items %}
+                    <option value="{{ item.id }}"
+                            data-category="{{ item.category.id }}">
+                        {{ item.item_code }} - {{ item.item_description }}
+                        {% if item.size %}
+                            - {{ item.size }}
+                        {% endif %}
+                        | Category: {{ item.category.category_name }}
+                        | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">
+                    Required Quantity *
+                </label>
+
+                <input type="number"
+                       name="required_quantity"
+                       step="0.01"
+                       min="0"
+                       value="0"
+                       class="nice-input required-qty"
+                       oninput="calculateAmount(this)">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">
+                    Rate
+                </label>
+
+                <input type="number"
+                       name="rate"
+                       step="0.01"
+                       min="0"
+                       value="0"
+                       class="nice-input item-rate"
+                       oninput="calculateAmount(this)">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">
+                    Amount
+                </label>
+
+                <input type="text"
+                       value="0.00"
+                       readonly
+                       class="nice-input amount-box bg-slate-100 text-slate-600">
+            </div>
+
+        </div>
+
+        <div class="mt-5">
+            <label class="block text-sm font-bold text-slate-700 mb-2">
+                Item Remarks
+            </label>
+
+            <input type="text"
+                   name="item_remarks"
+                   placeholder="Item remarks"
+                   class="nice-input">
+        </div>
+
+    </div>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+    function initializeProjectSearch() {
+        document.querySelectorAll(".project-select").forEach(function(select) {
+            if (!select.tomselect) {
+                new TomSelect(select, {
+                    create: false,
+                    maxOptions: 5000,
+                    placeholder: "Search project...",
+                    searchField: ["text"],
+                    sortField: {
+                        field: "text",
+                        direction: "asc"
+                    }
+                });
+            }
+        });
+    }
+
+    function initializeSingleStoreSearch(select) {
+        if (!select || select.tomselect) {
+            return;
+        }
+
+        new TomSelect(select, {
+            create: false,
+            maxOptions: 5000,
+            placeholder: "Search Store Item...",
+            searchField: ["text"],
+            sortField: {
+                field: "text",
+                direction: "asc"
+            }
+        });
+    }
+
+    function initializeStoreSearch() {
+        document.querySelectorAll(".store-item-select").forEach(function(select) {
+            initializeSingleStoreSearch(select);
+        });
+    }
+
+    function addBOQRow() {
+        const body = document.getElementById("boqItemsBody");
+        const template = document.getElementById("boqRowTemplate");
+
+        const newRowContent = template.content.cloneNode(true);
+        body.appendChild(newRowContent);
+
+        const rows = body.querySelectorAll(".boq-row");
+        const lastRow = rows[rows.length - 1];
+
+        const storeSelect = lastRow.querySelector(".store-item-select");
+        initializeSingleStoreSearch(storeSelect);
+    }
+
+    function removeBOQRow(button) {
+        const rows = document.querySelectorAll("#boqItemsBody .boq-row");
+
+        if (rows.length > 1) {
+            const row = button.closest(".boq-row");
+
+            row.querySelectorAll(".store-item-select").forEach(function(select) {
+                if (select.tomselect) {
+                    select.tomselect.destroy();
+                }
+            });
+
+            row.remove();
+        }
+    }
+
+    function calculateAmount(input) {
+        const row = input.closest(".boq-row");
+        const qty = parseFloat(row.querySelector(".required-qty").value) || 0;
+        const rate = parseFloat(row.querySelector(".item-rate").value) || 0;
+        const amount = qty * rate;
+
+        row.querySelector(".amount-box").value = amount.toFixed(2);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        initializeProjectSearch();
+        initializeStoreSearch();
+    });
+</script>
+
+{% endblock %}

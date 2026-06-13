@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+
+{% block title %}
+BOQ List
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <!-- HEADER -->
+        <div class="bg-gradient-to-br from-[#0F4C81] via-[#1B6CA8] to-[#89CFF0] rounded-[2rem] shadow-xl p-6 md:p-8 mb-8">
+
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+
+                <div>
+                    <p class="inline-flex bg-white/20 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest">
+                        HVAC BOQ Management
+                    </p>
+
+                    <h1 class="mt-4 text-3xl md:text-5xl font-black text-white">
+                        BOQ List
+                    </h1>
+
+                    <p class="mt-3 text-blue-50 text-sm md:text-base">
+                        Manage project-wise material requirement, issued quantity, consumed quantity and balance.
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+
+                    <a href="{% url 'dashboard' %}"
+                       class="bg-white/20 hover:bg-white text-white hover:text-[#0F4C81] px-5 py-3 rounded-2xl text-sm font-bold transition">
+                        Dashboard
+                    </a>
+
+                    <a href="{% url 'add_boq' %}"
+                       class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl text-sm font-bold hover:bg-blue-50 transition">
+                        + Add BOQ
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- STATS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-5 mb-8">
+
+            <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+                <p class="text-xs font-black text-slate-400 uppercase">Total BOQ</p>
+                <h2 class="mt-3 text-3xl font-black text-[#0F4C81]">{{ total_boqs|default:"0" }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+                <p class="text-xs font-black text-slate-500 uppercase">Draft</p>
+                <h2 class="mt-3 text-3xl font-black text-slate-700">{{ draft_boqs|default:"0" }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-blue-100 p-5 shadow-sm">
+                <p class="text-xs font-black text-blue-600 uppercase">Submitted</p>
+                <h2 class="mt-3 text-3xl font-black text-blue-600">{{ submitted_boqs|default:"0" }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-green-100 p-5 shadow-sm">
+                <p class="text-xs font-black text-green-600 uppercase">Approved</p>
+                <h2 class="mt-3 text-3xl font-black text-green-600">{{ approved_boqs|default:"0" }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-red-100 p-5 shadow-sm">
+                <p class="text-xs font-black text-red-600 uppercase">Rejected</p>
+                <h2 class="mt-3 text-3xl font-black text-red-600">{{ rejected_boqs|default:"0" }}</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-purple-100 p-5 shadow-sm">
+                <p class="text-xs font-black text-purple-600 uppercase">Closed</p>
+                <h2 class="mt-3 text-3xl font-black text-purple-600">{{ closed_boqs|default:"0" }}</h2>
+            </div>
+
+        </div>
+
+        <!-- FILTER -->
+        <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-5 mb-8">
+
+            <form method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+                <div class="md:col-span-7">
+                    <input type="text"
+                           name="search"
+                           value="{{ search }}"
+                           placeholder="Search BOQ ID, project, site, customer..."
+                           class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                </div>
+
+                <div class="md:col-span-3">
+                    <select name="status"
+                            class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                        <option value="">All Status</option>
+
+                        {% for key, value in status_choices %}
+                        <option value="{{ key }}" {% if status == key %}selected{% endif %}>
+                            {{ value }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <button type="submit"
+                            class="w-full bg-[#0F4C81] text-white px-5 py-3 rounded-2xl text-sm font-black hover:bg-[#0b3d68] transition">
+                        Search
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+        <!-- BOQ LIST -->
+        <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+
+            <div class="px-6 py-5 border-b border-slate-100">
+                <h2 class="text-2xl font-black text-[#0F4C81]">
+                    BOQ Records
+                </h2>
+                <p class="mt-1 text-sm text-slate-500">
+                    Project-wise bill of quantity records.
+                </p>
+            </div>
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full text-sm">
+
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">BOQ ID</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">Project</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">Customer</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">Title</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">Status</th>
+                            <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">Created</th>
+                            <th class="px-4 py-4 text-right text-xs font-black text-slate-500 uppercase">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for boq in boqs %}
+
+                        <tr class="border-b border-slate-100 hover:bg-slate-50">
+
+                            <td class="px-4 py-4">
+                                <span class="font-black text-[#0F4C81]">
+                                    {{ boq.boq_id }}
+                                </span>
+                            </td>
+
+                            <td class="px-4 py-4">
+                                <p class="font-black text-slate-900">
+                                    {{ boq.project.project_id }}
+                                </p>
+                                <p class="text-xs text-slate-500">
+                                    {{ boq.project.site_name|default:"-" }}
+                                </p>
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {% if boq.project.customer %}
+                                <p class="font-bold text-slate-800">
+                                    {{ boq.project.customer.customer_name }}
+                                </p>
+                                <p class="text-xs text-slate-500">
+                                    {{ boq.project.customer.phone_number }}
+                                </p>
+                                {% else %}
+                                <p class="font-bold text-slate-500">
+                                    No Customer
+                                </p>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-4 py-4 text-slate-700">
+                                {{ boq.title }}
+                            </td>
+
+                            <td class="px-4 py-4">
+
+                                {% if boq.status == "APPROVED" %}
+                                <span class="px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-black border border-green-100">
+                                    Approved
+                                </span>
+
+                                {% elif boq.status == "REJECTED" %}
+                                <span class="px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-black border border-red-100">
+                                    Rejected
+                                </span>
+
+                                {% elif boq.status == "SUBMITTED" %}
+                                <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-black border border-blue-100">
+                                    Submitted
+                                </span>
+
+                                {% elif boq.status == "CLOSED" %}
+                                <span class="px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-black border border-purple-100">
+                                    Closed
+                                </span>
+
+                                {% else %}
+                                <span class="px-3 py-1 rounded-full bg-slate-50 text-slate-700 text-xs font-black border border-slate-200">
+                                    Draft
+                                </span>
+                                {% endif %}
+
+                            </td>
+
+                            <td class="px-4 py-4 text-slate-700">
+                                {{ boq.created_at|date:"d M Y" }}
+                            </td>
+
+                            <td class="px-4 py-4 text-right">
+
+                                <div class="flex flex-wrap justify-end gap-2">
+
+                                    <a href="{% url 'boq_detail' boq.id %}"
+                                       class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition">
+                                        View
+                                    </a>
+
+                                    <a href="{% url 'edit_boq' boq.id %}"
+                                       class="px-4 py-2 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold hover:bg-blue-100 transition">
+                                        Edit
+                                    </a>
+
+                                    
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="7" class="px-4 py-14 text-center">
+
+                                <h3 class="text-xl font-black text-slate-800">
+                                    No BOQ Found
+                                </h3>
+
+                                <p class="mt-2 text-sm text-slate-500">
+                                    Create your first BOQ to start project material planning.
+                                </p>
+
+                                <a href="{% url 'add_boq' %}"
+                                   class="inline-flex mt-5 px-5 py-3 rounded-2xl bg-[#0F4C81] text-white text-sm font-bold hover:bg-[#0b3d68] transition">
+                                    Add BOQ
+                                </a>
+
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Edit Project
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="max-w-6xl mx-auto">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900">
+                    Edit Customer Project
+                </h1>
+                <p class="text-slate-500 mt-1">
+                    Update project customer, capacity, status, dates and site details.
+                </p>
+            </div>
+
+            <a href="{% url 'project_list' %}"
+               class="px-5 py-3 rounded-2xl border border-slate-300 bg-white font-bold text-slate-700 hover:bg-slate-100">
+                Back to Projects
+            </a>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+
+            <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] px-6 py-6">
+                <h2 class="text-2xl font-black text-white">
+                    {{ project.project_id }} - {{ project.site_name }}
+                </h2>
+                <p class="text-blue-50 mt-1">
+                    {{ project.get_customer_name }} | {{ project.get_capacity_display_text }}
+                </p>
+            </div>
+
+            <div class="p-6">
+
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="mb-5 px-4 py-3 rounded-2xl font-bold
+                        {% if message.tags == 'success' %}
+                            bg-green-50 border border-green-200 text-green-700
+                        {% else %}
+                            bg-red-50 border border-red-200 text-red-700
+                        {% endif %}
+                    ">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="mb-8">
+                        <h3 class="text-xl font-black text-slate-900 mb-4">
+                            Basic Project Information
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Project ID
+                                </label>
+                                <input type="text"
+                                       value="{{ project.project_id }}"
+                                       readonly
+                                       class="w-full bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3 font-bold text-slate-700">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Customer
+                                </label>
+                                <select name="customer"
+                                        class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                                    <option value="">Select Customer</option>
+
+                                    {% for customer in customers %}
+                                        <option value="{{ customer.id }}"
+                                            {% if project.customer and project.customer.id == customer.id %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ customer.customer_id }} - {{ customer.customer_name }}
+                                            {% if customer.company_name %}
+                                                | {{ customer.company_name }}
+                                            {% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Site Name
+                                </label>
+                                <input type="text"
+                                       name="site_name"
+                                       value="{{ project.site_name|default:'' }}"
+                                       required
+                                       class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Location
+                                </label>
+                                <input type="text"
+                                       name="location"
+                                       value="{{ project.location|default:'' }}"
+                                       class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Capacity Value
+                                </label>
+                                <input type="number"
+                                       step="0.01"
+                                       name="capacity_value"
+                                       value="{{ project.capacity_value }}"
+                                       required
+                                       class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Capacity Unit
+                                </label>
+                                <select name="capacity_unit"
+                                        required
+                                        class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                                    <option value="TR" {% if project.capacity_unit == "TR" %}selected{% endif %}>
+                                        TR
+                                    </option>
+                                    <option value="HP" {% if project.capacity_unit == "HP" %}selected{% endif %}>
+                                        HP
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Project Value
+                                </label>
+                                <input type="number"
+                                       step="0.01"
+                                       name="project_value"
+                                       value="{{ project.project_value }}"
+                                       class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Project Status
+                                </label>
+                                <select name="project_status"
+                                        class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+
+                                    <option value="PLANNING" {% if project.project_status == "PLANNING" %}selected{% endif %}>
+                                        Planning
+                                    </option>
+
+                                    <option value="ONGOING" {% if project.project_status == "ONGOING" %}selected{% endif %}>
+                                        Ongoing
+                                    </option>
+
+                                    <option value="MATERIAL_REQUIRED" {% if project.project_status == "MATERIAL_REQUIRED" %}selected{% endif %}>
+                                        Material Required
+                                    </option>
+
+                                    <option value="MATERIAL_ISSUED" {% if project.project_status == "MATERIAL_ISSUED" %}selected{% endif %}>
+                                        Material Issued
+                                    </option>
+
+                                    <option value="INSTALLATION" {% if project.project_status == "INSTALLATION" %}selected{% endif %}>
+                                        Installation
+                                    </option>
+
+                                    <option value="TESTING" {% if project.project_status == "TESTING" %}selected{% endif %}>
+                                        Testing
+                                    </option>
+
+                                    <option value="HOLD" {% if project.project_status == "HOLD" %}selected{% endif %}>
+                                        Hold
+                                    </option>
+
+                                    <option value="COMMISSIONED" {% if project.project_status == "COMMISSIONED" %}selected{% endif %}>
+                                        Commissioned
+                                    </option>
+
+                                    <option value="CANCELLED" {% if project.project_status == "CANCELLED" %}selected{% endif %}>
+                                        Cancelled
+                                    </option>
+
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <div class="mt-5">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                Site Address
+                            </label>
+                            <textarea name="site_address"
+                                      rows="3"
+                                      class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">{{ project.site_address|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="mb-8 bg-blue-50 border border-blue-100 rounded-3xl p-5">
+
+                        <h3 class="text-xl font-black text-[#0F4C81] mb-4">
+                            Project Dates
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Start Date
+                                </label>
+                                <input type="date"
+                                       name="start_date"
+                                       value="{% if project.start_date %}{{ project.start_date|date:'Y-m-d' }}{% endif %}"
+                                       class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Expected Completion Date
+                                </label>
+                                <input type="date"
+                                       name="expected_completion_date"
+                                       value="{% if project.expected_completion_date %}{{ project.expected_completion_date|date:'Y-m-d' }}{% endif %}"
+                                       class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Actual Completion Date
+                                </label>
+                                <input type="date"
+                                       name="actual_completion_date"
+                                       value="{% if project.actual_completion_date %}{{ project.actual_completion_date|date:'Y-m-d' }}{% endif %}"
+                                       class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-8">
+
+                        <h3 class="text-xl font-black text-slate-900 mb-4">
+                            Project Notes
+                        </h3>
+
+                        <div class="space-y-5">
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Material Consumed Notes
+                                </label>
+                                <textarea name="material_consumed_notes"
+                                          rows="3"
+                                          class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">{{ project.material_consumed_notes|default:'' }}</textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Material Collection Notes
+                                </label>
+                                <textarea name="material_collection_notes"
+                                          rows="3"
+                                          class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">{{ project.material_collection_notes|default:'' }}</textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Project Stage Notes
+                                </label>
+                                <textarea name="project_stage_notes"
+                                          rows="3"
+                                          class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">{{ project.project_stage_notes|default:'' }}</textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Remarks
+                                </label>
+                                <textarea name="remarks"
+                                          rows="4"
+                                          class="w-full border border-slate-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">{{ project.remarks|default:'' }}</textarea>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                        <label class="flex items-center gap-3">
+                            <input type="checkbox"
+                                   name="is_active"
+                                   {% if project.is_active %}checked{% endif %}
+                                   class="w-5 h-5 accent-[#0F4C81]">
+
+                            <span class="font-bold text-slate-700">
+                                Active Project
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-end gap-3 mt-8">
+
+                        <a href="{% url 'project_list' %}"
+                           class="px-6 py-3 rounded-2xl border border-slate-300 bg-white font-bold text-slate-700 text-center hover:bg-slate-100">
+                            Cancel
+                        </a>
+
+                        <button type="submit"
+                                class="px-6 py-3 rounded-2xl bg-[#0F4C81] text-white font-black hover:bg-[#0b3b63]">
+                            Update Project
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

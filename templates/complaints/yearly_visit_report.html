@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Yearly Visit Report
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+    <div class="max-w-7xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+            <h1 class="text-4xl font-black text-white">
+                Yearly Visit Report
+            </h1>
+            <p class="text-blue-100 mt-2">
+                Check how many times AMC and warranty sites were visited in a year.
+            </p>
+        </div>
+
+        <form method="GET" class="bg-white rounded-3xl border shadow-sm p-5 mb-6">
+            <div class="flex gap-3">
+                <input type="number"
+                       name="year"
+                       value="{{ year }}"
+                       class="border border-slate-300 rounded-2xl px-4 py-3"
+                       placeholder="Enter year">
+
+                <button type="submit"
+                        class="px-6 py-3 rounded-2xl bg-[#0F4C81] text-white font-black">
+                    Filter
+                </button>
+            </div>
+        </form>
+
+        <div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-4 text-left">Customer ID</th>
+                            <th class="p-4 text-left">Customer</th>
+                            <th class="p-4 text-left">Phone</th>
+                            <th class="p-4 text-left">Site Type</th>
+                            <th class="p-4 text-left">Total Visits</th>
+                            <th class="p-4 text-left">Total Technicians</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for report in reports %}
+                        <tr class="border-b">
+                            <td class="p-4 font-bold">{{ report.customer__customer_id }}</td>
+                            <td class="p-4">{{ report.customer__customer_name }}</td>
+                            <td class="p-4">{{ report.customer__phone_number }}</td>
+                            <td class="p-4">{{ report.site_type }}</td>
+                            <td class="p-4 font-black">{{ report.total_visits }}</td>
+                            <td class="p-4 font-black">{{ report.total_technicians }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-500">
+                                No report data found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Edit BOQ Item
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-5xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                <div>
+                    <h1 class="text-4xl font-black text-white">
+                        Edit BOQ Item
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        Update material quantity, rate and consumption details.
+                    </p>
+                </div>
+
+                <a href="{% url 'boq_detail' boq_item.boq.id %}"
+                   class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
+                    Back
+                </a>
+
+            </div>
+
+        </div>
+
+        {% if error %}
+        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Store Item *
+                        </label>
+
+                        <select name="store_item"
+                                required
+                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                            <option value="">Select Store Item</option>
+
+                            {% for item in store_items %}
+                            <option value="{{ item.id }}"
+                                    {% if boq_item.store_item.id == item.id %}selected{% endif %}>
+                                {{ item.item_code }} - {{ item.item_description }}
+                                {% if item.size %} - {{ item.size }}{% endif %}
+                                | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Required Quantity
+                        </label>
+
+                        <input type="number"
+                               name="required_quantity"
+                               step="0.01"
+                               min="0"
+                               value="{{ boq_item.required_quantity }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Issued Quantity
+                        </label>
+
+                        <input type="number"
+                               name="issued_quantity"
+                               step="0.01"
+                               min="0"
+                               value="{{ boq_item.issued_quantity }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Consumed Quantity
+                        </label>
+
+                        <input type="number"
+                               name="consumed_quantity"
+                               step="0.01"
+                               min="0"
+                               value="{{ boq_item.consumed_quantity }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Returned Quantity
+                        </label>
+
+                        <input type="number"
+                               name="returned_quantity"
+                               step="0.01"
+                               min="0"
+                               value="{{ boq_item.returned_quantity }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Rate
+                        </label>
+
+                        <input type="number"
+                               name="rate"
+                               step="0.01"
+                               min="0"
+                               value="{{ boq_item.rate }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                </div>
+
+                <div class="mt-5">
+                    <label class="block font-bold mb-2">
+                        Remarks
+                    </label>
+
+                    <textarea name="remarks"
+                              rows="3"
+                              class="w-full border border-slate-300 rounded-2xl px-4 py-3">{{ boq_item.remarks }}</textarea>
+                </div>
+
+            </div>
+
+            <div class="mt-6 flex gap-3">
+
+                <button type="submit"
+                        class="bg-[#0F4C81] text-white px-8 py-4 rounded-2xl font-black">
+                    Update Item
+                </button>
+
+                <a href="{% url 'boq_detail' boq_item.boq.id %}"
+                   class="bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-black">
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

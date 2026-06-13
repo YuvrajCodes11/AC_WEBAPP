@@ -1,0 +1,495 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Material Issue Detail
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <!-- HEADER -->
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                <div>
+                    <p class="text-blue-100 text-xs font-bold uppercase tracking-widest">
+                        Material Issue Folder
+                    </p>
+
+                    <h1 class="text-4xl font-black text-white mt-2">
+                        {{ material_issue.issue_id }}
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        {{ material_issue.project.project_id }} - {{ material_issue.project.site_name }}
+                    </p>
+                </div>
+
+                <div class="flex gap-3 flex-wrap">
+
+                    <a href="{% url 'material_issue_list' %}"
+                       class="bg-white/20 text-white px-5 py-3 rounded-2xl font-bold">
+                        Back
+                    </a>
+
+                    <a href="{% url 'add_material_issue_item' material_issue.id %}"
+                       class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
+                        + Add Item
+                    </a>
+
+                    <a href="{% url 'edit_material_issue' material_issue.id %}"
+                       class="bg-slate-900 text-white px-5 py-3 rounded-2xl font-bold">
+                        Edit
+                    </a>
+
+                    <a href="{% url 'material_issue_print' material_issue.id %}"
+                       target="_blank"
+                       class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">
+                        Print Report
+                    </a>
+
+                    <a href="{% url 'project_full_pdf_report' material_issue.project.id %}"
+                       target="_blank"
+                       class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2">
+                        ⬇ Download Project PDF
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- CUSTOMER / SITE SUMMARY -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mb-8">
+
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
+
+                <div>
+                    <p class="text-xs font-black text-slate-400 uppercase">
+                        Customer / Site Material Summary
+                    </p>
+
+                    <h2 class="text-2xl font-black text-slate-900 mt-2">
+                        {% if material_issue.project.customer %}
+                            {{ material_issue.project.customer.customer_name }}
+                        {% else %}
+                            No Customer
+                        {% endif %}
+                    </h2>
+
+                    <p class="text-sm text-slate-500 mt-1">
+                        Project:
+                        <span class="font-bold text-slate-700">
+                            {{ material_issue.project.project_id }}
+                        </span>
+                    </p>
+
+                    <p class="text-sm text-slate-500 mt-1">
+                        Site:
+                        <span class="font-bold text-slate-700">
+                            {{ material_issue.project.site_name|default:"-" }}
+                        </span>
+                    </p>
+
+                    <p class="text-sm text-slate-500 mt-1">
+                        Location:
+                        <span class="font-bold text-slate-700">
+                            {{ material_issue.project.location|default:"-" }}
+                        </span>
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full md:w-auto">
+
+                    <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4">
+                        <p class="text-xs font-black uppercase text-blue-600">
+                            Total Sent
+                        </p>
+                        <h3 class="text-2xl font-black text-blue-700 mt-2">
+                            {{ total_issued_quantity }}
+                        </h3>
+                    </div>
+
+                    <div class="bg-orange-50 border border-orange-100 rounded-2xl p-4">
+                        <p class="text-xs font-black uppercase text-orange-600">
+                            Consumed
+                        </p>
+                        <h3 class="text-2xl font-black text-orange-700 mt-2">
+                            {{ total_consumed_quantity }}
+                        </h3>
+                    </div>
+
+                    <div class="bg-green-50 border border-green-100 rounded-2xl p-4">
+                        <p class="text-xs font-black uppercase text-green-600">
+                            Returned
+                        </p>
+                        <h3 class="text-2xl font-black text-green-700 mt-2">
+                            {{ total_returned_quantity }}
+                        </h3>
+                    </div>
+
+                    <div class="bg-red-50 border border-red-100 rounded-2xl p-4">
+                        <p class="text-xs font-black uppercase text-red-600">
+                            Balance
+                        </p>
+                        <h3 class="text-2xl font-black text-red-700 mt-2">
+                            {{ total_balance_quantity }}
+                        </h3>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ISSUE DETAILS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+            <div class="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+
+                <h2 class="text-2xl font-black text-[#0F4C81] mb-5">
+                    Issue Details
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
+
+                    <div>
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Issue ID
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {{ material_issue.issue_id }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Status
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {{ material_issue.get_status_display }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Issue Date
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {{ material_issue.issue_date|date:"d M Y" }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Issued By
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {{ material_issue.issued_by.username|default:"-" }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Issued To
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {{ material_issue.issued_to }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Received By
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {{ material_issue.received_by|default:"-" }}
+                        </p>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Remarks
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {{ material_issue.remarks|default:"-" }}
+                        </p>
+                    </div>
+
+                    {% if material_issue.issue_file %}
+                    <div class="md:col-span-2">
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Attachment
+                        </p>
+
+                        <a href="{{ material_issue.issue_file.url }}"
+                           target="_blank"
+                           class="inline-flex mt-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-xs font-bold">
+                            View Attachment
+                        </a>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+
+                <h2 class="text-xl font-black text-[#0F4C81] mb-5">
+                    Project / BOQ Info
+                </h2>
+
+                <div class="space-y-4 text-sm">
+
+                    <div>
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Project
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {{ material_issue.project.project_id }}
+                        </p>
+                        <p class="text-slate-500 text-xs">
+                            {{ material_issue.project.site_name }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Customer
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {% if material_issue.project.customer %}
+                                {{ material_issue.project.customer.customer_name }}
+                            {% else %}
+                                No Customer
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            BOQ
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {% if material_issue.boq %}
+                                {{ material_issue.boq.boq_id }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-black text-slate-400 uppercase">
+                            Location
+                        </p>
+                        <p class="font-bold text-slate-900 mt-1">
+                            {{ material_issue.project.location|default:"-" }}
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ITEM TABLE -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+
+            <div class="px-6 py-5 border-b border-slate-100 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+
+                <div>
+                    <h2 class="text-2xl font-black text-[#0F4C81]">
+                        Material Items Ledger
+                    </h2>
+
+                    <p class="text-sm text-slate-500 mt-1">
+                        Complete item-wise sent, consumed, returned and balance material details for this site.
+                    </p>
+                </div>
+
+                <a href="{% url 'add_material_issue_item' material_issue.id %}"
+                   class="bg-[#0F4C81] text-white px-4 py-2 rounded-xl text-xs font-bold">
+                    Add Item
+                </a>
+
+            </div>
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full text-sm">
+
+                    <thead class="bg-slate-100">
+
+                        <tr>
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Item Description
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Category
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Size
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Unit
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                BOQ Item
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Sent
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Consumed
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Returned
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Balance
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                Remarks
+                            </th>
+
+                            <th class="px-4 py-4 text-right text-xs font-black uppercase">
+                                Action
+                            </th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in issue_items %}
+
+                        <tr class="border-t">
+
+                            <td class="px-4 py-4 min-w-[260px]">
+                                <div class="font-black text-slate-900">
+                                    {{ item.store_item.item_description }}
+                                    {% if item.store_item.size %}
+                                        - {{ item.store_item.size }}
+                                    {% endif %}
+                                </div>
+
+                                <div class="text-xs text-slate-500 mt-1">
+                                    Code: {{ item.store_item.item_code }}
+                                </div>
+
+                                <div class="text-xs text-slate-500 mt-1">
+                                    Current Stock: {{ item.store_item.current_stock }}
+                                </div>
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ item.store_item.category.category_name }}
+                            </td>
+
+                            <td class="px-4 py-4 font-bold">
+                                {{ item.store_item.size|default:"-" }}
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ item.store_item.get_unit_display }}
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {% if item.boq_item %}
+                                    {{ item.boq_item.boq.boq_id }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
+                            <td class="px-4 py-4 font-black text-blue-600">
+                                {{ item.issued_quantity }}
+                            </td>
+
+                            <td class="px-4 py-4 font-black text-orange-600">
+                                {{ item.consumed_quantity }}
+                            </td>
+
+                            <td class="px-4 py-4 font-black text-green-600">
+                                {{ item.returned_quantity }}
+                            </td>
+
+                            <td class="px-4 py-4 font-black text-red-600">
+                                {{ item.balance_quantity }}
+                            </td>
+
+                            <td class="px-4 py-4 min-w-[180px]">
+                                {{ item.remarks|default:"-" }}
+                            </td>
+
+                            <td class="px-4 py-4 text-right">
+
+                                <div class="flex justify-end gap-2">
+
+                                    <a href="{% url 'edit_material_issue_item' item.id %}"
+                                       class="px-3 py-2 rounded-xl bg-blue-100 text-blue-700 text-xs font-bold">
+                                        Edit
+                                    </a>
+<!-- 
+                                    <a href="{% url 'delete_material_issue_item' item.id %}"
+                                       onclick="return confirm('Delete this item?')"
+                                       class="px-3 py-2 rounded-xl bg-red-100 text-red-700 text-xs font-bold">
+                                        Delete
+                                    </a> -->
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="11" class="text-center py-12">
+
+                                <h3 class="text-xl font-black text-slate-700">
+                                    No Material Items Found
+                                </h3>
+
+                                <a href="{% url 'add_material_issue_item' material_issue.id %}"
+                                   class="inline-flex mt-5 bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">
+                                    Add First Item
+                                </a>
+
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

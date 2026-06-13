@@ -1,0 +1,152 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}Puri Air Conditioning{% endblock %}
+    </title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .soft-grid {
+            background-image:
+                linear-gradient(rgba(59, 130, 246, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.08) 1px, transparent 1px);
+            background-size: 42px 42px;
+        }
+
+        /* Subtle Custom Animations */
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-15px) translateX(10px); }
+            100% { transform: translateY(0px) translateX(0px); }
+        }
+        
+        .animate-float-slow { animation: float 14s ease-in-out infinite; }
+        .animate-float-medium { animation: float 10s ease-in-out infinite reverse; }
+        .animate-float-fast { animation: float 8s ease-in-out infinite; }
+
+        @keyframes fade-in-up {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in-up {
+            animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-100 text-gray-800 soft-grid overflow-x-hidden flex flex-col">
+
+    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div class="absolute -top-32 -left-32 w-[25rem] h-[25rem] bg-blue-300/30 rounded-full blur-3xl animate-float-slow"></div>
+        <div class="absolute top-40 -right-32 w-[20rem] h-[20rem] bg-cyan-300/30 rounded-full blur-3xl animate-float-medium"></div>
+        <div class="absolute bottom-0 left-1/3 w-[30rem] h-[30rem] bg-sky-300/20 rounded-full blur-3xl animate-float-fast"></div>
+    </div>
+
+    <nav class="sticky top-0 z-50 border-b border-white/70 bg-white/70 backdrop-blur-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300">
+        <div class="max-w-[95rem] mx-auto px-4 md:px-6 py-2.5">
+            <div class="flex items-center justify-between gap-4">
+
+                <a href="{% url 'dashboard' %}" class="flex items-center gap-3 min-w-0 group cursor-pointer">
+                    <div class="relative transition-transform duration-300 ease-in-out group-hover:scale-105">
+                        <div class="absolute inset-0 bg-blue-500/20 rounded-2xl blur-md transition-opacity duration-300 group-hover:opacity-100 opacity-60"></div>
+                        <div class="relative bg-white/90 rounded-2xl shadow-sm p-1.5 ring-1 ring-blue-100/50 backdrop-blur-sm">
+                            <img 
+                                src="{% static 'images/logo.png' %}" 
+                                alt="Puri Air Conditioning Logo" 
+                                class="w-10 h-10 md:w-11 md:h-11 object-cover rounded-xl"
+                            >
+                        </div>
+                    </div>
+                    <div class="min-w-0 transition-transform duration-300 group-hover:translate-x-1">
+                        <h1 class="text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-cyan-700 tracking-tight truncate">
+                            Puri Air Conditioning
+                        </h1>
+                        <p class="text-[10px] md:text-xs text-gray-500/90 font-semibold mt-0.5 truncate">
+                            HVAC Solutions & Cooling Management
+                        </p>
+                    </div>
+                </a>
+
+                <div class="hidden lg:flex items-center gap-4">
+                    <div class="px-4 py-2 rounded-xl bg-blue-50/80 border border-blue-100/50 backdrop-blur-md transition-all duration-300 hover:shadow-sm">
+                        <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none">
+                            System
+                        </p>
+                        <p class="text-xs text-blue-700 font-extrabold mt-1 leading-none">
+                            Service Dashboard
+                        </p>
+                    </div>
+                    <div class="bg-white/80 rounded-2xl shadow-sm px-3 py-1.5 border border-blue-100/50 backdrop-blur-md transition-all duration-300 hover:shadow-md hover:scale-105 cursor-pointer">
+                        <img 
+                            src="{% static 'images/logo2.jpg' %}" 
+                            alt="HVAC Solution Logo" 
+                            class="w-[140px] h-[40px] object-contain rounded-lg"
+                        >
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow animate-fade-in-up">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="mt-8 border-t border-white/70 bg-white/50 backdrop-blur-lg shadow-[inset_0_1px_0_0_rgba(255,255,255,1)]">
+        <div class="max-w-[95rem] mx-auto px-4 md:px-6 py-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+
+                <div class="flex items-center gap-3 group">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 text-white flex items-center justify-center text-sm font-black shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+                        P
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-700">
+                            © 2026 Puri Air Conditioning
+                        </p>
+                        <p class="text-[10px] text-gray-500 font-medium">
+                            All Rights Reserved
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-2 text-xs font-bold">
+                    <span class="px-3 py-1.5 rounded-full bg-blue-100/70 text-blue-700 border border-blue-200/50 transition-all duration-300 hover:bg-blue-600 hover:text-white hover:shadow-md cursor-default">
+                        HVAC Solutions
+                    </span>
+                    <span class="px-3 py-1.5 rounded-full bg-cyan-100/70 text-cyan-700 border border-cyan-200/50 transition-all duration-300 hover:bg-cyan-500 hover:text-white hover:shadow-md cursor-default">
+                        Cooling Management
+                    </span>
+                    <span class="px-3 py-1.5 rounded-full bg-sky-100/70 text-sky-700 border border-sky-200/50 transition-all duration-300 hover:bg-sky-500 hover:text-white hover:shadow-md cursor-default">
+                        Service Dashboard
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

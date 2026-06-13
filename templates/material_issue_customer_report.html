@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Material Report{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <!-- HEADER -->
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <p class="text-blue-100 text-xs font-bold uppercase tracking-widest">
+                        HVAC Material Control
+                    </p>
+                    <h1 class="text-4xl font-black text-white mt-2">
+                        Customer Material Report
+                    </h1>
+                    <p class="text-blue-100 mt-2">
+                        Project-wise material issued, consumed, returned and balance.
+                    </p>
+                </div>
+                <div class="flex gap-3 flex-wrap">
+                    <a href="{% url 'dashboard' %}" class="bg-white/20 text-white px-5 py-3 rounded-2xl font-bold">
+                        Dashboard
+                    </a>
+                    <a href="{% url 'material_issue_list' %}" class="bg-white/20 text-white px-5 py-3 rounded-2xl font-bold">
+                        Material Issues
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEARCH -->
+        <form method="get" class="mb-8">
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 flex gap-3">
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Search by project ID, site name, customer name or phone..."
+                    class="flex-1 border border-slate-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-[#0F4C81]"
+                >
+                <button type="submit" class="bg-[#0F4C81] text-white px-6 py-3 rounded-2xl font-bold">
+                    Search
+                </button>
+                {% if search %}
+                <a href="{% url 'material_issue_customer_report' %}" class="bg-slate-100 text-slate-700 px-6 py-3 rounded-2xl font-bold">
+                    Clear
+                </a>
+                {% endif %}
+            </div>
+        </form>
+
+        <!-- RESULTS -->
+        {% if report_data %}
+
+            {% for entry in report_data %}
+
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm mb-8 overflow-hidden">
+
+                <!-- Project Header -->
+                <div class="bg-slate-50 border-b border-slate-200 px-6 py-5">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Project</p>
+                            <h2 class="text-xl font-black text-slate-900 mt-1">
+                                {{ entry.project.site_name }}
+                            </h2>
+                            <p class="text-sm text-slate-500 mt-1">
+                                ID: {{ entry.project.project_id }} &nbsp;|&nbsp;
+                                Customer: <strong>{{ entry.customer.customer_name }}</strong> &nbsp;|&nbsp;
+                                {{ entry.customer.phone_number }}
+                            </p>
+                        </div>
+                        <div class="flex gap-4 text-center">
+                            <div class="bg-blue-50 rounded-2xl px-4 py-3">
+                                <p class="text-xs font-bold text-blue-400 uppercase">Issued</p>
+                                <p class="text-xl font-black text-blue-700">{{ entry.total_issued }}</p>
+                            </div>
+                            <div class="bg-green-50 rounded-2xl px-4 py-3">
+                                <p class="text-xs font-bold text-green-400 uppercase">Consumed</p>
+                                <p class="text-xl font-black text-green-700">{{ entry.total_consumed }}</p>
+                            </div>
+                            <div class="bg-yellow-50 rounded-2xl px-4 py-3">
+                                <p class="text-xs font-bold text-yellow-500 uppercase">Returned</p>
+                                <p class="text-xl font-black text-yellow-700">{{ entry.total_returned }}</p>
+                            </div>
+                            <div class="bg-red-50 rounded-2xl px-4 py-3">
+                                <p class="text-xs font-bold text-red-400 uppercase">Balance</p>
+                                <p class="text-xl font-black text-red-700">{{ entry.total_balance }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-100 text-slate-500 text-xs uppercase font-bold">
+                            <tr>
+                                <th class="px-6 py-4 text-left">#</th>
+                                <th class="px-6 py-4 text-left">Item</th>
+                                <th class="px-6 py-4 text-left">Category</th>
+                                <th class="px-6 py-4 text-left">Size</th>
+                                <th class="px-6 py-4 text-left">Issue Date</th>
+                                <th class="px-6 py-4 text-right">Issued</th>
+                                <th class="px-6 py-4 text-right">Consumed</th>
+                                <th class="px-6 py-4 text-right">Returned</th>
+                                <th class="px-6 py-4 text-right">Balance</th>
+                                <th class="px-6 py-4 text-left">Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for item in entry.issue_items %}
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-6 py-4 text-slate-400">{{ forloop.counter }}</td>
+                                <td class="px-6 py-4 font-bold text-slate-800">
+                                    {{ item.store_item.item_code }} – {{ item.store_item.item_description }}
+                                </td>
+                                <td class="px-6 py-4 text-slate-500">
+                                    {{ item.store_item.category.category_name|default:"-" }}
+                                </td>
+                                <td class="px-6 py-4 text-slate-500">
+                                    {{ item.store_item.size|default:"-" }}
+                                </td>
+                                <td class="px-6 py-4 text-slate-500">
+                                    {{ item.material_issue.issue_date|date:"d M Y" }}
+                                </td>
+                                <td class="px-6 py-4 text-right font-bold text-blue-700">
+                                    {{ item.issued_quantity }}
+                                </td>
+                                <td class="px-6 py-4 text-right font-bold text-green-700">
+                                    {{ item.consumed_quantity }}
+                                </td>
+                                <td class="px-6 py-4 text-right font-bold text-yellow-600">
+                                    {{ item.returned_quantity }}
+                                </td>
+                                <td class="px-6 py-4 text-right font-bold text-red-600">
+                                    {{ item.issued_quantity|add:"-"|add:item.consumed_quantity }}
+                                </td>
+                                <td class="px-6 py-4 text-slate-500">
+                                    {{ item.store_item.get_unit_display }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-16 text-center">
+                <p class="text-4xl mb-4">📋</p>
+                <h3 class="text-xl font-black text-slate-700">No Data Found</h3>
+                <p class="text-slate-400 mt-2">
+                    {% if search %}No projects match your search.{% else %}No material issues recorded yet.{% endif %}
+                </p>
+            </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

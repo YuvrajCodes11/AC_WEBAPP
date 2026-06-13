@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Add AMC
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-5xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8">
+
+        <h1 class="text-4xl font-black text-[#0F4C81]">
+            Add AMC Contract
+        </h1>
+
+        <form method="POST" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
+
+            {% csrf_token %}
+
+            <select name="customer" class="border p-4 rounded-2xl" required>
+                <option value="">Select Customer</option>
+
+                {% for customer in customers %}
+                <option value="{{ customer.id }}">
+                    {{ customer.customer_name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <input type="number" step="0.01" name="contract_value" placeholder="Contract Value" class="border p-4 rounded-2xl">
+
+            <input type="date" name="contract_start_date" class="border p-4 rounded-2xl" required>
+
+            <input type="date" name="contract_end_date" class="border p-4 rounded-2xl" required>
+
+            <input type="number" name="services_per_year" placeholder="Services Per Year" value="4" class="border p-4 rounded-2xl">
+
+            <select name="service_frequency" class="border p-4 rounded-2xl" required>
+                <option value="MONTHLY">Monthly</option>
+                <option value="QUARTERLY" selected>Quarterly</option>
+                <option value="HALF_YEARLY">Half Yearly</option>
+                <option value="YEARLY">Yearly</option>
+            </select>
+
+            <input type="text" name="technician_name" placeholder="Technician Name" class="border p-4 rounded-2xl">
+
+            <select name="status" class="border p-4 rounded-2xl" required>
+                <option value="ACTIVE">Active</option>
+                <option value="EXPIRED">Expired</option>
+                <option value="HOLD">Hold</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
+
+            <textarea name="remarks" placeholder="Remarks" class="border p-4 rounded-2xl md:col-span-2" rows="4"></textarea>
+
+            <button class="md:col-span-2 bg-[#0F4C81] text-white py-4 rounded-2xl font-bold">
+                Save AMC
+            </button>
+
+        </form>
+
+        <a href="{% url 'amc_list' %}" class="inline-block mt-5 text-[#0F4C81] font-bold">
+            Back to AMC List
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

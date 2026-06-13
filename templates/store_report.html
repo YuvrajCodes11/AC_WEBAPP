@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Store Report
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8 print:hidden">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+            <div>
+                <h1 class="text-4xl font-black text-[#0F4C81]">Store Report</h1>
+                <p class="mt-2 text-gray-500">Current stock and low stock status.</p>
+            </div>
+
+            <div class="flex gap-3">
+                <a href="{% url 'reports_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">Reports</a>
+                <a href="{% url 'export_store_report' %}" class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">Export CSV</a>
+                <button onclick="window.print()" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">Print</button>
+            </div>
+        </div>
+
+        <form method="GET" class="mt-8">
+            <input
+                type="text"
+                name="search"
+                value="{{ search }}"
+                placeholder="Search item, category, size..."
+                class="w-full border border-gray-200 px-5 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-blue-100"
+            >
+        </form>
+
+    </div>
+
+    <div class="mt-8 bg-white rounded-[2rem] shadow-xl border border-blue-100 overflow-hidden">
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full min-w-[1100px]">
+
+                <thead>
+                    <tr class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] text-white">
+                        <th class="px-6 py-5 text-left">Code</th>
+                        <th class="px-6 py-5 text-left">Category</th>
+                        <th class="px-6 py-5 text-left">Description</th>
+                        <th class="px-6 py-5 text-left">Size</th>
+                        <th class="px-6 py-5 text-left">Remarks</th>
+                        <th class="px-6 py-5 text-left">Unit</th>
+                        <th class="px-6 py-5 text-left">Stock</th>
+                        <th class="px-6 py-5 text-left">Minimum</th>
+                        <th class="px-6 py-5 text-left">Status</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                    {% for item in items %}
+
+                    <tr class="hover:bg-blue-50">
+                        <td class="px-6 py-5 font-bold text-[#0F4C81]">{{ item.item_code }}</td>
+                        <td class="px-6 py-5">{{ item.category.category_name }}</td>
+                        <td class="px-6 py-5 font-bold">{{ item.item_description }}</td>
+                        <td class="px-6 py-5">{{ item.size|default:"-" }}</td>
+                        <td class="px-6 py-5">{{ item.remarks|default:"-" }}</td>
+                        <td class="px-6 py-5">{{ item.get_unit_display }}</td>
+                        <td class="px-6 py-5 font-bold">{{ item.current_stock }}</td>
+                        <td class="px-6 py-5">{{ item.minimum_stock }}</td>
+                        <td class="px-6 py-5">
+                            {% if item.current_stock <= item.minimum_stock %}
+                            <span class="bg-red-100 text-red-700 px-4 py-2 rounded-xl font-bold">Low Stock</span>
+                            {% else %}
+                            <span class="bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold">Available</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="9" class="px-6 py-12 text-center text-gray-500">No store item found.</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

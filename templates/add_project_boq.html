@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Add Project BOQ
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+
+            <div class="bg-gradient-to-br from-[#0F4C81] via-[#1B6CA8] to-[#89CFF0] p-6 md:p-8">
+
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                    <div>
+                        <p class="inline-flex bg-white/20 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest">
+                            Store Project BOQ
+                        </p>
+
+                        <h1 class="mt-4 text-3xl md:text-4xl font-black text-white">
+                            Add Project BOQ
+                        </h1>
+
+                        <p class="mt-2 text-blue-50 text-sm md:text-base">
+                            Create project material requirement from available store items.
+                        </p>
+                    </div>
+
+                    <a href="{% url 'project_boq_list' %}"
+                       class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl text-sm font-bold hover:bg-blue-50 transition">
+                        Back to BOQ List
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="p-6 md:p-8">
+
+                {% if error %}
+                <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold text-red-700">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="POST" class="space-y-8">
+                    {% csrf_token %}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
+                                Select Project
+                            </label>
+
+                            <select name="project"
+                                    required
+                                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                                <option value="">Select Project</option>
+
+                                {% for project in projects %}
+                                <option value="{{ project.id }}">
+                                    {{ project.customer_name }}{% if project.location %} - {{ project.location }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
+                                BOQ Title
+                            </label>
+
+                            <input type="text"
+                                   name="title"
+                                   value="Project BOQ"
+                                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                        </div>
+
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
+                                Material Consumed Notes
+                            </label>
+
+                            <textarea name="material_consumed_notes"
+                                      rows="4"
+                                      class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]"
+                                      placeholder="Add material consumed notes"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
+                                Project Stage Notes
+                            </label>
+
+                            <textarea name="project_stage_notes"
+                                      rows="4"
+                                      class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]"
+                                      placeholder="Add project stage notes"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
+                                Material Collection Notes
+                            </label>
+
+                            <textarea name="material_collection_notes"
+                                      rows="4"
+                                      class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]"
+                                      placeholder="Add material collection notes"></textarea>
+                        </div>
+
+                    </div>
+
+                    <div class="border border-slate-200 rounded-[2rem] overflow-hidden">
+
+                        <div class="bg-slate-900 px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+                            <div>
+                                <h2 class="text-xl font-black text-white">
+                                    Material Requirement
+                                </h2>
+
+                                <p class="mt-1 text-sm text-slate-300">
+                                    Add material needed from store item list.
+                                </p>
+                            </div>
+
+                            <button type="button"
+                                    onclick="addRow()"
+                                    class="bg-white text-slate-900 px-5 py-3 rounded-2xl text-sm font-black hover:bg-slate-100 transition">
+                                Add More Item
+                            </button>
+
+                        </div>
+
+                        <div class="overflow-x-auto">
+
+                            <table class="w-full text-sm">
+
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">
+                                            Store Item
+                                        </th>
+                                        <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">
+                                            Material Needed
+                                        </th>
+                                        <th class="px-4 py-4 text-left text-xs font-black text-slate-500 uppercase">
+                                            Remarks
+                                        </th>
+                                        <th class="px-4 py-4 text-right text-xs font-black text-slate-500 uppercase">
+                                            Action
+                                        </th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="boqItemsBody">
+
+                                    <tr class="border-b border-slate-100">
+
+                                        <td class="px-4 py-4 min-w-[320px]">
+                                            <select name="item"
+                                                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                                                <option value="">Select Item</option>
+
+                                                {% for item in items %}
+                                                <option value="{{ item.id }}">
+                                                    {{ item.item_code }} - {{ item.item_description }}{% if item.size %} - {{ item.size }}{% endif %} | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+
+                                        <td class="px-4 py-4 min-w-[180px]">
+                                            <input type="number"
+                                                   name="material_needed"
+                                                   step="0.01"
+                                                   min="0"
+                                                   placeholder="0"
+                                                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                                        </td>
+
+                                        <td class="px-4 py-4 min-w-[260px]">
+                                            <input type="text"
+                                                   name="remarks"
+                                                   placeholder="Remarks"
+                                                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
+                                        </td>
+
+                                        <td class="px-4 py-4 text-right">
+                                            <button type="button"
+                                                    onclick="removeRow(this)"
+                                                    class="px-4 py-2 rounded-xl bg-red-50 text-red-700 text-xs font-black hover:bg-red-100 transition">
+                                                Delete
+                                            </button>
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-3 md:justify-end">
+
+                        <a href="{% url 'project_boq_list' %}"
+                           class="px-6 py-3 rounded-2xl border border-slate-200 text-slate-700 text-sm font-black text-center hover:bg-slate-50 transition">
+                            Cancel
+                        </a>
+
+                        <button type="submit"
+                                class="px-6 py-3 rounded-2xl bg-[#0F4C81] text-white text-sm font-black hover:bg-[#0b3d68] transition">
+                            Save Project BOQ
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    function addRow() {
+        const tbody = document.getElementById("boqItemsBody");
+        const firstRow = tbody.querySelector("tr");
+        const newRow = firstRow.cloneNode(true);
+
+        const selects = newRow.querySelectorAll("select");
+        selects.forEach(select => {
+            select.selectedIndex = 0;
+        });
+
+        const inputs = newRow.querySelectorAll("input");
+        inputs.forEach(input => {
+            input.value = "";
+        });
+
+        tbody.appendChild(newRow);
+    }
+
+    function removeRow(button) {
+        const tbody = document.getElementById("boqItemsBody");
+        const rows = tbody.querySelectorAll("tr");
+
+        if (rows.length > 1) {
+            button.closest("tr").remove();
+        }
+    }
+</script>
+
+{% endblock %}

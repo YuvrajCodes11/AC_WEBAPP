@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Complaint List
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+    <div class="max-w-7xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-4xl font-black text-white">
+                        Complaint List
+                    </h1>
+                    <p class="text-blue-100 mt-2">
+                        Search, filter and manage customer complaints.
+                    </p>
+                </div>
+
+                <a href="{% url 'add_complaint' %}"
+                   class="bg-white text-[#0F4C81] px-6 py-3 rounded-2xl font-black">
+                    Add Complaint
+                </a>
+            </div>
+        </div>
+
+        <form method="GET" class="bg-white rounded-3xl border shadow-sm p-5 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+                <input type="text"
+                       name="search"
+                       value="{{ search }}"
+                       placeholder="Search complaint/customer/phone"
+                       class="border border-slate-300 rounded-2xl px-4 py-3">
+
+                <select name="site_type" class="border border-slate-300 rounded-2xl px-4 py-3">
+                    <option value="">All Site Types</option>
+                    <option value="WARRANTY" {% if site_type == "WARRANTY" %}selected{% endif %}>Warranty Site</option>
+                    <option value="AMC" {% if site_type == "AMC" %}selected{% endif %}>AMC Site</option>
+                    <option value="GENERAL" {% if site_type == "GENERAL" %}selected{% endif %}>General Site</option>
+                </select>
+
+                <select name="status" class="border border-slate-300 rounded-2xl px-4 py-3">
+                    <option value="">All Status</option>
+                    <option value="PENDING" {% if status == "PENDING" %}selected{% endif %}>Pending</option>
+                    <option value="COMPLETED" {% if status == "COMPLETED" %}selected{% endif %}>Completed</option>
+                    <option value="CANCELLED" {% if status == "CANCELLED" %}selected{% endif %}>Cancelled</option>
+                    <option value="PARTIAL" {% if status == "PARTIAL" %}selected{% endif %}>Partial Work</option>
+                </select>
+
+                <input type="number"
+                       name="year"
+                       value="{{ year }}"
+                       placeholder="Year"
+                       class="border border-slate-300 rounded-2xl px-4 py-3">
+
+                <button type="submit"
+                        class="bg-[#0F4C81] text-white rounded-2xl font-black">
+                    Search
+                </button>
+
+            </div>
+        </form>
+
+        <div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-4 text-left">Complaint ID</th>
+                            <th class="p-4 text-left">Customer</th>
+                            <th class="p-4 text-left">Phone</th>
+                            <th class="p-4 text-left">Site</th>
+                            <th class="p-4 text-left">Visit Date</th>
+                            <th class="p-4 text-left">Technician</th>
+                            <th class="p-4 text-left">Status</th>
+                            <th class="p-4 text-left">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for complaint in complaints %}
+                        <tr class="border-b">
+                            <td class="p-4 font-bold">{{ complaint.complaint_id }}</td>
+                            <td class="p-4">{{ complaint.customer.customer_name }}</td>
+                            <td class="p-4">{{ complaint.customer.phone_number }}</td>
+                            <td class="p-4">{{ complaint.get_site_type_display }}</td>
+                            <td class="p-4">{{ complaint.visit_date }}</td>
+                            <td class="p-4">{{ complaint.no_of_technicians }}</td>
+                            <td class="p-4">{{ complaint.get_status_display }}</td>
+                            <td class="p-4 flex gap-3">
+                                <a href="{% url 'complaint_detail' complaint.id %}" class="text-[#0F4C81] font-bold">View</a>
+                                <a href="{% url 'edit_complaint' complaint.id %}" class="text-amber-700 font-bold">Edit</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="p-8 text-center text-slate-500">
+                                No complaints found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

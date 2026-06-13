@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}
+AMC Report
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8 print:hidden">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+            <div>
+                <h1 class="text-4xl font-black text-[#0F4C81]">AMC Report</h1>
+                <p class="mt-2 text-gray-500">AMC contracts, expiry and pending visit report.</p>
+            </div>
+
+            <div class="flex gap-3">
+                <a href="{% url 'reports_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">Reports</a>
+                <a href="{% url 'export_amc_report' %}" class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">Export CSV</a>
+                <button onclick="window.print()" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">Print</button>
+            </div>
+        </div>
+
+        <form method="GET" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <select name="status" class="border border-gray-200 px-5 py-4 rounded-2xl">
+                <option value="">All Status</option>
+                <option value="ACTIVE" {% if status == "ACTIVE" %}selected{% endif %}>Active</option>
+                <option value="EXPIRED" {% if status == "EXPIRED" %}selected{% endif %}>Expired</option>
+                <option value="HOLD" {% if status == "HOLD" %}selected{% endif %}>Hold</option>
+                <option value="CANCELLED" {% if status == "CANCELLED" %}selected{% endif %}>Cancelled</option>
+            </select>
+
+            <button class="bg-[#0F4C81] text-white py-3 rounded-2xl font-bold">Filter</button>
+
+        </form>
+
+    </div>
+
+    <div class="mt-8 bg-white rounded-[2rem] shadow-xl border border-blue-100 overflow-hidden">
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full min-w-[1100px]">
+
+                <thead>
+                    <tr class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] text-white">
+                        <th class="px-6 py-5 text-left">AMC ID</th>
+                        <th class="px-6 py-5 text-left">Customer</th>
+                        <th class="px-6 py-5 text-left">Start</th>
+                        <th class="px-6 py-5 text-left">End</th>
+                        <th class="px-6 py-5 text-left">Value</th>
+                        <th class="px-6 py-5 text-left">Frequency</th>
+                        <th class="px-6 py-5 text-left">Technician</th>
+                        <th class="px-6 py-5 text-left">Status</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                    {% for amc in amcs %}
+
+                    <tr class="hover:bg-blue-50">
+                        <td class="px-6 py-5 font-bold text-[#0F4C81]">{{ amc.amc_id }}</td>
+                        <td class="px-6 py-5 font-bold">{{ amc.customer.customer_name }}</td>
+                        <td class="px-6 py-5">{{ amc.contract_start_date }}</td>
+                        <td class="px-6 py-5">{{ amc.contract_end_date }}</td>
+                        <td class="px-6 py-5 font-bold">₹ {{ amc.contract_value }}</td>
+                        <td class="px-6 py-5">{{ amc.get_service_frequency_display }}</td>
+                        <td class="px-6 py-5">{{ amc.technician_name|default:"-" }}</td>
+                        <td class="px-6 py-5">{{ amc.get_status_display }}</td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">No AMC data found.</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="mt-8 bg-white rounded-[2rem] shadow-xl border border-red-100 overflow-hidden">
+
+        <div class="p-6 border-b border-gray-100">
+            <h2 class="text-2xl font-black text-red-600">Pending AMC Visits</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full min-w-[900px]">
+
+                <thead>
+                    <tr class="bg-red-100 text-red-800">
+                        <th class="px-6 py-4 text-left">Visit ID</th>
+                        <th class="px-6 py-4 text-left">AMC</th>
+                        <th class="px-6 py-4 text-left">Customer</th>
+                        <th class="px-6 py-4 text-left">Visit Date</th>
+                        <th class="px-6 py-4 text-left">Technician</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                    {% for visit in pending_visits %}
+
+                    <tr>
+                        <td class="px-6 py-4 font-bold">{{ visit.visit_id }}</td>
+                        <td class="px-6 py-4">{{ visit.amc.amc_id }}</td>
+                        <td class="px-6 py-4">{{ visit.amc.customer.customer_name }}</td>
+                        <td class="px-6 py-4">{{ visit.visit_date }}</td>
+                        <td class="px-6 py-4">{{ visit.technician_name|default:"-" }}</td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-gray-500">No pending AMC visit.</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

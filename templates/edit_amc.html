@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Edit AMC
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-5xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-[2rem] shadow-xl border border-blue-100 p-8">
+
+        <h1 class="text-4xl font-black text-[#0F4C81]">
+            Edit AMC Contract
+        </h1>
+
+        <p class="mt-2 text-gray-500">
+            AMC ID: {{ amc.amc_id }}
+        </p>
+
+        <form method="POST" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
+
+            {% csrf_token %}
+
+            <select name="customer" class="border p-4 rounded-2xl" required>
+                {% for customer in customers %}
+                <option value="{{ customer.id }}" {% if amc.customer.id == customer.id %}selected{% endif %}>
+                    {{ customer.customer_name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <input type="number" step="0.01" name="contract_value" value="{{ amc.contract_value }}" class="border p-4 rounded-2xl">
+
+            <input type="date" name="contract_start_date" value="{{ amc.contract_start_date|date:'Y-m-d' }}" class="border p-4 rounded-2xl" required>
+
+            <input type="date" name="contract_end_date" value="{{ amc.contract_end_date|date:'Y-m-d' }}" class="border p-4 rounded-2xl" required>
+
+            <input type="number" name="services_per_year" value="{{ amc.services_per_year }}" class="border p-4 rounded-2xl">
+
+            <select name="service_frequency" class="border p-4 rounded-2xl" required>
+                <option value="MONTHLY" {% if amc.service_frequency == "MONTHLY" %}selected{% endif %}>Monthly</option>
+                <option value="QUARTERLY" {% if amc.service_frequency == "QUARTERLY" %}selected{% endif %}>Quarterly</option>
+                <option value="HALF_YEARLY" {% if amc.service_frequency == "HALF_YEARLY" %}selected{% endif %}>Half Yearly</option>
+                <option value="YEARLY" {% if amc.service_frequency == "YEARLY" %}selected{% endif %}>Yearly</option>
+            </select>
+
+            <input type="text" name="technician_name" value="{{ amc.technician_name }}" class="border p-4 rounded-2xl">
+
+            <select name="status" class="border p-4 rounded-2xl" required>
+                <option value="ACTIVE" {% if amc.status == "ACTIVE" %}selected{% endif %}>Active</option>
+                <option value="EXPIRED" {% if amc.status == "EXPIRED" %}selected{% endif %}>Expired</option>
+                <option value="HOLD" {% if amc.status == "HOLD" %}selected{% endif %}>Hold</option>
+                <option value="CANCELLED" {% if amc.status == "CANCELLED" %}selected{% endif %}>Cancelled</option>
+            </select>
+
+            <textarea name="remarks" class="border p-4 rounded-2xl md:col-span-2" rows="4">{{ amc.remarks }}</textarea>
+
+            <button class="md:col-span-2 bg-green-600 text-white py-4 rounded-2xl font-bold">
+                Update AMC
+            </button>
+
+        </form>
+
+        <a href="{% url 'amc_detail' amc.id %}" class="inline-block mt-5 text-[#0F4C81] font-bold">
+            Back to AMC Detail
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,502 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Add Project
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-5xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <p class="text-blue-100 text-xs font-bold uppercase tracking-widest">
+                        HVAC Project Management
+                    </p>
+
+                    <h1 class="text-3xl md:text-4xl font-black text-white mt-2">
+                        Add New Project
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        Create project, site details, execution information and required materials.
+                    </p>
+                </div>
+
+                <a href="{% url 'project_list' %}"
+                   class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl text-sm font-bold hover:bg-slate-100 transition">
+                    Back
+                </a>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl font-bold">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="mb-6 px-5 py-4 rounded-2xl font-bold
+                {% if message.tags == 'success' %}
+                    bg-green-50 border border-green-200 text-green-700
+                {% else %}
+                    bg-red-50 border border-red-200 text-red-700
+                {% endif %}
+            ">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" class="space-y-8">
+            {% csrf_token %}
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-xl font-black text-[#0F4C81] mb-6">
+                    Customer Information
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <div class="relative">
+                        <label class="block text-sm font-bold mb-2">
+                            Search Customer *
+                        </label>
+
+                        <input type="text"
+                               id="customerSearch"
+                               autocomplete="off"
+                               required
+                               placeholder="Search by ID, name, company, phone..."
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+
+                        <input type="hidden"
+                               name="customer"
+                               id="selectedCustomerId"
+                               required>
+
+                        <div id="customerResults"
+                             class="hidden absolute z-50 mt-2 w-full bg-white border border-slate-200 rounded-2xl shadow-xl max-h-72 overflow-y-auto">
+                        </div>
+
+                        <p id="selectedCustomerText"
+                           class="text-sm text-green-700 font-bold mt-2 hidden">
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Site Name *
+                        </label>
+
+                        <input type="text"
+                               name="site_name"
+                               required
+                               placeholder="Example: ABC Mall HVAC Installation"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-xl font-black text-[#0F4C81] mb-6">
+                    Site Details
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Location
+                        </label>
+
+                        <input type="text"
+                               name="location"
+                               value="Muzaffarpur"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Project Value
+                        </label>
+
+                        <input type="number"
+                               step="0.01"
+                               name="project_value"
+                               value="0"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <label class="block text-sm font-bold mb-2">
+                        Site Address
+                    </label>
+
+                    <textarea name="site_address"
+                              rows="3"
+                              class="w-full border border-slate-300 rounded-2xl px-4 py-3"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-xl font-black text-[#0F4C81] mb-6">
+                    HVAC Capacity
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Capacity
+                        </label>
+
+                        <input type="number"
+                               step="0.01"
+                               name="capacity_value"
+                               value="0"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Unit
+                        </label>
+
+                        <select name="capacity_unit"
+                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                            <option value="TR">TR</option>
+                            <option value="HP">HP</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-xl font-black text-[#0F4C81] mb-6">
+                    Project Timeline
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Start Date
+                        </label>
+
+                        <input type="date"
+                               name="start_date"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Expected Completion
+                        </label>
+
+                        <input type="date"
+                               name="expected_completion_date"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Status
+                        </label>
+
+                        <select id="projectStatus"
+                                name="project_status"
+                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                            <option value="PLANNING">Planning</option>
+                            <option value="ONGOING">Ongoing</option>
+                            <option value="MATERIAL_REQUIRED">Material Required</option>
+                            <option value="MATERIAL_ISSUED">Material Issued</option>
+                            <option value="INSTALLATION">Installation</option>
+                            <option value="TESTING">Testing</option>
+                            <option value="HOLD">Hold</option>
+                            <option value="COMMISSIONED">Commissioned</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="materialRequiredBox"
+                 class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 hidden">
+
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-black text-[#0F4C81]">
+                            Material Required
+                        </h2>
+                        <p class="text-sm text-slate-500 mt-1">
+                            Add required material items for this project.
+                        </p>
+                    </div>
+
+                    <button type="button"
+                            onclick="addMaterialRow()"
+                            class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold hover:bg-[#0b3d68]">
+                        Add Material
+                    </button>
+                </div>
+
+                <div id="materialRows" class="space-y-4">
+
+                    <div class="material-row bg-slate-50 border border-slate-200 rounded-3xl p-5">
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-bold mb-2">
+                                    Material Item
+                                </label>
+
+                                <select name="material_item[]"
+                                        class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                                    <option value="">Select Item</option>
+
+                                    {% for item in store_items %}
+                                    <option value="{{ item.id }}">
+                                        {{ item.item_code }} - {{ item.item_description }}
+                                        {% if item.size %}
+                                            - {{ item.size }}
+                                        {% endif %}
+                                        | Stock: {{ item.current_stock }} {{ item.unit }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold mb-2">
+                                    Quantity
+                                </label>
+
+                                <input type="number"
+                                       step="0.01"
+                                       name="material_quantity[]"
+                                       placeholder="Qty"
+                                       class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold mb-2">
+                                    Issued To
+                                </label>
+
+                                <input type="text"
+                                       name="issued_to[]"
+                                       placeholder="Team / Technician"
+                                       class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                            </div>
+
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-bold mb-2">
+                                Material Note
+                            </label>
+
+                            <textarea name="material_description[]"
+                                      rows="2"
+                                      placeholder="Example: Required for installation work"
+                                      class="w-full border border-slate-300 rounded-2xl px-4 py-3"></textarea>
+                        </div>
+
+                        <div class="mt-4 flex justify-end">
+                            <button type="button"
+                                    onclick="removeMaterialRow(this)"
+                                    class="bg-red-600 text-white px-5 py-3 rounded-2xl font-bold hover:bg-red-700">
+                                Remove
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-xl font-black text-[#0F4C81] mb-6">
+                    Notes & Remarks
+                </h2>
+
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Project Stage Notes
+                        </label>
+
+                        <textarea name="project_stage_notes"
+                                  rows="3"
+                                  class="w-full border border-slate-300 rounded-2xl px-4 py-3"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Material Collection Notes
+                        </label>
+
+                        <textarea name="material_collection_notes"
+                                  rows="3"
+                                  class="w-full border border-slate-300 rounded-2xl px-4 py-3"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Material Consumed Notes
+                        </label>
+
+                        <textarea name="material_consumed_notes"
+                                  rows="3"
+                                  class="w-full border border-slate-300 rounded-2xl px-4 py-3"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">
+                            Remarks
+                        </label>
+
+                        <textarea name="remarks"
+                                  rows="3"
+                                  class="w-full border border-slate-300 rounded-2xl px-4 py-3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button type="submit"
+                        class="bg-[#0F4C81] hover:bg-[#0b3d68] text-white px-8 py-4 rounded-2xl font-black transition">
+                    Save Project
+                </button>
+
+                <a href="{% url 'project_list' %}"
+                   class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-8 py-4 rounded-2xl font-black transition text-center">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+    const customers = [
+        {% for customer in customers %}
+        {
+            id: "{{ customer.id }}",
+            text: "{{ customer.customer_id|escapejs }} - {{ customer.customer_name|escapejs }}{% if customer.company_name %} | {{ customer.company_name|escapejs }}{% endif %}{% if customer.phone %} | {{ customer.phone|escapejs }}{% endif %}",
+            search: "{{ customer.customer_id|escapejs }} {{ customer.customer_name|escapejs }} {% if customer.company_name %}{{ customer.company_name|escapejs }}{% endif %} {% if customer.phone %}{{ customer.phone|escapejs }}{% endif %} {% if customer.whatsapp %}{{ customer.whatsapp|escapejs }}{% endif %}"
+        },
+        {% endfor %}
+    ];
+
+    const customerSearch = document.getElementById("customerSearch");
+    const selectedCustomerId = document.getElementById("selectedCustomerId");
+    const customerResults = document.getElementById("customerResults");
+    const selectedCustomerText = document.getElementById("selectedCustomerText");
+
+    customerSearch.addEventListener("input", function () {
+        const query = this.value.toLowerCase().trim();
+
+        selectedCustomerId.value = "";
+        selectedCustomerText.classList.add("hidden");
+        selectedCustomerText.innerText = "";
+
+        customerResults.innerHTML = "";
+
+        if (query.length < 1) {
+            customerResults.classList.add("hidden");
+            return;
+        }
+
+        const matchedCustomers = customers.filter(function (customer) {
+            return customer.search.toLowerCase().includes(query);
+        }).slice(0, 20);
+
+        if (matchedCustomers.length === 0) {
+            customerResults.innerHTML = `
+                <div class="px-4 py-3 text-sm text-red-600 font-bold">
+                    No customer found
+                </div>
+            `;
+            customerResults.classList.remove("hidden");
+            return;
+        }
+
+        matchedCustomers.forEach(function (customer) {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-slate-100 text-sm font-bold text-slate-700";
+            item.innerText = customer.text;
+
+            item.onclick = function () {
+                customerSearch.value = customer.text;
+                selectedCustomerId.value = customer.id;
+                selectedCustomerText.innerText = "Selected: " + customer.text;
+                selectedCustomerText.classList.remove("hidden");
+                customerResults.classList.add("hidden");
+            };
+
+            customerResults.appendChild(item);
+        });
+
+        customerResults.classList.remove("hidden");
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!customerSearch.contains(event.target) && !customerResults.contains(event.target)) {
+            customerResults.classList.add("hidden");
+        }
+    });
+
+    document.querySelector("form").addEventListener("submit", function (event) {
+        if (!selectedCustomerId.value) {
+            event.preventDefault();
+            customerSearch.focus();
+            alert("Please search and select a customer.");
+        }
+    });
+
+    const statusSelect = document.getElementById("projectStatus");
+    const materialBox = document.getElementById("materialRequiredBox");
+    const materialRows = document.getElementById("materialRows");
+
+    function toggleMaterialBox() {
+        if (statusSelect.value === "MATERIAL_REQUIRED") {
+            materialBox.classList.remove("hidden");
+        } else {
+            materialBox.classList.add("hidden");
+        }
+    }
+
+    statusSelect.addEventListener("change", toggleMaterialBox);
+    toggleMaterialBox();
+
+    function addMaterialRow() {
+        const firstRow = document.querySelector(".material-row");
+        const newRow = firstRow.cloneNode(true);
+
+        newRow.querySelectorAll("input, textarea, select").forEach(function(field) {
+            field.value = "";
+        });
+
+        materialRows.appendChild(newRow);
+    }
+
+    function removeMaterialRow(button) {
+        const rows = document.querySelectorAll(".material-row");
+
+        if (rows.length > 1) {
+            button.closest(".material-row").remove();
+        }
+    }
+</script>
+
+{% endblock %}

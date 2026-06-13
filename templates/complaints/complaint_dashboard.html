@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Complaint Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+    <div class="max-w-7xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-4xl font-black text-white">
+                        Complaint Dashboard
+                    </h1>
+                    <p class="text-blue-100 mt-2">
+                        Track customer complaints, AMC visits and warranty site visits.
+                    </p>
+                </div>
+
+                <a href="{% url 'add_complaint' %}"
+                   class="bg-white text-[#0F4C81] px-6 py-3 rounded-2xl font-black">
+                    Add Complaint
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+
+            <div class="bg-white p-6 rounded-3xl border shadow-sm">
+                <p class="text-sm text-slate-500 font-bold">Total Complaints</p>
+                <h2 class="text-4xl font-black text-slate-800">{{ total_complaints }}</h2>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border shadow-sm">
+                <p class="text-sm text-slate-500 font-bold">Warranty Visits {{ current_year }}</p>
+                <h2 class="text-4xl font-black text-blue-700">{{ warranty_visits_year }}</h2>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border shadow-sm">
+                <p class="text-sm text-slate-500 font-bold">AMC Visits {{ current_year }}</p>
+                <h2 class="text-4xl font-black text-amber-700">{{ amc_visits_year }}</h2>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border shadow-sm">
+                <p class="text-sm text-slate-500 font-bold">Pending</p>
+                <h2 class="text-4xl font-black text-red-600">{{ pending_count }}</h2>
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+
+            <div class="bg-green-50 p-6 rounded-3xl border border-green-200">
+                <p class="text-sm text-green-700 font-bold">Completed</p>
+                <h2 class="text-3xl font-black text-green-700">{{ completed_count }}</h2>
+            </div>
+
+            <div class="bg-red-50 p-6 rounded-3xl border border-red-200">
+                <p class="text-sm text-red-700 font-bold">Cancelled</p>
+                <h2 class="text-3xl font-black text-red-700">{{ cancelled_count }}</h2>
+            </div>
+
+            <div class="bg-orange-50 p-6 rounded-3xl border border-orange-200">
+                <p class="text-sm text-orange-700 font-bold">Partial Work</p>
+                <h2 class="text-3xl font-black text-orange-700">{{ partial_count }}</h2>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border shadow-sm">
+                <a href="{% url 'yearly_visit_report' %}"
+                   class="text-[#0F4C81] font-black">
+                    View Yearly Report →
+                </a>
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h2 class="text-2xl font-black text-slate-800">
+                    Recent Complaints
+                </h2>
+
+                <a href="{% url 'complaint_list' %}" class="text-[#0F4C81] font-bold">
+                    View All
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-100 text-slate-700">
+                        <tr>
+                            <th class="p-4 text-left">Complaint ID</th>
+                            <th class="p-4 text-left">Customer</th>
+                            <th class="p-4 text-left">Site Type</th>
+                            <th class="p-4 text-left">Visit Date</th>
+                            <th class="p-4 text-left">Technicians</th>
+                            <th class="p-4 text-left">Status</th>
+                            <th class="p-4 text-left">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for complaint in recent_complaints %}
+                        <tr class="border-b">
+                            <td class="p-4 font-bold">{{ complaint.complaint_id }}</td>
+                            <td class="p-4">{{ complaint.customer.customer_name }}</td>
+                            <td class="p-4">{{ complaint.get_site_type_display }}</td>
+                            <td class="p-4">{{ complaint.visit_date }}</td>
+                            <td class="p-4">{{ complaint.no_of_technicians }}</td>
+                            <td class="p-4">{{ complaint.get_status_display }}</td>
+                            <td class="p-4">
+                                <a href="{% url 'complaint_detail' complaint.id %}"
+                                   class="text-[#0F4C81] font-bold">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="p-6 text-center text-slate-500">
+                                No complaints found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

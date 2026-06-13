@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Edit Material Issue
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-5xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                <div>
+                    <h1 class="text-4xl font-black text-white">
+                        Edit Material Issue
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        Update project, BOQ, status and issue details.
+                    </p>
+                </div>
+
+                <a href="{% url 'material_issue_detail' material_issue.id %}"
+                   class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
+                    Back
+                </a>
+
+            </div>
+
+        </div>
+
+        {% if error %}
+        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Project *
+                        </label>
+
+                        <select name="project"
+                                required
+                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+
+                            {% for project in projects %}
+                            <option value="{{ project.id }}"
+                                    {% if material_issue.project.id == project.id %}selected{% endif %}>
+                                {{ project.project_id }} - {{ project.site_name }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            BOQ
+                        </label>
+
+                        <select name="boq"
+                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+
+                            <option value="">
+                                No BOQ
+                            </option>
+
+                            {% for boq in boqs %}
+                            <option value="{{ boq.id }}"
+                                    {% if material_issue.boq and material_issue.boq.id == boq.id %}selected{% endif %}>
+                                {{ boq.boq_id }} - {{ boq.project.site_name }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Issued To
+                        </label>
+
+                        <input type="text"
+                               name="issued_to"
+                               value="{{ material_issue.issued_to }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Received By
+                        </label>
+
+                        <input type="text"
+                               name="received_by"
+                               value="{{ material_issue.received_by }}"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Status
+                        </label>
+
+                        <select name="status"
+                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+
+                            {% for key,value in status_choices %}
+                            <option value="{{ key }}"
+                                    {% if material_issue.status == key %}selected{% endif %}>
+                                {{ value }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Attachment
+                        </label>
+
+                        <input type="file"
+                               name="issue_file"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+
+                        {% if material_issue.issue_file %}
+                        <a href="{{ material_issue.issue_file.url }}"
+                           target="_blank"
+                           class="inline-flex mt-2 text-sm font-bold text-blue-600">
+                            View Existing File
+                        </a>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <div class="mt-5">
+                    <label class="block font-bold mb-2">
+                        Remarks
+                    </label>
+
+                    <textarea name="remarks"
+                              rows="4"
+                              class="w-full border border-slate-300 rounded-2xl px-4 py-3">{{ material_issue.remarks }}</textarea>
+                </div>
+
+            </div>
+
+            <div class="mt-6 flex gap-3">
+
+                <button type="submit"
+                        class="bg-[#0F4C81] text-white px-8 py-4 rounded-2xl font-black">
+                    Update Material Issue
+                </button>
+
+                <a href="{% url 'material_issue_detail' material_issue.id %}"
+                   class="bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-black">
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Edit Store Item
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 px-4 py-8">
+
+    <div class="max-w-5xl mx-auto">
+
+        <div class="bg-gradient-to-r from-[#0F4C81] to-[#1B6CA8] rounded-3xl p-8 shadow-xl mb-8">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+                    <h1 class="text-4xl font-black text-white">
+                        Edit Store Item
+                    </h1>
+
+                    <p class="text-blue-100 mt-2">
+                        Update HVAC material item details.
+                    </p>
+                </div>
+
+                <a href="{% url 'store_item_list' %}"
+                   class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl font-bold">
+                    Back
+                </a>
+
+            </div>
+
+        </div>
+
+        {% if error %}
+        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="bg-white rounded-3xl shadow-sm border p-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Item Code
+                        </label>
+
+                        <input type="text"
+                               value="{{ item.item_code }}"
+                               readonly
+                               class="w-full border bg-slate-100 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Category *
+                        </label>
+
+                        <select name="category"
+                                required
+                                class="w-full border rounded-2xl px-4 py-3">
+
+                            {% for category in categories %}
+                            <option value="{{ category.id }}"
+                                {% if category.id == item.category.id %}selected{% endif %}>
+                                {{ category.category_name }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Item Description *
+                        </label>
+
+                        <input type="text"
+                               name="item_description"
+                               value="{{ item.item_description }}"
+                               required
+                               class="w-full border rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Size
+                        </label>
+
+                        <input type="text"
+                               name="size"
+                               value="{{ item.size|default:'' }}"
+                               class="w-full border rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Serial Number <span class="text-gray-400 font-normal text-sm">(AC units only)</span>
+                        </label>
+
+                        <input type="text"
+                               name="serial_number"
+                               value="{{ item.serial_number|default:'' }}"
+                               placeholder="e.g. AC2024-XYZ-00123"
+                               class="w-full border rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Unit *
+                        </label>
+
+                        <select name="unit"
+                                required
+                                class="w-full border rounded-2xl px-4 py-3">
+
+                            {% for value,label in unit_choices %}
+                            <option value="{{ value }}"
+                                {% if item.unit == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Opening Stock
+                        </label>
+
+                        <input type="number"
+                               step="0.01"
+                               name="opening_stock"
+                               value="{{ item.opening_stock }}"
+                               class="w-full border rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Current Stock
+                        </label>
+
+                        <input type="number"
+                               step="0.01"
+                               value="{{ item.current_stock }}"
+                               readonly
+                               class="w-full border bg-slate-100 text-slate-500 rounded-2xl px-4 py-3">
+
+                        <p class="text-xs text-slate-500 mt-2">
+                            Current stock is auto-calculated from opening stock and transactions.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Minimum Stock
+                        </label>
+
+                        <input type="number"
+                               step="0.01"
+                               name="minimum_stock"
+                               value="{{ item.minimum_stock }}"
+                               class="w-full border rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">
+                            Alert Percentage
+                        </label>
+
+                        <input type="number"
+                               step="0.01"
+                               name="alert_percentage"
+                               value="{{ item.alert_percentage }}"
+                               class="w-full border rounded-2xl px-4 py-3">
+                    </div>
+
+                </div>
+
+                <div class="mt-6">
+
+                    <label class="block font-bold mb-2">
+                        Remarks
+                    </label>
+
+                    <textarea name="remarks"
+                              rows="4"
+                              class="w-full border rounded-2xl px-4 py-3">{{ item.remarks|default:'' }}</textarea>
+
+                </div>
+
+            </div>
+
+            <div class="mt-6 flex gap-3">
+
+                <button type="submit"
+                        class="bg-[#0F4C81] text-white px-8 py-4 rounded-2xl font-black">
+                    Update Item
+                </button>
+
+                <a href="{% url 'store_item_list' %}"
+                   class="bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-black">
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
