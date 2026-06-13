@@ -52,7 +52,7 @@ Edit Material Issue Item
                         </label>
 
                         <input type="text"
-                               value="{{ issue_item.store_item.item_code }} - {{ issue_item.store_item.item_description }}"
+                               value="{{ issue_item.store_item.item_code }} - {{ issue_item.store_item.item_description }} - {% if issue_item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}"
                                readonly
                                class="w-full bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
@@ -63,7 +63,7 @@ Edit Material Issue Item
                         </label>
 
                         <input type="text"
-                               value="{% if issue_item.boq_item %}{{ issue_item.boq_item.boq.boq_id }} - {{ issue_item.boq_item.store_item.item_description }}{% else %}No BOQ Item{% endif %}"
+                               value="{% if issue_item.boq_item %}{{ issue_item.boq_item.boq.boq_id }} - {{ issue_item.boq_item.store_item.item_description }} - {% if issue_item.boq_item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}{% else %}No BOQ Item{% endif %}"
                                readonly
                                class="w-full bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
