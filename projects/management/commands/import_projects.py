@@ -1,62 +1,60 @@
-import os
-import sys
-import django
-import pandas as pd
+from pathlib import Path
 
+from django.core.management.base import BaseCommand, CommandError
 
-BASE_DIR = os.path.dirname(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))
-        )
-    )
-)
-
-sys.path.append(BASE_DIR)
-
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE",
-    "puriaccooling.settings"
-)
-
-django.setup()
-
-
+from customers.models import Customer
 from projects.models import CustomerProject
 
 
-excel_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "Book1.xlsx"
-)
+class Command(BaseCommand):
+    help = "Import customer projects from an Excel workbook."
 
+    def add_arguments(self, parser):
+        default_path = Path(__file__).with_name("Book1.xlsx")
+        parser.add_argument("path", nargs="?", default=str(default_path))
 
-df = pd.read_excel(excel_path)
+    def handle(self, *args, **options):
+        try:
+            import pandas as pd
+        except ImportError as exc:
+            raise CommandError(
+                "This command requires pandas and an Excel reader such as openpyxl."
+            ) from exc
 
+        excel_path = Path(options["path"]).expanduser()
+        if not excel_path.exists():
+            raise CommandError(f"Excel file not found: {excel_path}")
 
-for index, row in df.iterrows():
+        imported = 0
+        for _, row in pd.read_excel(excel_path).iterrows():
+            customer_name = str(row.get("CUSTOMER NAME", "")).strip()
+            location = str(row.get("LOCATION", "")).strip()
+            tonnage = str(row.get("TONAGE", "")).strip().upper()
 
-    customer_name = str(row["CUSTOMER NAME"]).strip()
-    location = str(row["LOCATION"]).strip()
-    tonage = str(row["TONAGE"]).strip()
+            if not customer_name or customer_name.lower() == "nan":
+                continue
 
-    if "HP" in tonage.upper():
+            customer, _ = Customer.objects.get_or_create(
+                customer_name=customer_name,
+                defaults={"phone_number": "N/A"},
+            )
 
-        capacity_unit = "HP"
-        capacity_value = tonage.upper().replace("HP", "").strip()
+            capacity_unit = "HP" if "HP" in tonnage else "TR"
+            capacity_text = tonnage.replace(capacity_unit, "").strip()
+            try:
+                capacity_value = float(capacity_text or 0)
+            except ValueError:
+                capacity_value = 0
 
-    else:
+            CustomerProject.objects.create(
+                customer=customer,
+                site_name=location or f"{customer_name} Site",
+                location=location or None,
+                capacity_value=capacity_value,
+                capacity_unit=capacity_unit,
+            )
+            imported += 1
 
-        capacity_unit = "TR"
-        capacity_value = tonage.upper().replace("TR", "").strip()
-
-    CustomerProject.objects.create(
-        customer_name=customer_name,
-        location=location,
-        capacity_value=capacity_value,
-        capacity_unit=capacity_unit,
-        extra_note=""
-    )
-
-
-print("All projects imported successfully.")
+        self.stdout.write(self.style.SUCCESS(
+            f"Imported {imported} project(s) successfully."
+        ))

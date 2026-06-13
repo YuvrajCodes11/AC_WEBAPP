@@ -169,12 +169,12 @@ BOQ List
                             </td>
 
                             <td class="px-4 py-4">
-                                {% if boq.project and boq.project.customer %}
+                                {% if boq.project %}
                                 <p class="font-bold text-slate-800">
-                                    {{ boq.project.customer.customer_name }}
+                                    {{ boq.project.get_customer_name }}
                                 </p>
                                 <p class="text-xs text-slate-500">
-                                    {{ boq.project.customer.phone_number }}
+                                    {{ boq.project.get_customer_phone }}
                                 </p>
                                 {% else %}
                                 <p class="font-bold text-slate-500">

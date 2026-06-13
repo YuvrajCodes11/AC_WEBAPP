@@ -140,6 +140,8 @@ def project_full_pdf_report(request, project_id):
         ("Start Date",      fmt_date(project.start_date)),
         ("Expected End",    fmt_date(project.expected_completion_date)),
         ("Actual End",      fmt_date(project.actual_completion_date)),
+        ("Insurance Start", fmt_date(project.insurance_start_date)),
+        ("Insurance End",   fmt_date(project.insurance_end_date)),
         ("Active",          "Yes" if project.is_active else "No"),
         ("Created By",      project.created_by.get_full_name() or project.created_by.username if project.created_by else "—"),
         ("Created Date",    fmt_date(project.created_at)),
@@ -164,10 +166,10 @@ def project_full_pdf_report(request, project_id):
     if customer:
         cust_pairs = [
             ("Customer ID",   customer.customer_id),
-            ("Name",          customer.customer_name),
+            ("Name",          project.get_customer_name()),
             ("Company",       customer.company_name or "—"),
             ("Category",      customer.get_customer_category_display()),
-            ("Phone",         customer.phone_number),
+            ("Phone",         project.get_customer_phone()),
             ("WhatsApp",      customer.whatsapp_number or "—"),
             ("Email",         customer.email or "—"),
             ("GST No.",       customer.gst_number or "—"),

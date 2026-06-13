@@ -30,7 +30,7 @@ Store Items
                     Store
                 </a>
 
-                <a href="{% url 'add_item' %}" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">
+                <a href="{% url 'add_store_item' %}" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">
                     Add Item
                 </a>
 
@@ -160,11 +160,11 @@ Store Items
 
                             {% if profile.role == "CEO" %}
 
-                            <a href="{% url 'edit_item' item.id %}" class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold">
+                            <a href="{% url 'edit_store_item' item.id %}" class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold">
                                 Edit
                             </a>
 
-                            <a href="{% url 'delete_item' item.id %}" onclick="return confirm('Delete this item?')" class="bg-red-600 text-white px-4 py-2 rounded-xl font-bold ml-2">
+                            <a href="{% url 'delete_store_item' item.id %}" onclick="return confirm('Delete this item?')" class="bg-red-600 text-white px-4 py-2 rounded-xl font-bold ml-2">
                                 Delete
                             </a>
 

@@ -17,8 +17,8 @@ AMC Report
             </div>
 
             <div class="flex gap-3">
-                <a href="{% url 'reports_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">Reports</a>
-                <a href="{% url 'export_amc_report' %}" class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">Export CSV</a>
+                <a href="{% url 'reports:reports_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">Reports</a>
+                <a href="{% url 'amc_list' %}" class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">AMC List</a>
                 <button onclick="window.print()" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">Print</button>
             </div>
         </div>

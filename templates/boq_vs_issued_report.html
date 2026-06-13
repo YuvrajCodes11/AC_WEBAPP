@@ -17,8 +17,8 @@ BOQ vs Issued Report
             </div>
 
             <div class="flex gap-3">
-                <a href="{% url 'reports_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">Reports</a>
-                <a href="{% url 'export_boq_vs_issued_report' %}" class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">Export CSV</a>
+                <a href="{% url 'reports:reports_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">Reports</a>
+                <a href="{% url 'reports:export_boq_vs_issued_report' %}" class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">Export CSV</a>
                 <button onclick="window.print()" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">Print</button>
             </div>
         </div>
@@ -52,8 +52,8 @@ BOQ vs Issued Report
 
                     <tr class="hover:bg-blue-50">
                         <td class="px-6 py-5 font-bold text-[#0F4C81]">{{ row.boq.boq_id }}</td>
-                        <td class="px-6 py-5">{{ row.customer.customer_name }}</td>
-                        <td class="px-6 py-5">{{ row.project.project_id }} - {{ row.project.site_name }}</td>
+                        <td class="px-6 py-5">{% if row.project %}{{ row.project.get_customer_name }}{% else %}No Customer{% endif %}</td>
+                        <td class="px-6 py-5">{% if row.project %}{{ row.project.project_id }} - {{ row.project.site_name }}{% else %}No Project Linked{% endif %}</td>
                         <td class="px-6 py-5 font-bold">{{ row.store_item.item_description }} ({% if row.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %})</td>
                         <td class="px-6 py-5">{{ row.store_item.size|default:"-" }}</td>
                         <td class="px-6 py-5">{{ row.store_item.get_unit_display }}</td>
@@ -110,11 +110,11 @@ BOQ vs Issued Report
                     {% for item in new_items %}
 
                     <tr>
-                        <td class="px-6 py-4 font-bold">{{ item.issue.issue_id }}</td>
-                        <td class="px-6 py-4">{{ item.issue.project.project_id }} - {{ item.issue.project.site_name }}</td>
+                        <td class="px-6 py-4 font-bold">{{ item.material_issue.issue_id }}</td>
+                        <td class="px-6 py-4">{{ item.material_issue.project.project_id }} - {{ item.material_issue.project.site_name }}</td>
                         <td class="px-6 py-4">{{ item.store_item.item_description }} ({% if item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %})</td>
-                        <td class="px-6 py-4 font-bold">{{ item.quantity }}</td>
-                        <td class="px-6 py-4 text-orange-700 font-bold">{{ item.alert_message }}</td>
+                        <td class="px-6 py-4 font-bold">{{ item.issued_quantity }}</td>
+                        <td class="px-6 py-4 text-orange-700 font-bold">Not listed in the selected BOQ</td>
                     </tr>
 
                     {% empty %}

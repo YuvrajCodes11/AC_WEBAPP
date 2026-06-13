@@ -30,7 +30,7 @@ Add Project BOQ
                         </p>
                     </div>
 
-                    <a href="{% url 'project_boq_list' %}"
+                    <a href="{% url 'boq_list' %}"
                        class="bg-white text-[#0F4C81] px-5 py-3 rounded-2xl text-sm font-bold hover:bg-blue-50 transition">
                         Back to BOQ List
                     </a>
@@ -58,13 +58,12 @@ Add Project BOQ
                             </label>
 
                             <select name="project"
-                                    required
                                     class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C81]">
-                                <option value="">Select Project</option>
+                                <option value="">No Project</option>
 
                                 {% for project in projects %}
                                 <option value="{{ project.id }}">
-                                    {% if project.customer %}{{ project.customer.customer_name }}{% else %}No Customer{% endif %} - {{ project.site_name }}{% if project.location %} - {{ project.location }}{% endif %}
+                                    {{ project.get_customer_name }} - {{ project.site_name }}{% if project.location %} - {{ project.location }}{% endif %}
                                 </option>
                                 {% endfor %}
                             </select>
@@ -216,7 +215,7 @@ Add Project BOQ
 
                     <div class="flex flex-col md:flex-row gap-3 md:justify-end">
 
-                        <a href="{% url 'project_boq_list' %}"
+                        <a href="{% url 'boq_list' %}"
                            class="px-6 py-3 rounded-2xl border border-slate-200 text-slate-700 text-sm font-black text-center hover:bg-slate-50 transition">
                             Cancel
                         </a>

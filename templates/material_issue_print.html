@@ -91,11 +91,7 @@ Print Material Issue
                 <div>
                     <p>
                         <strong>Customer:</strong>
-                        {% if material_issue.project.customer %}
-                            {{ material_issue.project.customer.customer_name }}
-                        {% else %}
-                            No Customer
-                        {% endif %}
+                        {{ material_issue.project.get_customer_name }}
                     </p>
 
                     <p>

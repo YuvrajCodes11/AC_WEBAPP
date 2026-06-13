@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'service',
     'amc',
     "complaints",
-    # 'reports',
+    'reports',
     # 'training',
 ]
 

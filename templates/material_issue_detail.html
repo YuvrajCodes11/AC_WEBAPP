@@ -75,11 +75,7 @@ Material Issue Detail
                     </p>
 
                     <h2 class="text-2xl font-black text-slate-900 mt-2">
-                        {% if material_issue.project.customer %}
-                            {{ material_issue.project.customer.customer_name }}
-                        {% else %}
-                            No Customer
-                        {% endif %}
+                        {{ material_issue.project.get_customer_name }}
                     </h2>
 
                     <p class="text-sm text-slate-500 mt-1">
@@ -283,11 +279,7 @@ Material Issue Detail
                             Customer
                         </p>
                         <p class="font-bold text-slate-900 mt-1">
-                            {% if material_issue.project.customer %}
-                                {{ material_issue.project.customer.customer_name }}
-                            {% else %}
-                                No Customer
-                            {% endif %}
+                            {{ material_issue.project.get_customer_name }}
                         </p>
                     </div>
 

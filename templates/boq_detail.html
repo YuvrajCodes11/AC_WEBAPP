@@ -122,7 +122,7 @@ BOQ Detail
                     <div>
                         <p class="text-xs font-black text-slate-400 uppercase">Customer</p>
                         <p class="mt-1 font-bold text-slate-900">
-                            {% if boq.project and boq.project.customer %}{{ boq.project.customer.customer_name }}{% else %}-{% endif %}
+                            {% if boq.project %}{{ boq.project.get_customer_name }}{% else %}-{% endif %}
                         </p>
                     </div>
 

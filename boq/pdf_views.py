@@ -127,12 +127,12 @@ def boq_pdf_report(request, id):
     elements.append(Spacer(1, 6))
 
     elements += section_header("Customer Information", styles)
-    if cust:
+    if proj and cust:
         customer_pairs = [
             ("Customer ID",     cust.customer_id),
-            ("Name",            cust.customer_name),
+            ("Name",            proj.get_customer_name()),
             ("Company",         cust.company_name or "—"),
-            ("Phone",           cust.phone_number),
+            ("Phone",           proj.get_customer_phone()),
             ("Email",           cust.email or "—"),
             ("WhatsApp",        cust.whatsapp_number or "—"),
             ("GST No.",         cust.gst_number or "—"),

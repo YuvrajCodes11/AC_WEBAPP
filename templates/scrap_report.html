@@ -46,7 +46,7 @@
                             <td class="p-4">{{ item.scrap_date|date:"d M Y"|default:"-" }}</td>
                             <td class="p-4 font-bold">{{ item.material_issue.issue_id }}</td>
                             <td class="p-4">
-                                {% if item.material_issue.project.customer %}{{ item.material_issue.project.customer.customer_name }} | {% endif %}
+                                {{ item.material_issue.project.get_customer_name }} |
                                 {{ item.material_issue.project.project_id }}
                             </td>
                             <td class="p-4">{{ item.store_item.item_code }} - {{ item.store_item.item_description }}</td>

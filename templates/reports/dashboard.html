@@ -73,6 +73,21 @@ Reports Dashboard
 
         </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            <a href="{% url 'reports:store_report' %}" class="bg-white border p-5 shadow-sm">
+                <p class="font-black text-[#0F4C81]">Store Report</p>
+                <p class="mt-1 text-sm text-slate-500">Stock, item type and low-stock status.</p>
+            </a>
+            <a href="{% url 'reports:boq_vs_issued_report' %}" class="bg-white border p-5 shadow-sm">
+                <p class="font-black text-[#0F4C81]">BOQ vs Issued</p>
+                <p class="mt-1 text-sm text-slate-500">Planned and issued material comparison.</p>
+            </a>
+            <a href="{% url 'reports:project_consumption_report' %}" class="bg-white border p-5 shadow-sm">
+                <p class="font-black text-[#0F4C81]">Project Consumption</p>
+                <p class="mt-1 text-sm text-slate-500">Consumed material grouped by project.</p>
+            </a>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             <div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
@@ -89,7 +104,7 @@ Reports Dashboard
                             {{ project.project_id }} - {{ project.site_name }}
                         </p>
                         <p class="text-sm text-slate-500">
-                            {{ project.customer.customer_name|default:"No Customer" }}
+                            {{ project.get_customer_name }}
                         </p>
                     </div>
                     {% empty %}

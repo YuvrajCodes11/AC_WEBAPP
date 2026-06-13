@@ -17,8 +17,8 @@ Project Consumption Report
             </div>
 
             <div class="flex gap-3">
-                <a href="{% url 'reports_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">Reports</a>
-                <a href="{% url 'export_project_consumption_report' %}" class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">Export CSV</a>
+                <a href="{% url 'reports:reports_dashboard' %}" class="bg-gray-700 text-white px-5 py-3 rounded-2xl font-bold">Reports</a>
+                <a href="{% url 'reports:export_project_consumption_report' %}" class="bg-green-600 text-white px-5 py-3 rounded-2xl font-bold">Export CSV</a>
                 <button onclick="window.print()" class="bg-[#0F4C81] text-white px-5 py-3 rounded-2xl font-bold">Print</button>
             </div>
         </div>
@@ -49,16 +49,16 @@ Project Consumption Report
 
                     <tr class="hover:bg-blue-50">
                         <td class="px-6 py-5 font-bold">
-                            {{ row.customer_name|default:"No Customer" }}
+                            {{ row.project.get_customer_name }}
                             <div class="text-sm font-normal text-gray-500">
-                                {{ row.project_id|default:"-" }}{% if row.site_name %} - {{ row.site_name }}{% endif %}
+                                {{ row.project.project_id }}{% if row.project.site_name %} - {{ row.project.site_name }}{% endif %}
                             </div>
                         </td>
-                        <td class="px-6 py-5">{{ row.issue__project__location }}</td>
-                        <td class="px-6 py-5">{{ row.store_item__item_description }}</td>
-                        <td class="px-6 py-5">{% if row.store_item__is_vrv %}VRV{% else %}Non-VRV{% endif %}</td>
-                        <td class="px-6 py-5">{{ row.store_item__size|default:"-" }}</td>
-                        <td class="px-6 py-5">{{ row.store_item__unit }}</td>
+                        <td class="px-6 py-5">{{ row.project.location|default:"-" }}</td>
+                        <td class="px-6 py-5">{{ row.store_item.item_description }}</td>
+                        <td class="px-6 py-5">{% if row.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}</td>
+                        <td class="px-6 py-5">{{ row.store_item.size|default:"-" }}</td>
+                        <td class="px-6 py-5">{{ row.store_item.get_unit_display }}</td>
                         <td class="px-6 py-5 font-bold text-[#0F4C81]">{{ row.total_quantity }}</td>
                     </tr>
 
