@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.http import HttpResponse
 from django.utils import timezone
 from io import BytesIO
@@ -12,6 +12,88 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 from .models import CustomerComplaint
 from .forms import CustomerComplaintForm
 from customers.models import Customer, CustomerServiceSchedule
+from amc.models import AMCVisit
+from service.models import ServiceComplaint
+
+
+def _customer_visit_history(customer):
+    visits = []
+
+    schedules = CustomerServiceSchedule.objects.filter(
+        customer=customer,
+        status="COMPLETED",
+        completed_date__isnull=False,
+    )
+    for schedule in schedules:
+        visits.append({
+            "date": schedule.completed_date,
+            "type": schedule.get_service_type_display(),
+            "status": schedule.get_status_display(),
+            "notes": schedule.remarks or schedule.complaint_description or "-",
+        })
+
+    amc_visits = AMCVisit.objects.filter(
+        amc__customer=customer,
+        status="COMPLETED",
+    )
+    for visit in amc_visits:
+        visits.append({
+            "date": visit.visit_date,
+            "type": "AMC Visit",
+            "status": visit.get_status_display(),
+            "notes": visit.work_done or visit.remarks or "-",
+        })
+
+    complaint_visits = CustomerComplaint.objects.filter(
+        customer=customer,
+        status="COMPLETED",
+    )
+    for complaint in complaint_visits:
+        visits.append({
+            "date": complaint.visit_date,
+            "type": complaint.get_site_type_display(),
+            "status": complaint.get_status_display(),
+            "notes": complaint.work_done or complaint.remarks or "-",
+        })
+
+    service_visits = ServiceComplaint.objects.filter(
+        customer=customer,
+        status="COMPLETED",
+        service_completed_date__isnull=False,
+    )
+    for service in service_visits:
+        visits.append({
+            "date": service.service_completed_date,
+            "type": "Service Visit",
+            "status": service.get_status_display(),
+            "notes": service.remarks or service.nature_of_complaint or "-",
+        })
+
+    return sorted(
+        visits,
+        key=lambda visit: visit["date"],
+        reverse=True,
+    )
+
+
+def _completed_visits_for_year(year):
+    report = {}
+    for customer in Customer.objects.all():
+        for visit in _customer_visit_history(customer):
+            if visit["date"].year != int(year):
+                continue
+            key = (customer.id, visit["type"])
+            if key not in report:
+                report[key] = {
+                    "customer": customer,
+                    "site_type": visit["type"],
+                    "total_visits": 0,
+                }
+            report[key]["total_visits"] += 1
+    return sorted(
+        report.values(),
+        key=lambda row: (row["customer"].customer_name, row["site_type"]),
+    )
 
 
 def complaint_dashboard(request):
@@ -19,15 +101,18 @@ def complaint_dashboard(request):
 
     total_complaints = CustomerComplaint.objects.count()
 
-    warranty_visits_year = CustomerComplaint.objects.filter(
-        site_type="WARRANTY",
-        visit_date__year=current_year
-    ).count()
-
-    amc_visits_year = CustomerComplaint.objects.filter(
-        site_type="AMC",
-        visit_date__year=current_year
-    ).count()
+    completed_visits = [
+        visit
+        for customer in Customer.objects.all()
+        for visit in _customer_visit_history(customer)
+        if visit["date"].year == current_year
+    ]
+    warranty_visits_year = sum(
+        "Warranty" in visit["type"] for visit in completed_visits
+    )
+    amc_visits_year = sum(
+        "AMC" in visit["type"] for visit in completed_visits
+    )
 
     completed_count = CustomerComplaint.objects.filter(
         status="COMPLETED"
@@ -151,19 +236,14 @@ def complaint_detail(request, pk):
         customer=customer
     ).count()
 
-    total_visits = CustomerComplaint.objects.filter(
-        customer=customer
-    ).count()
-
-    warranty_visits = CustomerComplaint.objects.filter(
-        customer=customer,
-        site_type="WARRANTY"
-    ).count()
-
-    amc_visits = CustomerComplaint.objects.filter(
-        customer=customer,
-        site_type="AMC"
-    ).count()
+    visit_history = _customer_visit_history(customer)
+    total_visits = len(visit_history)
+    warranty_visits = sum(
+        "Warranty" in visit["type"] for visit in visit_history
+    )
+    amc_visits = sum(
+        "AMC" in visit["type"] for visit in visit_history
+    )
 
     context = {
         "complaint": complaint,
@@ -178,19 +258,12 @@ def complaint_detail(request, pk):
 
 def yearly_visit_report(request):
     year = request.GET.get("year", timezone.localdate().year)
+    try:
+        year = int(year)
+    except (TypeError, ValueError):
+        year = timezone.localdate().year
 
-    reports = CustomerComplaint.objects.filter(
-        visit_date__year=year
-    ).values(
-        "customer__customer_id",
-        "customer__customer_name",
-        "customer__phone_number",
-        "site_type",
-    ).annotate(
-        total_visits=Count("id")
-    ).order_by(
-        "customer__customer_name"
-    )
+    reports = _completed_visits_for_year(year)
 
     context = {
         "year": year,
@@ -223,19 +296,22 @@ def customer_service_history_report(request):
             customer=customer
         ).order_by("-visit_date", "-id")
 
-        visits = CustomerServiceSchedule.objects.filter(
-            customer=customer
-        ).order_by("-service_date", "-id")
+        visits = _customer_visit_history(customer)
 
         service_complaints = customer.service_complaints.all().order_by(
             "-complaint_date", "-id"
         )
 
-        if complaints.exists() or visits.exists() or service_complaints.exists():
+        if (
+            complaints.exists()
+            or customer.service_schedules.exists()
+            or visits
+            or service_complaints.exists()
+        ):
             report_data.append({
                 "customer": customer,
                 "total_complaints": complaints.count() + service_complaints.count(),
-                "total_visits": visits.count() + complaints.count(),
+                "total_visits": len(visits),
                 "complaints": complaints,
                 "visits": visits,
                 "service_complaints": service_complaints,
@@ -250,7 +326,7 @@ def customer_service_history_report(request):
 def customer_service_history_pdf(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
     complaints = CustomerComplaint.objects.filter(customer=customer).order_by("-visit_date")
-    visits = CustomerServiceSchedule.objects.filter(customer=customer).order_by("-service_date")
+    visits = _customer_visit_history(customer)
     service_complaints = customer.service_complaints.all().order_by("-complaint_date")
 
     buffer = BytesIO()
@@ -270,7 +346,7 @@ def customer_service_history_pdf(request, customer_id):
         Spacer(1, 12),
         Paragraph(
             f"<b>Total Complaints:</b> {complaints.count() + service_complaints.count()} &nbsp;&nbsp; "
-            f"<b>Total Visits:</b> {visits.count() + complaints.count()}",
+            f"<b>Total Visits:</b> {len(visits)}",
             styles["BodyText"],
         ),
         Spacer(1, 12),
@@ -280,10 +356,10 @@ def customer_service_history_pdf(request, customer_id):
     visit_data = [["Date", "Type", "Status", "Notes"]]
     for visit in visits:
         visit_data.append([
-            visit.service_date.strftime("%d %b %Y"),
-            visit.get_service_type_display(),
-            visit.get_status_display(),
-            visit.remarks or "-",
+            visit["date"].strftime("%d %b %Y"),
+            visit["type"],
+            visit["status"],
+            visit["notes"],
         ])
     if len(visit_data) == 1:
         visit_data.append(["-", "-", "-", "No visits"])

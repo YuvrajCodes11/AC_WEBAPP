@@ -49,9 +49,9 @@ Yearly Visit Report
                     <tbody>
                         {% for report in reports %}
                         <tr class="border-b">
-                            <td class="p-4 font-bold">{{ report.customer__customer_id }}</td>
-                            <td class="p-4">{{ report.customer__customer_name }}</td>
-                            <td class="p-4">{{ report.customer__phone_number }}</td>
+                            <td class="p-4 font-bold">{{ report.customer.customer_id }}</td>
+                            <td class="p-4">{{ report.customer.customer_name }}</td>
+                            <td class="p-4">{{ report.customer.phone_number }}</td>
                             <td class="p-4">{{ report.site_type }}</td>
                             <td class="p-4 font-black">{{ report.total_visits }}</td>
                         </tr>
