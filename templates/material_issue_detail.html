@@ -365,15 +365,11 @@ Material Issue Detail
                             </th>
 
                             <th class="px-4 py-4 text-left text-xs font-black uppercase">
+                                BOQ Balance
+                            </th>
+
+                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
                                 Consumed
-                            </th>
-
-                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
-                                Returned
-                            </th>
-
-                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
-                                Not Used
                             </th>
 
                             <th class="px-4 py-4 text-left text-xs font-black uppercase">
@@ -451,16 +447,16 @@ Material Issue Detail
                                 {{ item.issued_quantity }}
                             </td>
 
+                            <td class="px-4 py-4 font-black text-amber-600">
+                                {% if item.boq_item %}
+                                    {{ item.boq_item.balance_quantity }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
                             <td class="px-4 py-4 font-black text-orange-600">
                                 {{ item.consumed_quantity }}
-                            </td>
-
-                            <td class="px-4 py-4 font-black text-green-600">
-                                {{ item.returned_quantity }}
-                            </td>
-
-                            <td class="px-4 py-4 font-black text-cyan-700">
-                                {{ item.unused_quantity }}
                             </td>
 
                             <td class="px-4 py-4 font-black text-slate-700">
@@ -502,7 +498,7 @@ Material Issue Detail
                         {% empty %}
 
                         <tr>
-                            <td colspan="13" class="text-center py-12">
+                            <td colspan="12" class="text-center py-12">
 
                                 <h3 class="text-xl font-black text-slate-700">
                                     No Material Items Found

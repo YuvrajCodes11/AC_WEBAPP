@@ -1,8 +1,10 @@
+import re
 from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from django.urls import reverse
 
 from boq.models import ProjectBOQ, ProjectBOQItem
 from customers.models import Customer
@@ -106,3 +108,42 @@ class MaterialIssueStockTests(TestCase):
                 boq_item=self.boq_item,
                 issued_quantity=Decimal("9"),
             )
+
+    def test_material_ledger_column_order(self):
+        MaterialIssueItem.objects.create(
+            material_issue=self.issue,
+            store_item=self.item,
+            boq_item=self.boq_item,
+            issued_quantity=Decimal("6"),
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("material_issue_detail", args=[self.issue.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        ledger = response.content.decode().split("Material Items Ledger", 1)[1]
+        headings = [
+            "Item Description",
+            "Category",
+            "Size",
+            "Unit",
+            "BOQ Item",
+            "Sent",
+            "BOQ Balance",
+            "Consumed",
+            "Scrap",
+            "Balance",
+            "Remarks",
+            "Action",
+        ]
+        table_head = ledger.split("</thead>", 1)[0]
+        rendered_headings = [
+            heading.strip()
+            for heading in re.findall(
+                r"<th[^>]*>\s*([^<]+?)\s*</th>",
+                table_head,
+            )
+        ]
+        self.assertEqual(rendered_headings, headings)
