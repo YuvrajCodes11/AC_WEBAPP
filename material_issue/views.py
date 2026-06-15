@@ -298,6 +298,7 @@ def add_material_issue(request):
                                     ProjectBOQItem,
                                     id=boq_item_id,
                                     boq__project=project,
+                                    store_item=store_item,
                                 )
 
                         remark = ""
@@ -527,6 +528,7 @@ def add_material_issue_item(request, issue_id):
                         ProjectBOQItem,
                         id=boq_item_id,
                         boq__project=material_issue.project,
+                        store_item=store_item,
                     )
 
                 MaterialIssueItem.objects.create(
@@ -594,10 +596,9 @@ def edit_material_issue_item(request, id):
                 request.POST.get("returned_quantity") or "0"
             )
 
-            issue_item.serial_number = (
-                request.POST.get("serial_number", "").strip()
-                or issue_item.store_item.serial_number
-            )
+            issue_item.serial_number = request.POST.get(
+                "serial_number", ""
+            ).strip()
 
             issue_item.scrap_quantity = Decimal(
                 request.POST.get("scrap_quantity") or "0"

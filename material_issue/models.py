@@ -296,15 +296,25 @@ class MaterialIssueItem(models.Model):
             old_scrap_quantity = old.scrap_quantity
             old_boq_item_id = old.boq_item_id
 
-        if not self.boq_item_id and self.material_issue.boq_id and self.store_item_id:
-            self.boq_item = ProjectBOQItem.objects.filter(
-                boq=self.material_issue.boq,
+        if not self.boq_item_id and self.store_item_id:
+            matching_boq_items = ProjectBOQItem.objects.filter(
+                boq__project=self.material_issue.project,
                 store_item_id=self.store_item_id,
-            ).first()
+            )
+            if self.material_issue.boq_id:
+                matching_boq_items = matching_boq_items.filter(
+                    boq=self.material_issue.boq
+                )
+            if matching_boq_items.count() == 1:
+                self.boq_item = matching_boq_items.first()
 
-        if not self.serial_number and self.store_item_id:
+        if not self.pk and not self.serial_number and self.store_item_id:
             self.serial_number = self.store_item.serial_number
-        elif self.serial_number and self.store_item_id and not self.store_item.serial_number:
+        elif (
+            self.serial_number
+            and self.store_item_id
+            and self.store_item.serial_number != self.serial_number
+        ):
             self.store_item.serial_number = self.serial_number
             self.store_item.save(update_fields=["serial_number"])
 

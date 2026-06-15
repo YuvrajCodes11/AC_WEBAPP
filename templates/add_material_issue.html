@@ -65,6 +65,9 @@ Add Material Issue
         padding: 12px 14px !important;
         font-size: 13px !important;
         font-weight: 600 !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        line-height: 1.4 !important;
     }
 
     .ts-dropdown .active {
@@ -429,20 +432,58 @@ Add Material Issue
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
 <script>
+    let itemRowTemplate = null;
+    let categoryOptions = [];
+    let storeItemOptions = [];
+    let boqItemOptions = [];
+
+    function initializeSelect(select, placeholderText) {
+        if (!select || select.tomselect) return;
+        new TomSelect(select, {
+            create: false,
+            maxOptions: 5000,
+            placeholder: placeholderText,
+            searchField: ["text"],
+            sortField: {
+                field: "text",
+                direction: "asc"
+            }
+        });
+    }
+
     function initializeSingleSelect(selector, placeholderText) {
         document.querySelectorAll(selector).forEach(function(select) {
-            if (!select.tomselect) {
-                new TomSelect(select, {
-                    create: false,
-                    maxOptions: 5000,
-                    placeholder: placeholderText,
-                    searchField: ["text"],
-                    sortField: {
-                        field: "text",
-                        direction: "asc"
-                    }
-                });
+            initializeSelect(select, placeholderText);
+        });
+    }
+
+    function initializeSelectFromData(select, sourceOptions, placeholderText) {
+        select.innerHTML = "";
+        const options = sourceOptions.map(function(source) {
+            return Object.assign({
+                value: source.value,
+                text: source.text
+            }, source.data);
+        });
+        new TomSelect(select, {
+            create: false,
+            maxOptions: 5000,
+            options: options,
+            valueField: "value",
+            labelField: "text",
+            searchField: ["text"],
+            placeholder: placeholderText,
+            sortField: {
+                field: "text",
+                direction: "asc"
             }
+        });
+        Array.from(select.options).forEach(function(option) {
+            const source = sourceOptions.find(item => item.value === option.value);
+            if (!source) return;
+            Object.keys(source.data).forEach(function(key) {
+                option.dataset[key] = source.data[key];
+            });
         });
     }
 
@@ -462,27 +503,69 @@ Add Material Issue
         });
     }
 
-    function filterRowItems(row) {
-        const category = row.querySelector(".category-select");
-        const storeItem = row.querySelector(".store-item-select");
-        const boqItem = row.querySelector(".boq-item-select");
-        const categoryId = category.value;
+    function readOptions(select) {
+        return Array.from(select.options).map(function(option) {
+            return {
+                value: option.value,
+                text: option.textContent.trim(),
+                data: Object.assign({}, option.dataset)
+            };
+        });
+    }
 
-        [storeItem, boqItem].forEach(function(select) {
-            if (select.tomselect) select.tomselect.destroy();
-            Array.from(select.options).forEach(function(option) {
-                if (!option.value) return;
-                const visible = !categoryId || option.dataset.category === categoryId;
-                option.hidden = !visible;
-                option.disabled = !visible;
+    function rebuildSelect(select, sourceOptions, isAllowed, placeholderText) {
+        const selectedValue = select.value;
+        if (select.tomselect) select.tomselect.destroy();
+        select.innerHTML = "";
+
+        sourceOptions.forEach(function(source) {
+            if (source.value && !isAllowed(source)) return;
+            const option = document.createElement("option");
+            option.value = source.value;
+            option.textContent = source.text;
+            Object.keys(source.data).forEach(function(key) {
+                option.dataset[key] = source.data[key];
             });
-            if (select.selectedOptions[0] && select.selectedOptions[0].disabled) {
-                select.value = "";
-            }
+            select.appendChild(option);
         });
 
-        initializeSingleSelect(".store-item-select", "Search item code, name, size, stock...");
-        initializeSingleSelect(".boq-item-select", "Search BOQ item...");
+        if (Array.from(select.options).some(option => option.value === selectedValue)) {
+            select.value = selectedValue;
+        }
+        initializeSelect(select, placeholderText);
+    }
+
+    function refreshStoreItems(row) {
+        const category = row.querySelector(".category-select");
+        const storeItem = row.querySelector(".store-item-select");
+        const categoryId = category.value;
+
+        rebuildSelect(
+            storeItem,
+            storeItemOptions,
+            option => !categoryId || option.data.category === categoryId,
+            "Search item code, name, size, stock..."
+        );
+    }
+
+    function refreshBoqItems(row) {
+        const projectId = document.querySelector(".project-select").value;
+        const boqId = document.querySelector(".boq-select").value;
+        const categoryId = row.querySelector(".category-select").value;
+        const storeItemId = row.querySelector(".store-item-select").value;
+        const boqItem = row.querySelector(".boq-item-select");
+
+        rebuildSelect(
+            boqItem,
+            boqItemOptions,
+            function(option) {
+                return option.data.project === projectId
+                    && (!boqId || option.data.boq === boqId)
+                    && (!categoryId || option.data.category === categoryId)
+                    && (!storeItemId || option.data.storeItem === storeItemId);
+            },
+            "Search BOQ item..."
+        );
     }
 
     function bindRowRelationships(row) {
@@ -493,7 +576,8 @@ Add Material Issue
         if (!category.dataset.bound) {
             category.dataset.bound = "1";
             category.addEventListener("change", function() {
-                filterRowItems(row);
+                refreshStoreItems(row);
+                refreshBoqItems(row);
             });
         }
 
@@ -506,42 +590,38 @@ Add Material Issue
                 const categoryId = selected.dataset.category;
                 if (category.tomselect) category.tomselect.setValue(categoryId, true);
                 else category.value = categoryId;
-                filterRowItems(row);
+                refreshStoreItems(row);
                 if (storeItem.tomselect) storeItem.tomselect.setValue(storeItemId, true);
                 else storeItem.value = storeItemId;
+            });
+        }
+
+        if (!storeItem.dataset.bound) {
+            storeItem.dataset.bound = "1";
+            storeItem.addEventListener("change", function() {
+                const storeItemId = storeItem.value;
+                refreshBoqItems(row);
+                if (!storeItemId) return;
+                const matches = Array.from(boqItem.options).filter(function(option) {
+                    return option.value && option.dataset.storeItem === storeItemId;
+                });
+                if (matches.length === 1) {
+                    if (boqItem.tomselect) boqItem.tomselect.setValue(matches[0].value, true);
+                    else boqItem.value = matches[0].value;
+                }
             });
         }
     }
 
     function filterBoqItems() {
-        const projectId = document.querySelector(".project-select").value;
-        const boqId = document.querySelector(".boq-select").value;
-
-        document.querySelectorAll(".boq-item-select").forEach(function(select) {
-            const row = select.closest(".item-row");
-            if (!row) return;
-            const categoryId = row.querySelector(".category-select").value;
-            if (select.tomselect) select.tomselect.destroy();
-            Array.from(select.options).forEach(function(option) {
-                const validProject = !option.value || option.dataset.project === projectId;
-                const validBoq = !option.value || !boqId || option.dataset.boq === boqId;
-                const validCategory = !option.value || !categoryId || option.dataset.category === categoryId;
-                option.hidden = !(validProject && validBoq && validCategory);
-                option.disabled = option.hidden;
-            });
-            if (select.selectedOptions[0] && select.selectedOptions[0].disabled) select.value = "";
+        document.querySelectorAll(".item-row").forEach(function(row) {
+            refreshBoqItems(row);
         });
-
-        initializeSingleSelect(".boq-item-select", "Search BOQ item...");
     }
 
     function addRow() {
         const itemRows = document.getElementById("itemRows");
-        const firstRow = itemRows.querySelector(".item-row");
-
-        destroySearchDropdownsInside(firstRow);
-
-        const clone = firstRow.cloneNode(true);
+        const clone = itemRowTemplate.cloneNode(true);
 
         clone.querySelectorAll("input").forEach(function(input) {
             if (input.type === "number") {
@@ -558,10 +638,29 @@ Add Material Issue
 
         itemRows.appendChild(clone);
 
-        initializeAllSearchDropdowns();
-        bindRowRelationships(firstRow);
+        const projectId = document.querySelector(".project-select").value;
+        const boqId = document.querySelector(".boq-select").value;
+        initializeSelectFromData(
+            clone.querySelector(".category-select"),
+            categoryOptions,
+            "Search category..."
+        );
+        initializeSelectFromData(
+            clone.querySelector(".store-item-select"),
+            storeItemOptions,
+            "Search item code, name, size, stock..."
+        );
+        initializeSelectFromData(
+            clone.querySelector(".boq-item-select"),
+            boqItemOptions.filter(function(option) {
+                return !option.value || (
+                    option.data.project === projectId
+                    && (!boqId || option.data.boq === boqId)
+                );
+            }),
+            "Search BOQ item..."
+        );
         bindRowRelationships(clone);
-        filterBoqItems();
     }
 
     function removeRow(btn) {
@@ -577,6 +676,11 @@ Add Material Issue
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+        const firstRow = document.querySelector(".item-row");
+        itemRowTemplate = firstRow.cloneNode(true);
+        categoryOptions = readOptions(firstRow.querySelector(".category-select"));
+        storeItemOptions = readOptions(firstRow.querySelector(".store-item-select"));
+        boqItemOptions = readOptions(firstRow.querySelector(".boq-item-select"));
         initializeAllSearchDropdowns();
         document.querySelectorAll(".item-row").forEach(bindRowRelationships);
 

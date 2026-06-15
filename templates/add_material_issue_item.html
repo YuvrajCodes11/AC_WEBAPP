@@ -7,6 +7,13 @@ Add Material Issue Item
 {% block content %}
 
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<style>
+    .ts-dropdown .option {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.4;
+    }
+</style>
 
 <div class="min-h-screen bg-slate-50 px-4 py-8">
 
@@ -136,22 +143,49 @@ Add Material Issue Item
     document.getElementById('category-filter').addEventListener('change', function() {
         var categoryId = this.value;
         var storeSelect = document.getElementById('store-item-select');
+        var boqSelect = document.getElementById('boq-item-select');
         if (storeItemSelect) storeItemSelect.destroy();
-        Array.from(storeSelect.options).forEach(function(option) {
-            if (!option.value) return;
-            var visible = !categoryId || option.dataset.category === categoryId;
-            option.hidden = !visible;
-            option.disabled = !visible;
+        if (boqItemSelect) boqItemSelect.destroy();
+        [storeSelect, boqSelect].forEach(function(select) {
+            Array.from(select.options).forEach(function(option) {
+                if (!option.value) return;
+                var visible = !categoryId || option.dataset.category === categoryId;
+                option.hidden = !visible;
+                option.disabled = !visible;
+            });
+            if (select.selectedOptions[0] && select.selectedOptions[0].disabled) {
+                select.value = '';
+            }
         });
-        if (storeSelect.selectedOptions[0] && storeSelect.selectedOptions[0].disabled) {
-            storeSelect.value = '';
-        }
         storeItemSelect = new TomSelect('#store-item-select', {
             create: false,
             maxOptions: 5000,
             placeholder: 'Search by item name, code or category...',
             searchField: ['text']
         });
+        boqItemSelect = new TomSelect('#boq-item-select', {
+            create: false,
+            placeholder: 'Select BOQ item...',
+            searchField: ['text']
+        });
+    });
+
+    document.getElementById('store-item-select').addEventListener('change', function() {
+        var storeItemId = this.value;
+        if (!storeItemId) return;
+        var boqSelect = document.getElementById('boq-item-select');
+        var matches = Array.from(boqSelect.options).filter(function(option) {
+            return !option.disabled && option.value
+                && option.dataset.storeItem === storeItemId;
+        });
+        if (matches.length === 1) {
+            boqItemSelect.setValue(matches[0].value, true);
+        } else {
+            var selected = boqSelect.selectedOptions[0];
+            if (selected && selected.value && selected.dataset.storeItem !== storeItemId) {
+                boqItemSelect.clear(true);
+            }
+        }
     });
 
     document.getElementById('boq-item-select').addEventListener('change', function() {

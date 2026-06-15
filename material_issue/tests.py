@@ -111,6 +111,7 @@ class MaterialIssueStockTests(TestCase):
         self.item.refresh_from_db()
         self.boq_item.refresh_from_db()
         self.assertEqual(self.item.current_stock, Decimal("5"))
+        self.assertEqual(self.item.serial_number, "SITE-SN-200")
         self.assertEqual(self.boq_item.issued_quantity, Decimal("6"))
         self.assertEqual(self.boq_item.consumed_quantity, Decimal("2"))
         self.assertEqual(self.boq_item.returned_quantity, Decimal("1"))
@@ -121,6 +122,91 @@ class MaterialIssueStockTests(TestCase):
             ).get().quantity,
             Decimal("6"),
         )
+
+    def test_unique_project_boq_item_is_linked_automatically(self):
+        issue_without_boq = MaterialIssue.objects.create(
+            project=self.project,
+            heading="Automatic Link",
+            issued_by=self.user,
+        )
+
+        issue_item = MaterialIssueItem.objects.create(
+            material_issue=issue_without_boq,
+            store_item=self.item,
+            issued_quantity=Decimal("3"),
+        )
+
+        issue_item.refresh_from_db()
+        self.boq_item.refresh_from_db()
+        self.assertEqual(issue_item.boq_item, self.boq_item)
+        self.assertEqual(self.boq_item.issued_quantity, Decimal("3"))
+
+    def test_add_page_lists_new_and_inactive_projects(self):
+        inactive_project = CustomerProject.objects.create(
+            customer=self.customer,
+            site_name="Inactive But Visible",
+            is_active=False,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("add_material_issue"))
+
+        self.assertContains(response, self.project.project_id)
+        self.assertContains(response, inactive_project.project_id)
+        self.assertContains(response, "Inactive But Visible")
+
+    def test_add_item_rejects_boq_item_for_different_store_item(self):
+        other_item = StoreItem.objects.create(
+            category=self.category,
+            item_description="Different Unit",
+            opening_stock=Decimal("10"),
+            current_stock=Decimal("10"),
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("add_material_issue_item", args=[self.issue.id]),
+            {
+                "category": self.category.id,
+                "store_item": other_item.id,
+                "boq_item": self.boq_item.id,
+                "issued_quantity": "2",
+                "serial_number": "",
+                "remarks": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No ProjectBOQItem matches the given query")
+        self.assertFalse(
+            MaterialIssueItem.objects.filter(
+                material_issue=self.issue,
+                store_item=other_item,
+            ).exists()
+        )
+
+    def test_delete_item_restores_store_and_boq_values(self):
+        issue_item = MaterialIssueItem.objects.create(
+            material_issue=self.issue,
+            store_item=self.item,
+            boq_item=self.boq_item,
+            issued_quantity=Decimal("4"),
+            consumed_quantity=Decimal("1"),
+            returned_quantity=Decimal("1"),
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("delete_material_issue_item", args=[issue_item.id])
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.item.refresh_from_db()
+        self.boq_item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("10"))
+        self.assertEqual(self.boq_item.issued_quantity, Decimal("0"))
+        self.assertEqual(self.boq_item.consumed_quantity, Decimal("0"))
+        self.assertEqual(self.boq_item.returned_quantity, Decimal("0"))
 
     def test_unrelated_boq_is_rejected(self):
         other_project = CustomerProject.objects.create(site_name="Other Site")
@@ -177,3 +263,4 @@ class MaterialIssueStockTests(TestCase):
             )
         ]
         self.assertEqual(rendered_headings, headings)
+        self.assertNotContains(response, "Not Used")

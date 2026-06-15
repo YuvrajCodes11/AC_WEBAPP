@@ -73,3 +73,28 @@ class BOQPdfFlowTests(TestCase):
             response,
             "initializeSingleCategorySearch(categorySelect)",
         )
+        self.assertContains(response, "overflow-wrap: anywhere")
+
+    def test_boq_detail_displays_full_item_description_and_synced_columns(self):
+        long_description = (
+            "VRV indoor cassette unit with complete control assembly and accessories"
+        )
+        self.item.item_description = long_description
+        self.item.size = "Large ceiling cassette"
+        self.item.save()
+        boq = ProjectBOQ.objects.create(project=self.project)
+        ProjectBOQItem.objects.create(
+            boq=boq,
+            store_item=self.item,
+            required_quantity=Decimal("4"),
+            issued_quantity=Decimal("3"),
+            consumed_quantity=Decimal("1"),
+            returned_quantity=Decimal("1"),
+        )
+
+        response = self.client.get(reverse("boq_detail", args=[boq.id]))
+
+        self.assertContains(response, long_description)
+        self.assertContains(response, "Large ceiling cassette")
+        self.assertContains(response, "Consumed")
+        self.assertContains(response, "Returned")

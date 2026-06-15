@@ -54,7 +54,11 @@ BOQ vs Issued Report
                         <td class="px-6 py-5 font-bold text-[#0F4C81]">{{ row.boq.boq_id }}</td>
                         <td class="px-6 py-5">{% if row.project %}{{ row.project.get_customer_name }}{% else %}No Customer{% endif %}</td>
                         <td class="px-6 py-5">{% if row.project %}{{ row.project.project_id }} - {{ row.project.site_name }}{% else %}No Project Linked{% endif %}</td>
-                        <td class="px-6 py-5 font-bold">{{ row.store_item.item_description }} ({% if row.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %})</td>
+                        <td class="px-6 py-5 font-bold min-w-[280px] whitespace-normal break-words">
+                            {{ row.store_item.item_description }}
+                            {% if row.store_item.size %} - {{ row.store_item.size }}{% endif %}
+                            ({% if row.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %})
+                        </td>
                         <td class="px-6 py-5">{{ row.store_item.size|default:"-" }}</td>
                         <td class="px-6 py-5">{{ row.store_item.get_unit_display }}</td>
                         <td class="px-6 py-5 font-bold">{{ row.boq_qty }}</td>
@@ -112,7 +116,11 @@ BOQ vs Issued Report
                     <tr>
                         <td class="px-6 py-4 font-bold">{{ item.material_issue.issue_id }}</td>
                         <td class="px-6 py-4">{{ item.material_issue.project.project_id }} - {{ item.material_issue.project.site_name }}</td>
-                        <td class="px-6 py-4">{{ item.store_item.item_description }} ({% if item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %})</td>
+                        <td class="px-6 py-4 min-w-[280px] whitespace-normal break-words">
+                            {{ item.store_item.item_description }}
+                            {% if item.store_item.size %} - {{ item.store_item.size }}{% endif %}
+                            ({% if item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %})
+                        </td>
                         <td class="px-6 py-4 font-bold">{{ item.issued_quantity }}</td>
                         <td class="px-6 py-4 text-orange-700 font-bold">Not listed in the selected BOQ</td>
                     </tr>
