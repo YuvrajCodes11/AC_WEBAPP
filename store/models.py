@@ -327,7 +327,10 @@ class StoreTransaction(models.Model):
 
         if (
             self.transaction_type in ("OUT", "SCRAP")
-            and not (self.transaction_type == "SCRAP" and self.material_issue_item_id)
+            and not (
+                self.material_issue_item_id
+                and self.is_stock_updated
+            )
             and self.item.current_stock < self.quantity
         ):
             raise ValidationError(

@@ -123,7 +123,6 @@ Print Material Issue
                             <th class="border border-slate-300 px-3 py-2 text-left">Issued Qty</th>
                             <th class="border border-slate-300 px-3 py-2 text-left">Consumed</th>
                             <th class="border border-slate-300 px-3 py-2 text-left">Returned</th>
-                            <th class="border border-slate-300 px-3 py-2 text-left">Not Used</th>
                             <th class="border border-slate-300 px-3 py-2 text-left">Scrap</th>
                             <th class="border border-slate-300 px-3 py-2 text-left">Balance</th>
                         </tr>
@@ -142,13 +141,12 @@ Print Material Issue
                             <td class="border border-slate-300 px-3 py-2">{{ item.issued_quantity }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.consumed_quantity }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.returned_quantity }}</td>
-                            <td class="border border-slate-300 px-3 py-2">{{ item.unused_quantity }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.scrap_quantity }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.balance_quantity }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="12" class="border border-slate-300 px-3 py-6 text-center">
+                            <td colspan="11" class="border border-slate-300 px-3 py-6 text-center">
                                 No material item found.
                             </td>
                         </tr>

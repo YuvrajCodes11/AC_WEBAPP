@@ -52,6 +52,7 @@ class BOQPdfFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertTrue(response.content.startswith(b"%PDF"))
+        self.assertTrue(response["Content-Disposition"].startswith("inline;"))
 
     def test_project_pdf_renders_linked_project_data(self):
         response = self.client.get(
@@ -61,6 +62,7 @@ class BOQPdfFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertTrue(response.content.startswith(b"%PDF"))
+        self.assertTrue(response["Content-Disposition"].startswith("inline;"))
 
     def test_add_boq_initializes_category_search_for_each_new_row(self):
         response = self.client.get(reverse("add_boq"))

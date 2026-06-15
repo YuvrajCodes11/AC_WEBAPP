@@ -275,7 +275,6 @@ def project_full_pdf_report(request, project_id):
         items = issue.items.select_related("store_item").all()
         total_issued   = sum(i.issued_quantity for i in items)
         total_returned = sum(i.returned_quantity for i in items)
-        total_unused = sum(i.unused_quantity for i in items)
         total_consumed = sum(i.consumed_quantity for i in items)
         total_scrap = sum(i.scrap_quantity for i in items)
 
@@ -310,17 +309,20 @@ def project_full_pdf_report(request, project_id):
                     fontName="Helvetica-Bold" if bold else "Helvetica",
                     textColor=col, alignment=align))
 
-            cw2 = [(PAGE_W - 2*MARGIN)*p for p in [0.27, 0.08, 0.11, 0.11, 0.11, 0.11, 0.11, 0.10]]
+            cw2 = [(PAGE_W - 2*MARGIN)*p for p in [0.31, 0.09, 0.12, 0.12, 0.12, 0.12, 0.12]]
             idata = [[hdr("Item"), hdr("Unit"), hdr("Issued"),
-                      hdr("Consumed"), hdr("Returned"), hdr("Not Used"), hdr("Scrap"), hdr("Balance")]]
+                      hdr("Consumed"), hdr("Returned"), hdr("Scrap"), hdr("Balance")]]
             for it in items:
                 idata.append([
-                    td(f"{it.store_item.item_description} ({'VRV' if it.store_item.is_vrv else 'Non-VRV'})"),
+                    td(
+                        f"{it.store_item.item_code} - {it.store_item.item_description}"
+                        f"{' - ' + it.store_item.size if it.store_item.size else ''}"
+                        f" ({'VRV' if it.store_item.is_vrv else 'Non-VRV'})"
+                    ),
                     td(it.store_item.get_unit_display(), align=1),
                     td(f"{it.issued_quantity:.2f}", col=colors.HexColor("#2563EB"), align=2),
                     td(f"{it.consumed_quantity:.2f}", col=BRAND_ORANGE, align=2),
                     td(f"{it.returned_quantity:.2f}", col=BRAND_PURPLE, align=2),
-                    td(f"{it.unused_quantity:.2f}", col=colors.HexColor("#0891B2"), align=2),
                     td(f"{it.scrap_quantity:.2f}", col=TEXT_MUTED, align=2),
                     td(f"{it.balance_quantity():.2f}", bold=True, col=BRAND_RED, align=2),
                 ])
@@ -330,9 +332,8 @@ def project_full_pdf_report(request, project_id):
                 td(f"{total_issued:.2f}", bold=True, col=colors.HexColor("#2563EB"), align=2),
                 td(f"{total_consumed:.2f}", bold=True, col=BRAND_ORANGE, align=2),
                 td(f"{total_returned:.2f}", bold=True, col=BRAND_PURPLE, align=2),
-                td(f"{total_unused:.2f}", bold=True, col=colors.HexColor("#0891B2"), align=2),
                 td(f"{total_scrap:.2f}", bold=True, col=TEXT_MUTED, align=2),
-                td(f"{total_issued - total_consumed - total_returned - total_unused - total_scrap:.2f}", bold=True, col=BRAND_RED, align=2),
+                td(f"{total_issued - total_consumed - total_returned - total_scrap:.2f}", bold=True, col=BRAND_RED, align=2),
             ])
             it2 = Table(idata, colWidths=cw2, repeatRows=1)
             alt2 = [("BACKGROUND", (0, r), (-1, r), TABLE_ROW_ALT)
@@ -407,6 +408,6 @@ def project_full_pdf_report(request, project_id):
 
     response = HttpResponse(buffer, content_type="application/pdf")
     response["Content-Disposition"] = (
-        f'attachment; filename="Project_Report_{project.project_id}.pdf"'
+        f'inline; filename="Project_Report_{project.project_id}.pdf"'
     )
     return response

@@ -3,6 +3,7 @@
 from decimal import Decimal
 
 from django.db import models, transaction
+from django.db.models import Sum
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -161,12 +162,6 @@ class MaterialIssueItem(models.Model):
         default=0
     )
 
-    unused_quantity = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        default=0
-    )
-
     scrap_quantity = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -235,9 +230,6 @@ class MaterialIssueItem(models.Model):
         if self.returned_quantity < 0:
             raise ValidationError("Returned quantity cannot be negative.")
 
-        if self.unused_quantity < 0:
-            raise ValidationError("Unused quantity cannot be negative.")
-
         if self.scrap_quantity < 0:
             raise ValidationError("Scrap quantity cannot be negative.")
 
@@ -254,16 +246,21 @@ class MaterialIssueItem(models.Model):
         total_used = (
             self.consumed_quantity
             + self.returned_quantity
-            + self.unused_quantity
             + self.scrap_quantity
         )
 
         if total_used > self.issued_quantity:
             raise ValidationError(
-                "Consumed + returned + unused + scrap quantity cannot be greater than issued quantity."
+                "Consumed + returned + scrap quantity cannot be greater than issued quantity."
             )
 
-        if not self.pk and self.store_item.current_stock < self.issued_quantity:
+        previous_issued = Decimal("0.00")
+        if self.pk:
+            previous_issued = MaterialIssueItem.objects.only(
+                "issued_quantity"
+            ).get(pk=self.pk).issued_quantity
+        additional_stock_needed = self.issued_quantity - previous_issued
+        if additional_stock_needed > 0 and self.store_item.current_stock < additional_stock_needed:
             raise ValidationError(
                 f"Not enough stock for {self.store_item.item_description}. "
                 f"Available stock: {self.store_item.current_stock}"
@@ -276,39 +273,89 @@ class MaterialIssueItem(models.Model):
                 raise ValidationError("BOQ item does not belong to the material issue project.")
             if self.material_issue.boq_id and self.boq_item.boq_id != self.material_issue.boq_id:
                 raise ValidationError("BOQ item does not belong to the selected BOQ.")
+            other_issued = MaterialIssueItem.objects.filter(
+                boq_item=self.boq_item
+            ).exclude(pk=self.pk).aggregate(
+                total=Sum("issued_quantity")
+            )["total"] or Decimal("0.00")
+            if other_issued + self.issued_quantity > self.boq_item.required_quantity:
+                raise ValidationError(
+                    "Issued quantity cannot exceed the remaining BOQ quantity."
+                )
 
     @transaction.atomic
     def save(self, *args, **kwargs):
+        old_issued_quantity = Decimal("0.00")
         old_returned_quantity = Decimal("0.00")
-        old_unused_quantity = Decimal("0.00")
         old_scrap_quantity = Decimal("0.00")
+        old_boq_item_id = None
         if self.pk:
             old = MaterialIssueItem.objects.get(pk=self.pk)
+            old_issued_quantity = old.issued_quantity
             old_returned_quantity = old.returned_quantity
-            old_unused_quantity = old.unused_quantity
             old_scrap_quantity = old.scrap_quantity
+            old_boq_item_id = old.boq_item_id
+
+        if not self.boq_item_id and self.material_issue.boq_id and self.store_item_id:
+            self.boq_item = ProjectBOQItem.objects.filter(
+                boq=self.material_issue.boq,
+                store_item_id=self.store_item_id,
+            ).first()
 
         if not self.serial_number and self.store_item_id:
             self.serial_number = self.store_item.serial_number
+        elif self.serial_number and self.store_item_id and not self.store_item.serial_number:
+            self.store_item.serial_number = self.serial_number
+            self.store_item.save(update_fields=["serial_number"])
 
         self.clean()
 
-        if not self.pk and not self.is_stock_updated:
-            self.store_item.current_stock -= Decimal(self.issued_quantity)
+        issued_delta = Decimal(self.issued_quantity) - old_issued_quantity
+        if issued_delta:
+            self.store_item.current_stock -= issued_delta
             self.store_item.save()
-
             self.is_stock_updated = True
 
-            if self.boq_item:
-                self.boq_item.issued_quantity += Decimal(self.issued_quantity)
-                self.boq_item.save()
-
         super().save(*args, **kwargs)
-        self.sync_return_transaction(old_returned_quantity + old_unused_quantity)
+        self.sync_issue_transaction(old_issued_quantity)
+        self.sync_return_transaction(old_returned_quantity)
         self.sync_scrap_transaction(old_scrap_quantity)
+        self.sync_boq_totals(old_boq_item_id)
+        self.sync_boq_totals(self.boq_item_id)
+
+    def sync_issue_transaction(self, old_issued_quantity):
+        if Decimal(self.issued_quantity) == Decimal(old_issued_quantity) and self.stock_transaction_id:
+            return
+
+        StoreTransaction.objects.filter(
+            material_issue_item=self,
+            transaction_type="OUT",
+        ).delete()
+
+        stock_after = self.store_item.current_stock
+        transaction = StoreTransaction.objects.create(
+            item=self.store_item,
+            transaction_type="OUT",
+            purpose="PROJECT",
+            project=self.material_issue.project,
+            boq=self.material_issue.boq,
+            material_issue_item=self,
+            quantity=self.issued_quantity,
+            stock_before=stock_after + Decimal(self.issued_quantity),
+            stock_after=stock_after,
+            issued_to=self.material_issue.issued_to,
+            description=f"Issued against {self.material_issue.issue_id}",
+            is_stock_updated=True,
+            created_by=self.material_issue.issued_by,
+        )
+        self.stock_transaction = transaction
+        MaterialIssueItem.objects.filter(pk=self.pk).update(
+            stock_transaction=transaction,
+            is_stock_updated=True,
+        )
 
     def sync_return_transaction(self, old_returned_quantity):
-        return_quantity = Decimal(self.returned_quantity) + Decimal(self.unused_quantity)
+        return_quantity = Decimal(self.returned_quantity)
         delta = return_quantity - Decimal(old_returned_quantity)
         if delta == 0:
             return
@@ -335,10 +382,7 @@ class MaterialIssueItem(models.Model):
                 material_issue_item=self,
                 quantity=return_quantity,
                 issued_to=self.material_issue.issued_to,
-                description=(
-                    f"Return/unused against {self.material_issue.issue_id} "
-                    f"(returned {self.returned_quantity}, unused {self.unused_quantity})"
-                ),
+                description=f"Returned against {self.material_issue.issue_id}",
                 created_by=self.material_issue.issued_by,
             )
             self.return_stock_transaction = txn
@@ -385,20 +429,34 @@ class MaterialIssueItem(models.Model):
                 scrap_stock_transaction=self.scrap_stock_transaction
             )
 
+    @staticmethod
+    def sync_boq_totals(boq_item_id):
+        if not boq_item_id:
+            return
+        totals = MaterialIssueItem.objects.filter(
+            boq_item_id=boq_item_id
+        ).aggregate(
+            issued=Sum("issued_quantity"),
+            consumed=Sum("consumed_quantity"),
+            returned=Sum("returned_quantity"),
+        )
+        ProjectBOQItem.objects.filter(pk=boq_item_id).update(
+            issued_quantity=totals["issued"] or Decimal("0.00"),
+            consumed_quantity=totals["consumed"] or Decimal("0.00"),
+            returned_quantity=totals["returned"] or Decimal("0.00"),
+        )
+
     @transaction.atomic
     def delete(self, *args, **kwargs):
+        boq_item_id = self.boq_item_id
         if self.is_stock_updated:
             self.store_item.current_stock += Decimal(self.issued_quantity)
             self.store_item.save()
 
-            if self.boq_item:
-                self.boq_item.issued_quantity -= Decimal(self.issued_quantity)
-
-                if self.boq_item.issued_quantity < 0:
-                    self.boq_item.issued_quantity = Decimal("0.00")
-
-                self.boq_item.save()
-
+        StoreTransaction.objects.filter(
+            material_issue_item=self,
+            transaction_type="OUT",
+        ).delete()
         for txn in StoreTransaction.objects.filter(
             material_issue_item=self,
             transaction_type="RETURN",
@@ -411,13 +469,13 @@ class MaterialIssueItem(models.Model):
             txn.delete()
 
         super().delete(*args, **kwargs)
+        self.sync_boq_totals(boq_item_id)
 
     def balance_quantity(self):
         balance = (
             self.issued_quantity
             - self.consumed_quantity
             - self.returned_quantity
-            - self.unused_quantity
             - self.scrap_quantity
         )
 

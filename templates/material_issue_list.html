@@ -287,15 +287,6 @@ Material Issues
                                     </div>
 
                                     <div class="bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
-                                        <p class="text-xs text-cyan-600 font-bold">
-                                            Not Used Material
-                                        </p>
-                                        <p class="font-black text-cyan-700">
-                                            {{ issue.total_unused_quantity }}
-                                        </p>
-                                    </div>
-
-                                    <div class="bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
                                         <p class="text-xs text-orange-500 font-bold">
                                             Scrap Material
                                         </p>
@@ -383,7 +374,7 @@ Material Issues
                                     <a href="{% url 'project_full_pdf_report' issue.project.id %}"
                                        target="_blank"
                                        class="px-3 py-2 rounded-xl bg-purple-100 text-purple-700 text-xs font-bold">
-                                        ⬇ Project PDF
+                                        Print Project PDF
                                     </a>
 
                                     <a href="{% url 'edit_material_issue' issue.id %}"

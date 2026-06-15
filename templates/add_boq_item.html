@@ -33,7 +33,7 @@ Add BOQ Item
 
                 <div class="mb-5">
                     <label class="block font-bold mb-2">Filter by Category</label>
-                    <select id="category-filter" class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    <select name="category" id="category-filter" class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                         <option value="">All Categories</option>
                         {% for cat in categories %}
                         <option value="{{ cat.id }}">{{ cat.category_name }}</option>

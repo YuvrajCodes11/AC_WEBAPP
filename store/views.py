@@ -359,7 +359,7 @@ def edit_store_item(request, id):
                 if txn.transaction_type == "IN":
                     in_qty += txn.quantity
 
-                elif txn.transaction_type == "OUT":
+                elif txn.transaction_type == "OUT" and not txn.material_issue_item_id:
                     out_qty += txn.quantity
 
                 elif txn.transaction_type == "RETURN":

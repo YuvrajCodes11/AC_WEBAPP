@@ -20,7 +20,7 @@ Edit Material Issue Item
                     </h1>
 
                     <p class="text-blue-100 mt-2">
-                        Update consumed, returned, scrap and balance quantity.
+                        Update issued, consumed, returned, scrap and balance quantity.
                     </p>
                 </div>
 
@@ -52,7 +52,7 @@ Edit Material Issue Item
                         </label>
 
                         <input type="text"
-                               value="{{ issue_item.store_item.item_code }} - {{ issue_item.store_item.item_description }} - {% if issue_item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}"
+                               value="{{ issue_item.store_item.item_code }} - {{ issue_item.store_item.item_description }}{% if issue_item.store_item.size %} - {{ issue_item.store_item.size }}{% endif %} - {% if issue_item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}"
                                readonly
                                class="w-full bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
@@ -63,7 +63,7 @@ Edit Material Issue Item
                         </label>
 
                         <input type="text"
-                               value="{% if issue_item.boq_item %}{{ issue_item.boq_item.boq.boq_id }} - {{ issue_item.boq_item.store_item.item_description }} - {% if issue_item.boq_item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}{% else %}No BOQ Item{% endif %}"
+                               value="{% if issue_item.boq_item %}{{ issue_item.boq_item.boq.boq_id }} - {{ issue_item.boq_item.store_item.item_description }}{% if issue_item.boq_item.store_item.size %} - {{ issue_item.boq_item.store_item.size }}{% endif %} - {% if issue_item.boq_item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}{% else %}No BOQ Item{% endif %}"
                                readonly
                                class="w-full bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
@@ -74,9 +74,11 @@ Edit Material Issue Item
                         </label>
 
                         <input type="number"
+                               name="issued_quantity"
+                               step="0.01"
+                               min="0.01"
                                value="{{ issue_item.issued_quantity }}"
-                               readonly
-                               class="w-full bg-slate-100 border border-slate-300 rounded-2xl px-4 py-3">
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
 
                     <div>
@@ -113,19 +115,6 @@ Edit Material Issue Item
                                step="0.01"
                                min="0"
                                value="{{ issue_item.returned_quantity }}"
-                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
-                    </div>
-
-                    <div>
-                        <label class="block font-bold mb-2">
-                            Not Used Quantity
-                        </label>
-
-                        <input type="number"
-                               name="unused_quantity"
-                               step="0.01"
-                               min="0"
-                               value="{{ issue_item.unused_quantity }}"
                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
 

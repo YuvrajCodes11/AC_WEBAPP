@@ -35,6 +35,17 @@ Add Material Issue Item
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                     <div>
+                        <label class="block font-bold mb-2">Category</label>
+                        <select name="category" id="category-filter"
+                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.category_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
                         <label class="block font-bold mb-2">Store Item *</label>
                         <select name="store_item" id="store-item-select" required
                                 class="w-full border border-slate-300 rounded-2xl px-4 py-3">
@@ -56,8 +67,13 @@ Add Material Issue Item
                                 class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                             <option value="">Select BOQ Item (optional)</option>
                             {% for item in boq_items %}
-                            <option value="{{ item.id }}">
-                                {{ item.store_item.item_description }} | Required: {{ item.required_quantity }}
+                            <option value="{{ item.id }}"
+                                    data-store-item="{{ item.store_item.id }}"
+                                    data-category="{{ item.store_item.category.id }}">
+                                {{ item.store_item.item_code }} - {{ item.store_item.item_description }}
+                                {% if item.store_item.size %} - {{ item.store_item.size }}{% endif %}
+                                | Required: {{ item.required_quantity }}
+                                | Balance: {{ item.balance_quantity }}
                             </option>
                             {% endfor %}
                         </select>
@@ -73,6 +89,13 @@ Add Material Issue Item
                     <div>
                         <label class="block font-bold mb-2">Remarks</label>
                         <input type="text" name="remarks" placeholder="Material remarks"
+                               class="w-full border border-slate-300 rounded-2xl px-4 py-3">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">Serial Number</label>
+                        <input type="text" name="serial_number"
+                               placeholder="Serial number, if applicable"
                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
 
@@ -94,16 +117,49 @@ Add Material Issue Item
 
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
-    new TomSelect('#store-item-select', {
+    var categorySelect = new TomSelect('#category-filter', {
+        create: false,
+        placeholder: 'Search category...'
+    });
+    var storeItemSelect = new TomSelect('#store-item-select', {
         create: false,
         maxOptions: 5000,
         placeholder: 'Search by item name, code or category...',
         searchField: ['text']
     });
-    new TomSelect('#boq-item-select', {
+    var boqItemSelect = new TomSelect('#boq-item-select', {
         create: false,
         placeholder: 'Select BOQ item...',
         searchField: ['text']
+    });
+
+    document.getElementById('category-filter').addEventListener('change', function() {
+        var categoryId = this.value;
+        var storeSelect = document.getElementById('store-item-select');
+        if (storeItemSelect) storeItemSelect.destroy();
+        Array.from(storeSelect.options).forEach(function(option) {
+            if (!option.value) return;
+            var visible = !categoryId || option.dataset.category === categoryId;
+            option.hidden = !visible;
+            option.disabled = !visible;
+        });
+        if (storeSelect.selectedOptions[0] && storeSelect.selectedOptions[0].disabled) {
+            storeSelect.value = '';
+        }
+        storeItemSelect = new TomSelect('#store-item-select', {
+            create: false,
+            maxOptions: 5000,
+            placeholder: 'Search by item name, code or category...',
+            searchField: ['text']
+        });
+    });
+
+    document.getElementById('boq-item-select').addEventListener('change', function() {
+        var option = this.selectedOptions[0];
+        if (!option || !option.value) return;
+        categorySelect.setValue(option.dataset.category, true);
+        document.getElementById('category-filter').dispatchEvent(new Event('change'));
+        storeItemSelect.setValue(option.dataset.storeItem, true);
     });
 </script>
 

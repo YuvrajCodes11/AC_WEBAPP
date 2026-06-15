@@ -167,13 +167,15 @@ def boq_pdf_report(request, id):
     elements += section_header("Material Items", styles)
 
     col_widths = [
-        (PAGE_W - 2*MARGIN)*0.34,   # Item
-        (PAGE_W - 2*MARGIN)*0.10,   # Unit
-        (PAGE_W - 2*MARGIN)*0.12,   # BOQ Qty
-        (PAGE_W - 2*MARGIN)*0.12,   # Issued
-        (PAGE_W - 2*MARGIN)*0.12,   # Balance
-        (PAGE_W - 2*MARGIN)*0.10,   # Rate
-        (PAGE_W - 2*MARGIN)*0.10,   # Amount
+        (PAGE_W - 2*MARGIN)*0.28,
+        (PAGE_W - 2*MARGIN)*0.08,
+        (PAGE_W - 2*MARGIN)*0.10,
+        (PAGE_W - 2*MARGIN)*0.10,
+        (PAGE_W - 2*MARGIN)*0.10,
+        (PAGE_W - 2*MARGIN)*0.10,
+        (PAGE_W - 2*MARGIN)*0.09,
+        (PAGE_W - 2*MARGIN)*0.07,
+        (PAGE_W - 2*MARGIN)*0.08,
     ]
 
     def hdr(txt):
@@ -195,6 +197,8 @@ def boq_pdf_report(request, id):
         hdr("Unit"),
         hdr("BOQ Qty"),
         hdr("Issued"),
+        hdr("Consumed"),
+        hdr("Returned"),
         hdr("Balance"),
         hdr("Rate (₹)"),
         hdr("Amount (₹)"),
@@ -202,6 +206,8 @@ def boq_pdf_report(request, id):
 
     grand_required = Decimal("0")
     grand_issued   = Decimal("0")
+    grand_consumed = Decimal("0")
+    grand_returned = Decimal("0")
     grand_amount   = Decimal("0")
 
     for i, item in enumerate(boq_items):
@@ -209,6 +215,8 @@ def boq_pdf_report(request, id):
         amount   = item.total_amount()
         grand_required += item.required_quantity
         grand_issued   += item.issued_quantity
+        grand_consumed += item.consumed_quantity
+        grand_returned += item.returned_quantity
         grand_amount   += amount
 
         desc_text = item.store_item.item_description
@@ -229,6 +237,10 @@ def boq_pdf_report(request, id):
             cell(f"{item.required_quantity:.2f}", align="RIGHT"),
             cell(f"{item.issued_quantity:.2f}", align="RIGHT",
                  colour=colors.HexColor("#2563EB")),
+            cell(f"{item.consumed_quantity:.2f}", align="RIGHT",
+                 colour=BRAND_ORANGE),
+            cell(f"{item.returned_quantity:.2f}", align="RIGHT",
+                 colour=BRAND_GREEN),
             cell(f"{balance:.2f}", bold=True, align="RIGHT",
                  colour=BRAND_RED),
             cell(f"{item.rate:.2f}", align="RIGHT"),
@@ -246,6 +258,10 @@ def boq_pdf_report(request, id):
         cell(f"{grand_required:.2f}", bold=True, align="RIGHT"),
         cell(f"{grand_issued:.2f}", bold=True, align="RIGHT",
              colour=colors.HexColor("#2563EB")),
+        cell(f"{grand_consumed:.2f}", bold=True, align="RIGHT",
+             colour=BRAND_ORANGE),
+        cell(f"{grand_returned:.2f}", bold=True, align="RIGHT",
+             colour=BRAND_GREEN),
         cell(f"{max(grand_required - grand_issued, Decimal('0')):.2f}", bold=True, align="RIGHT",
              colour=BRAND_RED),
         cell(""),
@@ -346,6 +362,6 @@ def boq_pdf_report(request, id):
 
     response = HttpResponse(buffer, content_type="application/pdf")
     response["Content-Disposition"] = (
-        f'attachment; filename="BOQ_Report_{boq.boq_id}_{project_label}.pdf"'
+        f'inline; filename="BOQ_Report_{boq.boq_id}_{project_label}.pdf"'
     )
     return response

@@ -4,6 +4,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -62,10 +63,6 @@ def material_issue_list(request):
             total=Sum("returned_quantity")
         )["total"] or decimal_zero()
 
-        issue.total_unused_quantity = issue.items.aggregate(
-            total=Sum("unused_quantity")
-        )["total"] or decimal_zero()
-
         issue.total_scrap_quantity = issue.items.aggregate(
             total=Sum("scrap_quantity")
         )["total"] or decimal_zero()
@@ -74,7 +71,6 @@ def material_issue_list(request):
             issue.total_issued_quantity
             - issue.total_consumed_quantity
             - issue.total_returned_quantity
-            - issue.total_unused_quantity
             - issue.total_scrap_quantity
         )
 
@@ -146,15 +142,11 @@ def material_issue_customer_report(request):
             total=Sum("returned_quantity")
         )["total"] or decimal_zero()
 
-        total_unused = issue_items.aggregate(
-            total=Sum("unused_quantity")
-        )["total"] or decimal_zero()
-
         total_scrap = issue_items.aggregate(
             total=Sum("scrap_quantity")
         )["total"] or decimal_zero()
 
-        total_balance = total_issued - total_consumed - total_returned - total_unused - total_scrap
+        total_balance = total_issued - total_consumed - total_returned - total_scrap
 
         if issue_items.exists():
             report_data.append({
@@ -164,7 +156,6 @@ def material_issue_customer_report(request):
                 "total_issued": total_issued,
                 "total_consumed": total_consumed,
                 "total_returned": total_returned,
-                "total_unused": total_unused,
                 "total_scrap": total_scrap,
                 "total_balance": total_balance,
             })
@@ -230,6 +221,7 @@ def add_material_issue(request):
     boq_items = ProjectBOQItem.objects.select_related(
         "boq",
         "store_item",
+        "store_item__category",
     ).all().order_by("-id")
 
     error = None
@@ -246,6 +238,7 @@ def add_material_issue(request):
             issue_file = request.FILES.get("issue_file")
 
             store_item_ids = request.POST.getlist("store_item")
+            category_ids = request.POST.getlist("category")
             boq_item_ids = request.POST.getlist("boq_item")
             issued_quantities = request.POST.getlist("issued_quantity")
             item_remarks = request.POST.getlist("item_remarks")
@@ -260,56 +253,69 @@ def add_material_issue(request):
                 if boq_id:
                     boq = get_object_or_404(ProjectBOQ, id=boq_id, project=project)
 
-                material_issue = MaterialIssue.objects.create(
-                    project=project,
-                    boq=boq,
-                    heading=heading,
-                    issued_to=issued_to or "Site Engineer",
-                    received_by=received_by,
-                    status=status,
-                    remarks=remarks,
-                    issue_file=issue_file,
-                    issued_by=request.user,
-                )
+                serial_numbers = request.POST.getlist("serial_number")
 
-                for index, store_item_id in enumerate(store_item_ids):
-                    if not store_item_id:
-                        continue
-
-                    issued_quantity = Decimal(
-                        issued_quantities[index] or "0"
+                with transaction.atomic():
+                    material_issue = MaterialIssue.objects.create(
+                        project=project,
+                        boq=boq,
+                        heading=heading,
+                        issued_to=issued_to or "Site Engineer",
+                        received_by=received_by,
+                        status=status,
+                        remarks=remarks,
+                        issue_file=issue_file,
+                        issued_by=request.user,
                     )
 
-                    if issued_quantity <= 0:
-                        continue
+                    for index, store_item_id in enumerate(store_item_ids):
+                        if not store_item_id:
+                            continue
 
-                    store_item = get_object_or_404(
-                        StoreItem,
-                        id=store_item_id
-                    )
+                        issued_quantity = Decimal(
+                            issued_quantities[index] or "0"
+                        )
 
-                    boq_item = None
+                        if issued_quantity <= 0:
+                            continue
 
-                    if index < len(boq_item_ids):
-                        boq_item_id = boq_item_ids[index]
-                        if boq_item_id:
-                            boq_item = get_object_or_404(
-                                ProjectBOQItem,
-                                id=boq_item_id,
-                                boq__project=project,
-                            )
+                        store_item = get_object_or_404(
+                            StoreItem,
+                            id=store_item_id
+                        )
+                        if index < len(category_ids) and category_ids[index]:
+                            if str(store_item.category_id) != category_ids[index]:
+                                raise ValueError(
+                                    "Selected store item does not belong to the selected category."
+                                )
 
-                    remark = ""
-                    if index < len(item_remarks):
-                        remark = item_remarks[index].strip()
+                        boq_item = None
 
-                    MaterialIssueItem.objects.create(
-                        material_issue=material_issue,
-                        store_item=store_item,
-                        boq_item=boq_item,
-                        issued_quantity=issued_quantity,
-                        remarks=remark,
-                    )
+                        if index < len(boq_item_ids):
+                            boq_item_id = boq_item_ids[index]
+                            if boq_item_id:
+                                boq_item = get_object_or_404(
+                                    ProjectBOQItem,
+                                    id=boq_item_id,
+                                    boq__project=project,
+                                )
+
+                        remark = ""
+                        if index < len(item_remarks):
+                            remark = item_remarks[index].strip()
+
+                        serial_number = ""
+                        if index < len(serial_numbers):
+                            serial_number = serial_numbers[index].strip()
+
+                        MaterialIssueItem.objects.create(
+                            material_issue=material_issue,
+                            store_item=store_item,
+                            boq_item=boq_item,
+                            issued_quantity=issued_quantity,
+                            serial_number=serial_number or store_item.serial_number,
+                            remarks=remark,
+                        )
 
                 messages.success(request, "Material issue created successfully.")
                 return redirect("material_issue_detail", id=material_issue.id)
@@ -363,10 +369,6 @@ def material_issue_detail(request, id):
         total=Sum("returned_quantity")
     )["total"] or decimal_zero()
 
-    total_unused_quantity = issue_items.aggregate(
-        total=Sum("unused_quantity")
-    )["total"] or decimal_zero()
-
     total_scrap_quantity = issue_items.aggregate(
         total=Sum("scrap_quantity")
     )["total"] or decimal_zero()
@@ -375,7 +377,6 @@ def material_issue_detail(request, id):
         total_issued_quantity
         - total_consumed_quantity
         - total_returned_quantity
-        - total_unused_quantity
         - total_scrap_quantity
     )
 
@@ -385,7 +386,6 @@ def material_issue_detail(request, id):
         "total_issued_quantity": total_issued_quantity,
         "total_consumed_quantity": total_consumed_quantity,
         "total_returned_quantity": total_returned_quantity,
-        "total_unused_quantity": total_unused_quantity,
         "total_scrap_quantity": total_scrap_quantity,
         "total_balance_quantity": total_balance_quantity,
     })
@@ -485,6 +485,7 @@ def add_material_issue_item(request, issue_id):
     boq_items = ProjectBOQItem.objects.select_related(
         "boq",
         "store_item",
+        "store_item__category",
     )
 
     if material_issue.boq:
@@ -497,6 +498,7 @@ def add_material_issue_item(request, issue_id):
     if request.method == "POST":
         try:
             store_item_id = request.POST.get("store_item")
+            category_id = request.POST.get("category")
             boq_item_id = request.POST.get("boq_item") or None
 
             issued_quantity = Decimal(
@@ -504,6 +506,7 @@ def add_material_issue_item(request, issue_id):
             )
 
             remarks = request.POST.get("remarks", "").strip()
+            serial_number = request.POST.get("serial_number", "").strip()
 
             if not store_item_id:
                 error = "Please select store item."
@@ -513,6 +516,10 @@ def add_material_issue_item(request, issue_id):
 
             else:
                 store_item = get_object_or_404(StoreItem, id=store_item_id)
+                if category_id and str(store_item.category_id) != category_id:
+                    raise ValueError(
+                        "Selected store item does not belong to the selected category."
+                    )
 
                 boq_item = None
                 if boq_item_id:
@@ -527,6 +534,7 @@ def add_material_issue_item(request, issue_id):
                     store_item=store_item,
                     boq_item=boq_item,
                     issued_quantity=issued_quantity,
+                    serial_number=serial_number or store_item.serial_number,
                     remarks=remarks,
                 )
 
@@ -563,6 +571,7 @@ def edit_material_issue_item(request, id):
     boq_items = ProjectBOQItem.objects.select_related(
         "boq",
         "store_item",
+        "store_item__category",
     )
 
     if issue_item.material_issue.boq:
@@ -574,16 +583,15 @@ def edit_material_issue_item(request, id):
 
     if request.method == "POST":
         try:
+            issue_item.issued_quantity = Decimal(
+                request.POST.get("issued_quantity") or "0"
+            )
             issue_item.consumed_quantity = Decimal(
                 request.POST.get("consumed_quantity") or "0"
             )
 
             issue_item.returned_quantity = Decimal(
                 request.POST.get("returned_quantity") or "0"
-            )
-
-            issue_item.unused_quantity = Decimal(
-                request.POST.get("unused_quantity") or "0"
             )
 
             issue_item.serial_number = (
@@ -675,10 +683,6 @@ def material_issue_print(request, id):
         total=Sum("returned_quantity")
     )["total"] or decimal_zero()
 
-    total_unused_quantity = issue_items.aggregate(
-        total=Sum("unused_quantity")
-    )["total"] or decimal_zero()
-
     total_scrap_quantity = issue_items.aggregate(
         total=Sum("scrap_quantity")
     )["total"] or decimal_zero()
@@ -687,7 +691,6 @@ def material_issue_print(request, id):
         total_issued_quantity
         - total_consumed_quantity
         - total_returned_quantity
-        - total_unused_quantity
         - total_scrap_quantity
     )
 
@@ -697,7 +700,6 @@ def material_issue_print(request, id):
         "total_issued_quantity": total_issued_quantity,
         "total_consumed_quantity": total_consumed_quantity,
         "total_returned_quantity": total_returned_quantity,
-        "total_unused_quantity": total_unused_quantity,
         "total_scrap_quantity": total_scrap_quantity,
         "total_balance_quantity": total_balance_quantity,
     })

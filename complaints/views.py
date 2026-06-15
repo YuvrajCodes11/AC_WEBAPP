@@ -402,5 +402,5 @@ def customer_service_history_pdf(request, customer_id):
     doc.build(elements)
     buffer.seek(0)
     response = HttpResponse(buffer, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="Service_History_{customer.customer_id}.pdf"'
+    response["Content-Disposition"] = f'inline; filename="Service_History_{customer.customer_id}.pdf"'
     return response

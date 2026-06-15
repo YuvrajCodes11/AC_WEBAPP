@@ -52,7 +52,7 @@
                         <p class="text-sm text-slate-500 mt-1">{{ entry.customer.address|default:"-" }}</p>
                         <a href="{% url 'customer_service_history_pdf' entry.customer.id %}"
                            class="no-print inline-flex mt-3 bg-[#0F4C81] text-white px-4 py-2 rounded-xl text-sm font-bold">
-                            Download PDF
+                            Print PDF
                         </a>
                     </div>
                     <div class="grid grid-cols-2 gap-3 text-center">

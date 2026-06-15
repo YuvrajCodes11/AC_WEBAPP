@@ -49,7 +49,7 @@ class MaterialIssueStockTests(TestCase):
             issued_by=self.user,
         )
 
-    def test_issue_return_unused_scrap_and_delete_are_synchronised(self):
+    def test_issue_return_scrap_and_delete_are_synchronised(self):
         issue_item = MaterialIssueItem.objects.create(
             material_issue=self.issue,
             store_item=self.item,
@@ -63,8 +63,7 @@ class MaterialIssueStockTests(TestCase):
         self.assertEqual(issue_item.serial_number, "SN-100")
 
         issue_item.consumed_quantity = Decimal("1")
-        issue_item.returned_quantity = Decimal("2")
-        issue_item.unused_quantity = Decimal("1")
+        issue_item.returned_quantity = Decimal("3")
         issue_item.scrap_quantity = Decimal("1")
         issue_item.scrap_reason = "Damaged at site"
         issue_item.save()
@@ -92,6 +91,36 @@ class MaterialIssueStockTests(TestCase):
         self.boq_item.refresh_from_db()
         self.assertEqual(self.item.current_stock, Decimal("10"))
         self.assertEqual(self.boq_item.issued_quantity, Decimal("0"))
+        self.assertEqual(self.boq_item.consumed_quantity, Decimal("0"))
+        self.assertEqual(self.boq_item.returned_quantity, Decimal("0"))
+
+    def test_edit_synchronises_store_boq_and_serial_number(self):
+        issue_item = MaterialIssueItem.objects.create(
+            material_issue=self.issue,
+            store_item=self.item,
+            boq_item=self.boq_item,
+            issued_quantity=Decimal("4"),
+            serial_number="SITE-SN-200",
+        )
+
+        issue_item.issued_quantity = Decimal("6")
+        issue_item.consumed_quantity = Decimal("2")
+        issue_item.returned_quantity = Decimal("1")
+        issue_item.save()
+
+        self.item.refresh_from_db()
+        self.boq_item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("5"))
+        self.assertEqual(self.boq_item.issued_quantity, Decimal("6"))
+        self.assertEqual(self.boq_item.consumed_quantity, Decimal("2"))
+        self.assertEqual(self.boq_item.returned_quantity, Decimal("1"))
+        self.assertEqual(
+            StoreTransaction.objects.filter(
+                material_issue_item=issue_item,
+                transaction_type="OUT",
+            ).get().quantity,
+            Decimal("6"),
+        )
 
     def test_unrelated_boq_is_rejected(self):
         other_project = CustomerProject.objects.create(site_name="Other Site")
@@ -133,6 +162,7 @@ class MaterialIssueStockTests(TestCase):
             "Sent",
             "BOQ Balance",
             "Consumed",
+            "Returned",
             "Scrap",
             "Balance",
             "Remarks",

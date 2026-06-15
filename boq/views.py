@@ -84,6 +84,7 @@ def add_boq(request):
             remarks = request.POST.get("remarks", "").strip()
 
             store_item_ids = request.POST.getlist("store_item")
+            category_ids = request.POST.getlist("category")
             required_quantities = request.POST.getlist("required_quantity")
             rates = request.POST.getlist("rate")
             item_remarks = request.POST.getlist("item_remarks")
@@ -121,6 +122,9 @@ def add_boq(request):
                     continue
 
                 store_item = get_object_or_404(StoreItem, id=store_item_id)
+                if index < len(category_ids) and category_ids[index]:
+                    if str(store_item.category_id) != category_ids[index]:
+                        raise ValueError("Selected store item does not belong to the selected category.")
 
                 remark = ""
                 if index < len(item_remarks):
@@ -186,6 +190,14 @@ def boq_detail(request, id):
         total=Sum("issued_quantity")
     )["total"] or Decimal("0.00")
 
+    total_consumed_quantity = boq_items.aggregate(
+        total=Sum("consumed_quantity")
+    )["total"] or Decimal("0.00")
+
+    total_returned_quantity = boq_items.aggregate(
+        total=Sum("returned_quantity")
+    )["total"] or Decimal("0.00")
+
     total_balance_quantity = total_required_quantity - total_issued_quantity
 
     return render(request, "boq_detail.html", {
@@ -194,6 +206,8 @@ def boq_detail(request, id):
         "total_amount": total_amount,
         "total_required_quantity": total_required_quantity,
         "total_issued_quantity": total_issued_quantity,
+        "total_consumed_quantity": total_consumed_quantity,
+        "total_returned_quantity": total_returned_quantity,
         "total_balance_quantity": total_balance_quantity if total_balance_quantity > 0 else Decimal("0.00"),
     })
 
@@ -262,6 +276,7 @@ def add_boq_item(request, boq_id):
     if request.method == "POST":
         try:
             store_item_id = request.POST.get("store_item")
+            category_id = request.POST.get("category")
             required_quantity = parse_decimal(
                 request.POST.get("required_quantity")
             )
@@ -278,6 +293,8 @@ def add_boq_item(request, boq_id):
 
             else:
                 store_item = get_object_or_404(StoreItem, id=store_item_id)
+                if category_id and str(store_item.category_id) != category_id:
+                    raise ValueError("Selected store item does not belong to the selected category.")
 
                 ProjectBOQItem.objects.create(
                     boq=boq,
@@ -317,15 +334,23 @@ def edit_boq_item(request, id):
     if request.method == "POST":
         try:
             store_item_id = request.POST.get("store_item")
+            category_id = request.POST.get("category")
 
             if not store_item_id:
                 error = "Please select store item."
 
             else:
-                boq_item.store_item = get_object_or_404(
+                store_item = get_object_or_404(
                     StoreItem,
                     id=store_item_id
                 )
+                if category_id and str(store_item.category_id) != category_id:
+                    raise ValueError("Selected store item does not belong to the selected category.")
+                if boq_item.material_issue_items.exists() and store_item.id != boq_item.store_item_id:
+                    raise ValueError(
+                        "Store item cannot be changed after material has been issued against this BOQ item."
+                    )
+                boq_item.store_item = store_item
 
                 boq_item.required_quantity = parse_decimal(
                     request.POST.get("required_quantity")

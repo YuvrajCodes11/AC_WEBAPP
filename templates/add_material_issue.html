@@ -161,9 +161,8 @@ Add Material Issue
                             {% for project in projects %}
                             <option value="{{ project.id }}">
                                 {{ project.project_id }} - {{ project.site_name }}
-                                {% if project.customer %}
-                                    | {{ project.customer.customer_name }}
-                                {% endif %}
+                                | {{ project.get_customer_name }}
+                                {% if not project.is_active %}| Inactive{% endif %}
                             </option>
                             {% endfor %}
                         </select>
@@ -294,7 +293,20 @@ Add Material Issue
 
                         </div>
 
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Category
+                                </label>
+
+                                <select name="category" class="category-select">
+                                    <option value="">All Categories</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.category_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
 
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-2">
@@ -306,7 +318,7 @@ Add Material Issue
                                     <option value="">Search & Select Store Item</option>
 
                                     {% for item in store_items %}
-                                    <option value="{{ item.id }}">
+                                    <option value="{{ item.id }}" data-category="{{ item.category.id }}">
                                         {{ item.item_code }} - {{ item.item_description }}
                                         {% if item.size %}
                                             - {{ item.size }}
@@ -328,11 +340,16 @@ Add Material Issue
                                     <option value="">Search & Select BOQ Item</option>
 
                                     {% for boq_item in boq_items %}
-                                    <option value="{{ boq_item.id }}" data-project="{% if boq_item.boq.project %}{{ boq_item.boq.project.id }}{% endif %}" data-boq="{{ boq_item.boq.id }}">
+                                    <option value="{{ boq_item.id }}"
+                                            data-project="{% if boq_item.boq.project %}{{ boq_item.boq.project.id }}{% endif %}"
+                                            data-boq="{{ boq_item.boq.id }}"
+                                            data-store-item="{{ boq_item.store_item.id }}"
+                                            data-category="{{ boq_item.store_item.category.id }}">
                                         {% if boq_item.boq %}
                                             {{ boq_item.boq.boq_id }} |
                                         {% endif %}
                                         {{ boq_item.store_item.item_code }} - {{ boq_item.store_item.item_description }}
+                                        {% if boq_item.store_item.size %} - {{ boq_item.store_item.size }}{% endif %}
                                         {% if boq_item.required_quantity %}
                                             | Required: {{ boq_item.required_quantity }} | Balance: {{ boq_item.balance_quantity }}
                                         {% endif %}
@@ -344,7 +361,7 @@ Add Material Issue
 
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
 
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-2">
@@ -357,6 +374,17 @@ Add Material Issue
                                        value="0"
                                        name="issued_quantity"
                                        class="nice-input">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">
+                                    Serial Number
+                                </label>
+
+                                <input type="text"
+                                       name="serial_number"
+                                       class="nice-input"
+                                       placeholder="Serial number, if applicable">
                             </div>
 
                             <div>
@@ -421,16 +449,68 @@ Add Material Issue
     function initializeAllSearchDropdowns() {
         initializeSingleSelect(".project-select", "Search project...");
         initializeSingleSelect(".boq-select", "Search BOQ...");
+        initializeSingleSelect(".category-select", "Search category...");
         initializeSingleSelect(".store-item-select", "Search item code, name, size, stock...");
         initializeSingleSelect(".boq-item-select", "Search BOQ item...");
     }
 
     function destroySearchDropdownsInside(row) {
-        row.querySelectorAll(".store-item-select, .boq-item-select").forEach(function(select) {
+        row.querySelectorAll(".category-select, .store-item-select, .boq-item-select").forEach(function(select) {
             if (select.tomselect) {
                 select.tomselect.destroy();
             }
         });
+    }
+
+    function filterRowItems(row) {
+        const category = row.querySelector(".category-select");
+        const storeItem = row.querySelector(".store-item-select");
+        const boqItem = row.querySelector(".boq-item-select");
+        const categoryId = category.value;
+
+        [storeItem, boqItem].forEach(function(select) {
+            if (select.tomselect) select.tomselect.destroy();
+            Array.from(select.options).forEach(function(option) {
+                if (!option.value) return;
+                const visible = !categoryId || option.dataset.category === categoryId;
+                option.hidden = !visible;
+                option.disabled = !visible;
+            });
+            if (select.selectedOptions[0] && select.selectedOptions[0].disabled) {
+                select.value = "";
+            }
+        });
+
+        initializeSingleSelect(".store-item-select", "Search item code, name, size, stock...");
+        initializeSingleSelect(".boq-item-select", "Search BOQ item...");
+    }
+
+    function bindRowRelationships(row) {
+        const category = row.querySelector(".category-select");
+        const storeItem = row.querySelector(".store-item-select");
+        const boqItem = row.querySelector(".boq-item-select");
+
+        if (!category.dataset.bound) {
+            category.dataset.bound = "1";
+            category.addEventListener("change", function() {
+                filterRowItems(row);
+            });
+        }
+
+        if (!boqItem.dataset.bound) {
+            boqItem.dataset.bound = "1";
+            boqItem.addEventListener("change", function() {
+                const selected = boqItem.selectedOptions[0];
+                if (!selected || !selected.value) return;
+                const storeItemId = selected.dataset.storeItem;
+                const categoryId = selected.dataset.category;
+                if (category.tomselect) category.tomselect.setValue(categoryId, true);
+                else category.value = categoryId;
+                filterRowItems(row);
+                if (storeItem.tomselect) storeItem.tomselect.setValue(storeItemId, true);
+                else storeItem.value = storeItemId;
+            });
+        }
     }
 
     function filterBoqItems() {
@@ -438,11 +518,15 @@ Add Material Issue
         const boqId = document.querySelector(".boq-select").value;
 
         document.querySelectorAll(".boq-item-select").forEach(function(select) {
+            const row = select.closest(".item-row");
+            if (!row) return;
+            const categoryId = row.querySelector(".category-select").value;
             if (select.tomselect) select.tomselect.destroy();
             Array.from(select.options).forEach(function(option) {
                 const validProject = !option.value || option.dataset.project === projectId;
                 const validBoq = !option.value || !boqId || option.dataset.boq === boqId;
-                option.hidden = !(validProject && validBoq);
+                const validCategory = !option.value || !categoryId || option.dataset.category === categoryId;
+                option.hidden = !(validProject && validBoq && validCategory);
                 option.disabled = option.hidden;
             });
             if (select.selectedOptions[0] && select.selectedOptions[0].disabled) select.value = "";
@@ -459,8 +543,6 @@ Add Material Issue
 
         const clone = firstRow.cloneNode(true);
 
-        initializeAllSearchDropdowns();
-
         clone.querySelectorAll("input").forEach(function(input) {
             if (input.type === "number") {
                 input.value = "0";
@@ -471,11 +553,14 @@ Add Material Issue
 
         clone.querySelectorAll("select").forEach(function(select) {
             select.value = "";
+            delete select.dataset.bound;
         });
 
         itemRows.appendChild(clone);
 
         initializeAllSearchDropdowns();
+        bindRowRelationships(firstRow);
+        bindRowRelationships(clone);
         filterBoqItems();
     }
 
@@ -493,6 +578,7 @@ Add Material Issue
 
     document.addEventListener("DOMContentLoaded", function() {
         initializeAllSearchDropdowns();
+        document.querySelectorAll(".item-row").forEach(bindRowRelationships);
 
         const projectSelect = document.querySelector(".project-select");
         const boqSelect = document.querySelector(".boq-select");
