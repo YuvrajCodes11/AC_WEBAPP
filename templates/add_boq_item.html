@@ -104,6 +104,16 @@ Add BOQ Item
         create: false, placeholder: 'Search category...'
     });
 
+    // Store all original options once before TomSelect touches them
+    var storeSelectEl = document.getElementById('store-item-select');
+    var allStoreOptions = Array.from(storeSelectEl.options).map(function(opt) {
+        return {
+            value: opt.value,
+            text: opt.textContent.trim(),
+            category: opt.getAttribute('data-category') || ''
+        };
+    });
+
     var itemSelect = new TomSelect('#store-item-select', {
         create: false,
         maxOptions: 5000,
@@ -113,18 +123,23 @@ Add BOQ Item
 
     document.getElementById('category-filter').addEventListener('change', function() {
         var catId = this.value;
-        var storeSelect = document.getElementById('store-item-select');
-        var options = storeSelect.querySelectorAll('option');
+
+        // Destroy TomSelect, rebuild native options, re-init
         if (itemSelect) { itemSelect.destroy(); }
-        options.forEach(function(opt) {
-            if (!opt.value) return;
-            var visible = !catId || opt.getAttribute('data-category') === catId;
-            opt.hidden = !visible;
-            opt.disabled = !visible;
+
+        while (storeSelectEl.options.length > 0) storeSelectEl.remove(0);
+
+        allStoreOptions.forEach(function(opt) {
+            if (!opt.value || !catId || opt.category === catId) {
+                var el = document.createElement('option');
+                el.value = opt.value;
+                el.textContent = opt.text;
+                el.setAttribute('data-category', opt.category);
+                storeSelectEl.appendChild(el);
+            }
         });
-        if (storeSelect.selectedOptions[0] && storeSelect.selectedOptions[0].disabled) {
-            storeSelect.value = '';
-        }
+
+        storeSelectEl.value = '';
         itemSelect = new TomSelect('#store-item-select', {
             create: false, maxOptions: 5000,
             placeholder: 'Search item name, code or category...',

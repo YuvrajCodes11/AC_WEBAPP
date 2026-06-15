@@ -524,13 +524,35 @@ Add BOQ
         if (!category || category.dataset.bound) return;
 
         category.dataset.bound = "1";
+
+        // Store all original options once
+        const allOptions = Array.from(item.options).map(function(opt) {
+            return {
+                value: opt.value,
+                text: opt.textContent.trim(),
+                category: opt.dataset.category || ""
+            };
+        });
+
         category.addEventListener("change", function() {
             const categoryId = category.value;
+
+            // Destroy existing TomSelect on store item
             if (item.tomselect) item.tomselect.destroy();
-            Array.from(item.options).forEach(function(option) {
-                option.hidden = Boolean(option.value && categoryId && option.dataset.category !== categoryId);
-                option.disabled = option.hidden;
+
+            // Remove all options and re-add filtered ones
+            while (item.options.length > 0) item.remove(0);
+
+            allOptions.forEach(function(opt) {
+                if (!opt.value || !categoryId || opt.category === categoryId) {
+                    const el = document.createElement("option");
+                    el.value = opt.value;
+                    el.textContent = opt.text;
+                    el.dataset.category = opt.category;
+                    item.appendChild(el);
+                }
             });
+
             item.value = "";
             initializeSingleStoreSearch(item);
         });
