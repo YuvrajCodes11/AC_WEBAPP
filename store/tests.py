@@ -51,14 +51,16 @@ class StoreItemRecalculationTests(TestCase):
         non_vrv = StoreItem.objects.create(
             category=category,
             item_description="Non VRV",
-            is_non_vrv=True,
         )
+        non_vrv.set_non_vrv(True)
+        non_vrv.save()
         both = StoreItem.objects.create(
             category=category,
             item_description="Both",
             is_vrv=True,
-            is_non_vrv=True,
         )
+        both.set_non_vrv(True)
+        both.save()
 
         self.assertEqual(neither.item_type_display, "-")
         self.assertEqual(vrv.item_type_display, "VRV")

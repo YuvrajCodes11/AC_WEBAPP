@@ -83,11 +83,6 @@ class StoreItem(models.Model):
         help_text="Check if this item is VRV type."
     )
 
-    is_non_vrv = models.BooleanField(
-        default=False,
-        help_text="Check if this item is Non-VRV type."
-    )
-
     unit = models.CharField(
         max_length=20,
         choices=UNIT_CHOICES,
@@ -183,6 +178,20 @@ class StoreItem(models.Model):
         if self.is_non_vrv:
             labels.append("Non-VRV")
         return " / ".join(labels) if labels else "-"
+
+    @property
+    def is_non_vrv(self):
+        return "[NON_VRV]" in (self.remarks or "")
+
+    @property
+    def clean_remarks(self):
+        return (self.remarks or "").replace("[NON_VRV]", "").strip()
+
+    def set_non_vrv(self, enabled):
+        marker = "[NON_VRV]"
+        remarks = (self.remarks or "").replace(marker, "").strip()
+        remarks = remarks[:239].rstrip()
+        self.remarks = f"{remarks} {marker}".strip() if enabled else (remarks or None)
 
 
 class StoreTransaction(models.Model):

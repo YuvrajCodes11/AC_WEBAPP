@@ -242,7 +242,7 @@ Store Items
                                 {% endif %}
 
                                 <p class="text-xs text-slate-500 mt-1">
-                                    {{ item.remarks|default:"No remarks added" }}
+                                    {{ item.clean_remarks|default:"No remarks added" }}
                                 </p>
 
                                 {% if item.is_low_stock %}

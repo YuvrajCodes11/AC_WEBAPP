@@ -279,7 +279,7 @@ def add_store_item(request):
             else:
                 category = get_object_or_404(StoreCategory, id=category_id)
 
-                StoreItem.objects.create(
+                item = StoreItem(
                     category=category,
                     item_description=item_description,
                     size=size,
@@ -287,13 +287,14 @@ def add_store_item(request):
                     remarks=remarks,
                     unit=unit,
                     is_vrv=True if request.POST.get("is_vrv") == "on" else False,
-                    is_non_vrv=True if request.POST.get("is_non_vrv") == "on" else False,
                     opening_stock=opening_stock,
                     current_stock=opening_stock,
                     minimum_stock=minimum_stock,
                     alert_percentage=alert_percentage,
                     created_by=request.user,
                 )
+                item.set_non_vrv(request.POST.get("is_non_vrv") == "on")
+                item.save()
 
                 messages.success(request, "Store item added successfully.")
                 return redirect("store_item_list")
@@ -337,7 +338,7 @@ def edit_store_item(request, id):
             item.serial_number = request.POST.get("serial_number", "").strip() or None
             item.remarks = request.POST.get("remarks", "").strip()
             item.is_vrv = True if request.POST.get("is_vrv") == "on" else False
-            item.is_non_vrv = True if request.POST.get("is_non_vrv") == "on" else False
+            item.set_non_vrv(request.POST.get("is_non_vrv") == "on")
             item.unit = request.POST.get("unit")
 
             item.opening_stock = Decimal(
