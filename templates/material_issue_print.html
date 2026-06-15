@@ -75,7 +75,7 @@ Print Material Issue
                 <div>
                     <p><strong>Issued By:</strong> {{ material_issue.issued_by.username|default:"-" }}</p>
                     <p><strong>Issued To:</strong> {{ material_issue.issued_to }}</p>
-                    <p><strong>Received By:</strong> {{ material_issue.received_by|default:"-" }}</p>
+                    <p><strong>{% if material_issue.project %}Received By{% else %}Direct Entry Name{% endif %}:</strong> {{ material_issue.received_by|default:"-" }}</p>
                 </div>
 
             </div>
@@ -83,7 +83,7 @@ Print Material Issue
             <div class="grid grid-cols-2 gap-5 mt-5 text-sm">
 
                 <div>
-                    <p><strong>Project ID:</strong> {% if material_issue.project %}{{ material_issue.project.project_id }}{% else %}Direct Issue{% endif %}</p>
+                    <p><strong>Project ID:</strong> {% if material_issue.project %}{{ material_issue.project.project_id }}{% else %}Direct Entry{% endif %}</p>
                     <p><strong>Site Name:</strong> {% if material_issue.project %}{{ material_issue.project.site_name }}{% else %}-{% endif %}</p>
                     <p><strong>Location:</strong> {% if material_issue.project %}{{ material_issue.project.location|default:"-" }}{% else %}-{% endif %}</p>
                 </div>

@@ -97,7 +97,7 @@ class MaterialIssue(models.Model):
     def clean(self):
         if not self.project_id and not (self.received_by or "").strip():
             raise ValidationError(
-                "Select a project or enter the direct person/vendor name."
+                "Select a project or enter the Direct Entry Name."
             )
         if self.boq_id and not self.project_id:
             raise ValidationError("A BOQ can only be selected with a project.")

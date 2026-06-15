@@ -153,12 +153,12 @@ Add Material Issue
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2">
-                            Project <span class="text-slate-400 font-normal">(optional for direct issue)</span>
+                            Project <span class="text-slate-400 font-normal">(project issue only)</span>
                         </label>
 
                         <select name="project"
                                 class="project-select">
-                            <option value="">Search & Select Project</option>
+                            <option value="">No Project - Direct Entry</option>
 
                             {% for project in projects %}
                             <option value="{{ project.id }}" {% if selected_project_id == project.id|stringformat:"s" %}selected{% endif %}>
@@ -203,12 +203,12 @@ Add Material Issue
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2">
-                            Direct Person / Vendor <span class="text-slate-400 font-normal">(required without project)</span>
+                            Direct Entry Name <span class="text-slate-400 font-normal">(person/vendor name without project)</span>
                         </label>
 
                         <input type="text"
                                name="received_by"
-                               placeholder="e.g. Sharma Traders, Ravi Kumar..."
+                               placeholder="Enter person or vendor name"
                                class="nice-input">
                     </div>
 
@@ -321,7 +321,9 @@ Add Material Issue
                                     <option value="">Search & Select Store Item</option>
 
                                     {% for item in store_items %}
-                                    <option value="{{ item.id }}" data-category="{{ item.category.id }}">
+                                    <option value="{{ item.id }}"
+                                            data-category="{{ item.category.id }}"
+                                            data-serial="{{ item.serial_number|default:'' }}">
                                         {{ item.item_code }} - {{ item.item_description }}
                                         {% if item.size %}
                                             - {{ item.size }}
@@ -568,6 +570,14 @@ Add Material Issue
         );
     }
 
+    function syncSerialNumber(row) {
+        const storeItem = row.querySelector(".store-item-select");
+        const serialInput = row.querySelector('input[name="serial_number"]');
+        const selected = storeItem.selectedOptions[0];
+        if (!serialInput || !selected || !selected.value) return;
+        serialInput.value = selected.dataset.serial || "";
+    }
+
     function bindRowRelationships(row) {
         const category = row.querySelector(".category-select");
         const storeItem = row.querySelector(".store-item-select");
@@ -593,6 +603,7 @@ Add Material Issue
                 refreshStoreItems(row);
                 if (storeItem.tomselect) storeItem.tomselect.setValue(storeItemId, true);
                 else storeItem.value = storeItemId;
+                syncSerialNumber(row);
             });
         }
 
@@ -600,6 +611,7 @@ Add Material Issue
             storeItem.dataset.bound = "1";
             storeItem.addEventListener("change", function() {
                 const storeItemId = storeItem.value;
+                syncSerialNumber(row);
                 refreshBoqItems(row);
                 if (!storeItemId) return;
                 const matches = Array.from(boqItem.options).filter(function(option) {

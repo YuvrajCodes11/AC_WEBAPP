@@ -154,6 +154,8 @@ class MaterialIssueStockTests(TestCase):
         self.assertContains(response, self.project.project_id)
         self.assertContains(response, inactive_project.project_id)
         self.assertContains(response, "Inactive But Visible")
+        self.assertContains(response, 'data-serial="', html=False)
+        self.assertContains(response, "Direct Entry Name")
 
     def test_add_error_keeps_selected_project_visible(self):
         self.client.force_login(self.user)
@@ -333,7 +335,7 @@ class MaterialIssueStockTests(TestCase):
             reverse("material_issue_detail", args=[direct_issue.id])
         )
         self.assertEqual(detail.status_code, 200)
-        self.assertContains(detail, "Direct Issue - Sharma Traders")
+        self.assertContains(detail, "Direct Entry - Sharma Traders")
 
         direct_issue.project = self.project
         direct_issue.received_by = ""
@@ -358,7 +360,7 @@ class MaterialIssueStockTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(
             response,
-            "Select a project or enter the direct person/vendor name.",
+            "Select a project or enter the Direct Entry Name.",
         )
         self.assertFalse(
             MaterialIssue.objects.filter(heading="Invalid Direct Issue").exists()

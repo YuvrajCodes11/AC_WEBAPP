@@ -203,7 +203,7 @@ Material Issues
                             </th>
 
                             <th class="px-4 py-4 text-left text-xs font-black uppercase">
-                                Issued To / Received By
+                                Issued To / Direct Name
                             </th>
 
                             <th class="px-4 py-4 text-left text-xs font-black uppercase">
@@ -235,13 +235,13 @@ Material Issues
                             <td class="px-4 py-4 min-w-[260px]">
 
                                 <p class="font-black text-slate-900">
-                                    {% if issue.project %}{{ issue.project.get_customer_name }}{% else %}{{ issue.received_by|default:"Direct Issue" }}{% endif %}
+                                    {% if issue.project %}{{ issue.project.get_customer_name }}{% else %}{{ issue.received_by|default:"Direct Entry" }}{% endif %}
                                 </p>
 
                                 <p class="text-xs text-slate-500 mt-1">
                                     Project ID:
                                     <span class="font-bold">
-                                        {% if issue.project %}{{ issue.project.project_id }}{% else %}Direct Issue{% endif %}
+                                        {% if issue.project %}{{ issue.project.project_id }}{% else %}Direct Entry{% endif %}
                                     </span>
                                 </p>
 
@@ -315,7 +315,7 @@ Material Issues
                                 </p>
 
                                 <p class="text-xs text-slate-500 mt-1">
-                                    Received By:
+                                    {% if issue.project %}Received By:{% else %}Direct Entry Name:{% endif %}
                                     <span class="font-bold">
                                         {{ issue.received_by|default:"-" }}
                                     </span>

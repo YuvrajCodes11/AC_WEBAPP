@@ -61,7 +61,7 @@ Edit Material Issue
 
                     <div>
                         <label class="block font-bold mb-2">
-                            Project <span class="text-slate-400 font-normal">(optional for direct issue)</span>
+                            Project <span class="text-slate-400 font-normal">(project issue only)</span>
                         </label>
 
                         <select name="project"
@@ -69,7 +69,7 @@ Edit Material Issue
                                 class="w-full border border-slate-300 rounded-2xl px-4 py-3">
 
                             <option value="" {% if not material_issue.project %}selected{% endif %}>
-                                Direct issue - no project
+                                No Project - Direct Entry
                             </option>
                             {% for project in projects %}
                             <option value="{{ project.id }}"
@@ -118,13 +118,13 @@ Edit Material Issue
 
                     <div>
                         <label class="block font-bold mb-2">
-                            Direct Person / Vendor <span class="text-slate-400 font-normal text-sm">(required without project)</span>
+                            Direct Entry Name <span class="text-slate-400 font-normal text-sm">(person/vendor name without project)</span>
                         </label>
 
                         <input type="text"
                                name="received_by"
                                value="{{ material_issue.received_by }}"
-                               placeholder="e.g. Sharma Traders, Ravi Kumar..."
+                               placeholder="Enter person or vendor name"
                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
 

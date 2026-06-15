@@ -252,7 +252,7 @@ def add_material_issue(request):
                 project = get_object_or_404(CustomerProject, id=project_id)
 
             if not project and not received_by:
-                error = "Select a project or enter the direct person/vendor name."
+                error = "Select a project or enter the Direct Entry Name."
             elif boq_id and not project:
                 error = "Select a project before selecting a BOQ."
             else:
@@ -425,7 +425,7 @@ def edit_material_issue(request, id):
 
             received_by = request.POST.get("received_by", "").strip()
             if not project_id and not received_by:
-                error = "Select a project or enter the direct person/vendor name."
+                error = "Select a project or enter the Direct Entry Name."
             elif boq_id and not project_id:
                 error = "Select a project before selecting a BOQ."
             else:

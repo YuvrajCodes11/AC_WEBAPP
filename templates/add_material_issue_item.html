@@ -58,7 +58,9 @@ Add Material Issue Item
                                 class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                             <option value="">Search by name, code or category...</option>
                             {% for item in store_items %}
-                            <option value="{{ item.id }}" data-category="{{ item.category.id }}">
+                            <option value="{{ item.id }}"
+                                    data-category="{{ item.category.id }}"
+                                    data-serial="{{ item.serial_number|default:'' }}">
                                 [{{ item.category.category_name }}] {{ item.item_code }} - {{ item.item_description }}
                                 {% if item.size %} - {{ item.size }}{% endif %}
                                 | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
@@ -101,7 +103,7 @@ Add Material Issue Item
 
                     <div>
                         <label class="block font-bold mb-2">Serial Number</label>
-                        <input type="text" name="serial_number"
+                        <input type="text" name="serial_number" id="serial-number"
                                placeholder="Serial number, if applicable"
                                class="w-full border border-slate-300 rounded-2xl px-4 py-3">
                     </div>
@@ -172,6 +174,11 @@ Add Material Issue Item
 
     document.getElementById('store-item-select').addEventListener('change', function() {
         var storeItemId = this.value;
+        var selectedStoreItem = this.selectedOptions[0];
+        document.getElementById('serial-number').value =
+            selectedStoreItem && selectedStoreItem.value
+                ? (selectedStoreItem.dataset.serial || '')
+                : '';
         if (!storeItemId) return;
         var boqSelect = document.getElementById('boq-item-select');
         var matches = Array.from(boqSelect.options).filter(function(option) {
@@ -194,6 +201,7 @@ Add Material Issue Item
         categorySelect.setValue(option.dataset.category, true);
         document.getElementById('category-filter').dispatchEvent(new Event('change'));
         storeItemSelect.setValue(option.dataset.storeItem, true);
+        document.getElementById('store-item-select').dispatchEvent(new Event('change'));
     });
 </script>
 

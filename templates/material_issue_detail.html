@@ -29,7 +29,7 @@ Material Issue Detail
                         {% if material_issue.project %}
                             {{ material_issue.project.project_id }} - {{ material_issue.project.site_name }}
                         {% else %}
-                            Direct Issue - {{ material_issue.received_by }}
+                            Direct Entry - {{ material_issue.received_by }}
                         {% endif %}
                     </p>
                 </div>
@@ -218,10 +218,14 @@ Material Issue Detail
 
                     <div>
                         <p class="text-xs font-black text-slate-400 uppercase">
-                            Received By
+                            {% if material_issue.project %}Received By{% else %}Direct Entry Name{% endif %}
                         </p>
                         <p class="font-bold text-slate-900 mt-1">
-                            {{ material_issue.received_by|default:"-" }}
+                            {% if material_issue.project %}
+                                {{ material_issue.received_by|default:"-" }}
+                            {% else %}
+                                {{ material_issue.received_by|default:"Direct Entry Name Not Provided" }}
+                            {% endif %}
                         </p>
                     </div>
 
