@@ -61,3 +61,13 @@ class BOQPdfFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertTrue(response.content.startswith(b"%PDF"))
+
+    def test_add_boq_initializes_category_search_for_each_new_row(self):
+        response = self.client.get(reverse("add_boq"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "initializeSingleCategorySearch")
+        self.assertContains(
+            response,
+            "initializeSingleCategorySearch(categorySelect)",
+        )

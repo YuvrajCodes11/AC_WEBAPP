@@ -492,15 +492,26 @@ Add BOQ
         });
     }
 
+    function initializeSingleCategorySearch(select) {
+        if (!select || select.tomselect) {
+            return;
+        }
+
+        new TomSelect(select, {
+            create: false,
+            maxOptions: 5000,
+            placeholder: "Search category...",
+            searchField: ["text"],
+            sortField: {
+                field: "text",
+                direction: "asc"
+            }
+        });
+    }
+
     function initializeCategorySearch() {
         document.querySelectorAll(".category-filter").forEach(function(select) {
-            if (!select.tomselect) {
-                new TomSelect(select, {
-                    create: false,
-                    placeholder: "Search category...",
-                    searchField: ["text"]
-                });
-            }
+            initializeSingleCategorySearch(select);
         });
     }
 
@@ -536,9 +547,10 @@ Add BOQ
         const rows = body.querySelectorAll(".boq-row");
         const lastRow = rows[rows.length - 1];
 
+        const categorySelect = lastRow.querySelector(".category-filter");
         const storeSelect = lastRow.querySelector(".store-item-select");
+        initializeSingleCategorySearch(categorySelect);
         initializeSingleStoreSearch(storeSelect);
-        initializeCategorySearch();
         bindCategoryFilter(lastRow);
     }
 
@@ -548,7 +560,7 @@ Add BOQ
         if (rows.length > 1) {
             const row = button.closest(".boq-row");
 
-            row.querySelectorAll(".store-item-select").forEach(function(select) {
+            row.querySelectorAll(".category-filter, .store-item-select").forEach(function(select) {
                 if (select.tomselect) {
                     select.tomselect.destroy();
                 }
