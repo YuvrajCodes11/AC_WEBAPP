@@ -155,6 +155,32 @@ class MaterialIssueStockTests(TestCase):
         self.assertContains(response, inactive_project.project_id)
         self.assertContains(response, "Inactive But Visible")
 
+    def test_add_error_keeps_selected_project_visible(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("add_material_issue"),
+            {
+                "heading": "Selected Project Test",
+                "project": str(self.project.id),
+                "boq": "",
+                "received_by": "",
+                "store_item": [str(self.item.id)],
+                "category": [str(self.category.id)],
+                "boq_item": [""],
+                "issued_quantity": ["invalid"],
+                "serial_number": [""],
+                "item_remarks": [""],
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            f'value="{self.project.id}" selected',
+            html=False,
+        )
+
     def test_add_item_rejects_boq_item_for_different_store_item(self):
         other_item = StoreItem.objects.create(
             category=self.category,

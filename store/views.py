@@ -90,6 +90,7 @@ def store_dashboard(request):
             Q(item__item_code__icontains=search) |
             Q(item__item_description__icontains=search) |
             Q(item__size__icontains=search) |
+            Q(serial_number__icontains=search) |
             Q(item__remarks__icontains=search) |
             Q(item__category__category_name__icontains=search) |
             Q(project__project_id__icontains=search) |
@@ -523,6 +524,7 @@ def add_store_transaction(request):
             )
 
             issued_to = request.POST.get("issued_to", "").strip()
+            serial_number = request.POST.get("serial_number", "").strip()
             description = request.POST.get("description", "").strip()
             invoice_file = request.FILES.get("invoice_file")
 
@@ -570,6 +572,7 @@ def add_store_transaction(request):
                     project=project,
                     quantity=quantity,
                     issued_to=issued_to,
+                    serial_number=serial_number or item.serial_number,
                     amc_customer_name=amc_customer_name,
                     warranty_customer_name=warranty_customer_name,
                     service_customer_name=service_customer_name,

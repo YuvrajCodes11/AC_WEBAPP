@@ -161,7 +161,7 @@ Add Material Issue
                             <option value="">Search & Select Project</option>
 
                             {% for project in projects %}
-                            <option value="{{ project.id }}">
+                            <option value="{{ project.id }}" {% if selected_project_id == project.id|stringformat:"s" %}selected{% endif %}>
                                 {{ project.project_id }} - {{ project.site_name }}
                                 | {{ project.get_customer_name }}
                                 {% if not project.is_active %}| Inactive{% endif %}
@@ -180,7 +180,7 @@ Add Material Issue
                             <option value="">Search & Select BOQ</option>
 
                             {% for boq in boqs %}
-                            <option value="{{ boq.id }}" data-project="{% if boq.project %}{{ boq.project.id }}{% endif %}">
+                            <option value="{{ boq.id }}" data-project="{% if boq.project %}{{ boq.project.id }}{% endif %}" {% if selected_boq_id == boq.id|stringformat:"s" %}selected{% endif %}>
                                 {{ boq.boq_id }}
                                 {% if boq.project %}
                                     | {{ boq.project.project_id }} - {{ boq.project.site_name }}

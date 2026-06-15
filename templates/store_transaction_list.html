@@ -50,7 +50,7 @@ Store Transactions
                     <input type="text"
                            name="search"
                            value="{{ search }}"
-                           placeholder="Search transaction, item, project, BOQ..."
+                           placeholder="Search transaction, serial, item, project, BOQ..."
                            class="w-full border rounded-2xl px-4 py-3">
                 </div>
 
@@ -104,6 +104,7 @@ Store Transactions
                         <tr>
                             <th class="px-4 py-4 text-left">Transaction ID</th>
                             <th class="px-4 py-4 text-left">Item</th>
+                            <th class="px-4 py-4 text-left">Serial No.</th>
                             <th class="px-4 py-4 text-left">Type</th>
                             <th class="px-4 py-4 text-left">Purpose</th>
                             <th class="px-4 py-4 text-left">Project</th>
@@ -132,6 +133,10 @@ Store Transactions
                                 <p class="text-xs text-slate-500">
                                     {{ transaction.item.item_code }} | {{ transaction.item.item_type_display }}
                                 </p>
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ transaction.serial_number|default:transaction.item.serial_number|default:"-" }}
                             </td>
 
                             <td class="px-4 py-4">
@@ -206,7 +211,7 @@ Store Transactions
                         {% empty %}
 
                         <tr>
-                            <td colspan="9" class="text-center py-16">
+                            <td colspan="10" class="text-center py-16">
 
                                 <h2 class="text-xl font-black text-slate-700">
                                     No Transaction Found

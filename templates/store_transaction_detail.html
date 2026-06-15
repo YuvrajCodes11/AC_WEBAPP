@@ -99,6 +99,11 @@ Transaction Detail
                 </div>
 
                 <div>
+                    <strong>Serial Number:</strong><br>
+                    {{ transaction.serial_number|default:transaction.item.serial_number|default:"-" }}
+                </div>
+
+                <div>
                     <strong>Category:</strong><br>
                     {{ transaction.item.category.category_name }}
                 </div>

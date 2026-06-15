@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
@@ -8,10 +9,56 @@ from customers.models import Customer
 from material_issue.models import MaterialIssue, MaterialIssueItem
 from projects.models import CustomerProject
 
-from .models import StoreCategory, StoreItem
+from .management.commands.seed_store_items import ITEMS
+from .models import StoreCategory, StoreItem, StoreTransaction
 
 
 class StoreItemRecalculationTests(TestCase):
+    def test_official_catalog_seed_is_complete_and_idempotent(self):
+        call_command("seed_store_items", verbosity=0)
+        self.assertEqual(StoreItem.objects.count(), len(ITEMS))
+
+        call_command("seed_store_items", verbosity=0)
+        self.assertEqual(StoreItem.objects.count(), len(ITEMS))
+        self.assertEqual(
+            StoreItem.objects.get(
+                item_description='COPPER PIPE 6.4 mm/ 1/4" VRV'
+            ).item_type_display,
+            "VRV",
+        )
+        self.assertEqual(
+            StoreItem.objects.get(
+                item_description='COPPER PIPE 6.4 mm/ 1/4" Non VRV'
+            ).item_type_display,
+            "Non-VRV",
+        )
+
+    def test_manual_transaction_records_serial_number(self):
+        user = User.objects.create_user("transaction-tester", password="test-pass")
+        category = StoreCategory.objects.create(category_name="Transaction Category")
+        item = StoreItem.objects.create(
+            category=category,
+            item_description="Serialized Unit",
+            serial_number="ITEM-SERIAL",
+            current_stock=Decimal("5"),
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse("add_store_transaction"),
+            {
+                "item": item.id,
+                "transaction_type": "OUT",
+                "purpose": "GENERAL",
+                "quantity": "1",
+                "serial_number": "TXN-SERIAL",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        transaction = StoreTransaction.objects.get()
+        self.assertEqual(transaction.serial_number, "TXN-SERIAL")
+
     def test_add_requires_serial_number_and_has_searchable_category(self):
         user = User.objects.create_user("add-store-tester", password="test-pass")
         category = StoreCategory.objects.create(category_name="Searchable Category")

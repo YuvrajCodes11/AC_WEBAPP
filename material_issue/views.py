@@ -225,11 +225,15 @@ def add_material_issue(request):
     ).all().order_by("-id")
 
     error = None
+    selected_project_id = ""
+    selected_boq_id = ""
 
     if request.method == "POST":
         try:
             project_id = request.POST.get("project")
             boq_id = request.POST.get("boq") or None
+            selected_project_id = project_id or ""
+            selected_boq_id = boq_id or ""
             issued_to = request.POST.get("issued_to", "Site Engineer").strip()
             heading = request.POST.get("heading", "").strip() or "Material Issue"
             received_by = request.POST.get("received_by", "").strip()
@@ -340,6 +344,8 @@ def add_material_issue(request):
         "categories": StoreCategory.objects.all().order_by("category_name"),
         "status_choices": MaterialIssue.STATUS_CHOICES,
         "error": error,
+        "selected_project_id": selected_project_id,
+        "selected_boq_id": selected_boq_id,
     })
 
 

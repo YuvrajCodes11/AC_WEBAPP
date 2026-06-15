@@ -284,6 +284,13 @@ class StoreTransaction(models.Model):
         null=True
     )
 
+    serial_number = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Serial number recorded for this stock movement."
+    )
+
     amc_customer_name = models.CharField(
         max_length=200,
         blank=True,

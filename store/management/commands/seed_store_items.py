@@ -216,16 +216,26 @@ class Command(BaseCommand):
             if cat_created:
                 created_cats += 1
 
-            exists = StoreItem.objects.filter(
+            item = StoreItem.objects.filter(
                 category=category,
                 item_description=description,
-            ).exists()
+            ).first()
 
-            if exists:
+            if item:
+                changed_fields = []
+                if item.is_vrv != is_vrv:
+                    item.is_vrv = is_vrv
+                    changed_fields.append("is_vrv")
+                previous_remarks = item.remarks
+                item.set_non_vrv(not is_vrv)
+                if item.remarks != previous_remarks:
+                    changed_fields.append("remarks")
+                if changed_fields:
+                    item.save(update_fields=changed_fields)
                 skipped += 1
                 continue
 
-            StoreItem.objects.create(
+            item = StoreItem(
                 category=category,
                 item_description=description,
                 unit=unit,
@@ -233,6 +243,8 @@ class Command(BaseCommand):
                 opening_stock=0,
                 minimum_stock=0,
             )
+            item.set_non_vrv(not is_vrv)
+            item.save()
             created_items += 1
 
         self.stdout.write(self.style.SUCCESS(
