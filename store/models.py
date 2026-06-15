@@ -1,6 +1,7 @@
 # store/models.py
 
 from decimal import Decimal
+import re
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -284,13 +285,6 @@ class StoreTransaction(models.Model):
         null=True
     )
 
-    serial_number = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        help_text="Serial number recorded for this stock movement."
-    )
-
     amc_customer_name = models.CharField(
         max_length=200,
         blank=True,
@@ -338,6 +332,35 @@ class StoreTransaction(models.Model):
 
     class Meta:
         ordering = ["-id"]
+
+    SERIAL_MARKER_PATTERN = re.compile(r"\[SERIAL:([^\]]+)\]")
+
+    @classmethod
+    def description_with_serial(cls, description, serial_number):
+        clean_description = cls.SERIAL_MARKER_PATTERN.sub(
+            "",
+            description or "",
+        ).strip()
+        if not serial_number:
+            return clean_description or None
+        marker = f"[SERIAL:{serial_number.strip()}]"
+        return f"{marker} {clean_description}".strip()
+
+    @property
+    def serial_number(self):
+        match = self.SERIAL_MARKER_PATTERN.search(self.description or "")
+        if match:
+            return match.group(1).strip()
+        if self.material_issue_item_id:
+            return self.material_issue_item.serial_number
+        return self.item.serial_number
+
+    @property
+    def clean_description(self):
+        return self.SERIAL_MARKER_PATTERN.sub(
+            "",
+            self.description or "",
+        ).strip()
 
     def clean(self):
         if self.quantity <= 0:

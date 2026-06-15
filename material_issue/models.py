@@ -375,11 +375,13 @@ class MaterialIssueItem(models.Model):
             boq=self.material_issue.boq,
             material_issue_item=self,
             quantity=self.issued_quantity,
-            serial_number=self.serial_number or self.store_item.serial_number,
             stock_before=stock_after + Decimal(self.issued_quantity),
             stock_after=stock_after,
             issued_to=self.material_issue.received_by or self.material_issue.issued_to,
-            description=f"Issued against {self.material_issue.issue_id}",
+            description=StoreTransaction.description_with_serial(
+                f"Issued against {self.material_issue.issue_id}",
+                self.serial_number or self.store_item.serial_number,
+            ),
             is_stock_updated=True,
             created_by=self.material_issue.issued_by,
         )
@@ -417,9 +419,11 @@ class MaterialIssueItem(models.Model):
                 boq=self.material_issue.boq,
                 material_issue_item=self,
                 quantity=return_quantity,
-                serial_number=self.serial_number or self.store_item.serial_number,
                 issued_to=self.material_issue.received_by or self.material_issue.issued_to,
-                description=f"Returned against {self.material_issue.issue_id}",
+                description=StoreTransaction.description_with_serial(
+                    f"Returned against {self.material_issue.issue_id}",
+                    self.serial_number or self.store_item.serial_number,
+                ),
                 created_by=self.material_issue.issued_by,
             )
             self.return_stock_transaction = txn
@@ -455,11 +459,13 @@ class MaterialIssueItem(models.Model):
                 boq=self.material_issue.boq,
                 material_issue_item=self,
                 quantity=self.scrap_quantity,
-                serial_number=self.serial_number or self.store_item.serial_number,
                 stock_before=stock_now,
                 stock_after=stock_now,
                 issued_to=self.material_issue.received_by or self.material_issue.issued_to,
-                description=f"Scrap against {self.material_issue.issue_id}: {self.scrap_reason or '-'}",
+                description=StoreTransaction.description_with_serial(
+                    f"Scrap against {self.material_issue.issue_id}: {self.scrap_reason or '-'}",
+                    self.serial_number or self.store_item.serial_number,
+                ),
                 is_stock_updated=True,
                 created_by=self.material_issue.issued_by,
             )

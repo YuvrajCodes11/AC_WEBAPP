@@ -184,7 +184,7 @@ Transaction Detail
                 <strong>Description:</strong>
 
                 <div class="mt-2 p-4 bg-slate-50 rounded-2xl">
-                    {{ transaction.description|default:"No description provided." }}
+                    {{ transaction.clean_description|default:"No description provided." }}
                 </div>
 
             </div>

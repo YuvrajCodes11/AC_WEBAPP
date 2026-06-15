@@ -58,6 +58,7 @@ class StoreItemRecalculationTests(TestCase):
         self.assertEqual(response.status_code, 302)
         transaction = StoreTransaction.objects.get()
         self.assertEqual(transaction.serial_number, "TXN-SERIAL")
+        self.assertEqual(transaction.clean_description, "")
 
     def test_add_requires_serial_number_and_has_searchable_category(self):
         user = User.objects.create_user("add-store-tester", password="test-pass")

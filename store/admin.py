@@ -76,7 +76,6 @@ class StoreTransactionAdmin(admin.ModelAdmin):
         "project",
         "boq",
         "material_issue_item",
-        "serial_number",
         "issued_to",
         "created_by",
         "created_at",
@@ -95,7 +94,6 @@ class StoreTransactionAdmin(admin.ModelAdmin):
         "project__project_id",
         "project__site_name",
         "boq__boq_id",
-        "serial_number",
         "issued_to",
         "description",
     )
