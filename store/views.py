@@ -284,7 +284,6 @@ def add_store_item(request):
                     remarks=remarks,
                     unit=unit,
                     is_vrv=True if request.POST.get("is_vrv") == "on" else False,
-                    is_non_vrv=True if request.POST.get("is_non_vrv") == "on" else False,
                     opening_stock=opening_stock,
                     current_stock=opening_stock,
                     minimum_stock=minimum_stock,
@@ -334,7 +333,6 @@ def edit_store_item(request, id):
             item.serial_number = request.POST.get("serial_number", "").strip() or None
             item.remarks = request.POST.get("remarks", "").strip()
             item.is_vrv = True if request.POST.get("is_vrv") == "on" else False
-            item.is_non_vrv = True if request.POST.get("is_non_vrv") == "on" else False
             item.unit = request.POST.get("unit")
 
             item.opening_stock = Decimal(

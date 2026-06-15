@@ -114,26 +114,16 @@ Edit Store Item
 
                     <div class="pt-8">
                         <label class="block font-bold mb-2">Item Type</label>
-                        <div class="flex flex-wrap items-center gap-6">
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox"
-                                       name="is_vrv"
-                                       id="is_vrv"
-                                       {% if item.is_vrv %}checked{% endif %}
-                                       class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <label for="is_vrv" class="font-bold">VRV</label>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox"
-                                       name="is_non_vrv"
-                                       id="is_non_vrv"
-                                       {% if item.is_non_vrv %}checked{% endif %}
-                                       class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <label for="is_non_vrv" class="font-bold">Non-VRV</label>
-                            </div>
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox"
+                                   name="is_vrv"
+                                   id="is_vrv"
+                                   {% if item.is_vrv %}checked{% endif %}
+                                   class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <label for="is_vrv" class="font-bold">VRV item</label>
                         </div>
                         <p class="text-sm text-gray-500 mt-2">
-                            Tick VRV, Non-VRV, or both. The item will appear under whichever type(s) you select.
+                            Tick for VRV. Leave unticked for Non-VRV.
                         </p>
                     </div>
 

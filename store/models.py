@@ -83,11 +83,6 @@ class StoreItem(models.Model):
         help_text="Check if this item is VRV type."
     )
 
-    is_non_vrv = models.BooleanField(
-        default=True,
-        help_text="Check if this item is Non-VRV type."
-    )
-
     unit = models.CharField(
         max_length=20,
         choices=UNIT_CHOICES,
