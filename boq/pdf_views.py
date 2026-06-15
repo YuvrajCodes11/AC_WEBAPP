@@ -167,15 +167,13 @@ def boq_pdf_report(request, id):
     elements += section_header("Material Items", styles)
 
     col_widths = [
-        (PAGE_W - 2*MARGIN)*0.28,
-        (PAGE_W - 2*MARGIN)*0.08,
+        (PAGE_W - 2*MARGIN)*0.36,
         (PAGE_W - 2*MARGIN)*0.10,
-        (PAGE_W - 2*MARGIN)*0.10,
-        (PAGE_W - 2*MARGIN)*0.10,
-        (PAGE_W - 2*MARGIN)*0.10,
-        (PAGE_W - 2*MARGIN)*0.09,
+        (PAGE_W - 2*MARGIN)*0.14,
+        (PAGE_W - 2*MARGIN)*0.13,
+        (PAGE_W - 2*MARGIN)*0.13,
         (PAGE_W - 2*MARGIN)*0.07,
-        (PAGE_W - 2*MARGIN)*0.08,
+        (PAGE_W - 2*MARGIN)*0.07,
     ]
 
     def hdr(txt):
@@ -197,8 +195,6 @@ def boq_pdf_report(request, id):
         hdr("Unit"),
         hdr("BOQ Qty"),
         hdr("Issued"),
-        hdr("Consumed"),
-        hdr("Returned"),
         hdr("Balance"),
         hdr("Rate (₹)"),
         hdr("Amount (₹)"),
@@ -237,10 +233,6 @@ def boq_pdf_report(request, id):
             cell(f"{item.required_quantity:.2f}", align="RIGHT"),
             cell(f"{item.issued_quantity:.2f}", align="RIGHT",
                  colour=colors.HexColor("#2563EB")),
-            cell(f"{item.consumed_quantity:.2f}", align="RIGHT",
-                 colour=BRAND_ORANGE),
-            cell(f"{item.returned_quantity:.2f}", align="RIGHT",
-                 colour=BRAND_GREEN),
             cell(f"{balance:.2f}", bold=True, align="RIGHT",
                  colour=BRAND_RED),
             cell(f"{item.rate:.2f}", align="RIGHT"),
@@ -258,10 +250,6 @@ def boq_pdf_report(request, id):
         cell(f"{grand_required:.2f}", bold=True, align="RIGHT"),
         cell(f"{grand_issued:.2f}", bold=True, align="RIGHT",
              colour=colors.HexColor("#2563EB")),
-        cell(f"{grand_consumed:.2f}", bold=True, align="RIGHT",
-             colour=BRAND_ORANGE),
-        cell(f"{grand_returned:.2f}", bold=True, align="RIGHT",
-             colour=BRAND_GREEN),
         cell(f"{max(grand_required - grand_issued, Decimal('0')):.2f}", bold=True, align="RIGHT",
              colour=BRAND_RED),
         cell(""),

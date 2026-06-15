@@ -1,6 +1,6 @@
 import os
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages
@@ -359,12 +359,21 @@ def mark_service_missed(request, id):
 def customer_alert_dashboard(request):
     profile = get_profile(request)
     today = timezone.localdate()
+    upcoming_limit = today + timedelta(days=7)
 
     pending_services = CustomerServiceSchedule.objects.select_related(
         "customer"
     ).filter(
         status="PENDING",
         service_date__lte=today
+    ).order_by("service_date")
+
+    upcoming_services = CustomerServiceSchedule.objects.select_related(
+        "customer"
+    ).filter(
+        status="PENDING",
+        service_date__gt=today,
+        service_date__lte=upcoming_limit
     ).order_by("service_date")
 
     expiring_warranty_customers = [
@@ -380,6 +389,7 @@ def customer_alert_dashboard(request):
     return render(request, "customer_alert_dashboard.html", {
         "profile": profile,
         "pending_services": pending_services,
+        "upcoming_services": upcoming_services,
         "expiring_warranty_customers": expiring_warranty_customers,
         "expiring_amc_customers": expiring_amc_customers,
     })

@@ -103,15 +103,28 @@ Add Store Item
                                class="w-full border rounded-2xl px-4 py-3">
                     </div>
 
-                    <div class="flex items-center gap-3 pt-8">
-                        <input type="checkbox"
-                               name="is_vrv"
-                               id="is_vrv"
-                               class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <label for="is_vrv" class="font-bold">
-                            VRV Item
-                            <span class="font-normal text-gray-500">(unchecked means Non-VRV)</span>
-                        </label>
+                    <div class="pt-8">
+                        <label class="block font-bold mb-2">Item Type</label>
+                        <div class="flex flex-wrap items-center gap-6">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox"
+                                       name="is_vrv"
+                                       id="is_vrv"
+                                       class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <label for="is_vrv" class="font-bold">VRV</label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox"
+                                       name="is_non_vrv"
+                                       id="is_non_vrv"
+                                       checked
+                                       class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <label for="is_non_vrv" class="font-bold">Non-VRV</label>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Tick VRV, Non-VRV, or both. The item will appear under whichever type(s) you select.
+                        </p>
                     </div>
 
                     <div>
