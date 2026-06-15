@@ -83,15 +83,15 @@ Print Material Issue
             <div class="grid grid-cols-2 gap-5 mt-5 text-sm">
 
                 <div>
-                    <p><strong>Project ID:</strong> {{ material_issue.project.project_id }}</p>
-                    <p><strong>Site Name:</strong> {{ material_issue.project.site_name }}</p>
-                    <p><strong>Location:</strong> {{ material_issue.project.location|default:"-" }}</p>
+                    <p><strong>Project ID:</strong> {% if material_issue.project %}{{ material_issue.project.project_id }}{% else %}Direct Issue{% endif %}</p>
+                    <p><strong>Site Name:</strong> {% if material_issue.project %}{{ material_issue.project.site_name }}{% else %}-{% endif %}</p>
+                    <p><strong>Location:</strong> {% if material_issue.project %}{{ material_issue.project.location|default:"-" }}{% else %}-{% endif %}</p>
                 </div>
 
                 <div>
                     <p>
                         <strong>Customer:</strong>
-                        {{ material_issue.project.get_customer_name }}
+                        {% if material_issue.project %}{{ material_issue.project.get_customer_name }}{% else %}{{ material_issue.received_by }}{% endif %}
                     </p>
 
                     <p>
@@ -137,7 +137,7 @@ Print Material Issue
                             <td class="border border-slate-300 px-3 py-2">{{ item.store_item.item_description }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.store_item.size|default:"-" }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.store_item.get_unit_display }}</td>
-                            <td class="border border-slate-300 px-3 py-2">{% if item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}</td>
+                            <td class="border border-slate-300 px-3 py-2">{{ item.store_item.item_type_display }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.issued_quantity }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.consumed_quantity }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ item.returned_quantity }}</td>

@@ -219,7 +219,7 @@ def boq_pdf_report(request, id):
         code_text = item.store_item.item_code or ""
         if item.store_item.size:
             code_text += f" | {item.store_item.size}"
-        code_text += " | VRV" if item.store_item.is_vrv else " | Non-VRV"
+        code_text += f" | {item.store_item.item_type_display}"
 
         desc_para = Paragraph(
             f"<b>{desc_text}</b><br/><font size='6.5' color='#64748B'>{code_text}</font>",

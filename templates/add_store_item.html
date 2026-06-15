@@ -52,7 +52,13 @@ Add Store Item
                             Category *
                         </label>
 
+                        <input type="search"
+                               id="category-search"
+                               placeholder="Search category..."
+                               class="w-full border rounded-2xl px-4 py-3 mb-2">
+
                         <select name="category"
+                                id="category-select"
                                 required
                                 class="w-full border rounded-2xl px-4 py-3">
 
@@ -94,26 +100,36 @@ Add Store Item
 
                     <div>
                         <label class="block font-bold mb-2">
-                            Serial Number <span class="text-gray-400 font-normal text-sm">(AC units only)</span>
+                            Serial Number *
                         </label>
 
                         <input type="text"
                                name="serial_number"
+                               required
                                placeholder="e.g. AC2024-XYZ-00123"
                                class="w-full border rounded-2xl px-4 py-3">
                     </div>
 
                     <div class="pt-8">
                         <label class="block font-bold mb-2">Item Type</label>
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox"
-                                   name="is_vrv"
-                                   id="is_vrv"
-                                   class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                            <label for="is_vrv" class="font-bold">VRV item</label>
+                        <div class="flex flex-wrap items-center gap-6">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox"
+                                       name="is_vrv"
+                                       id="is_vrv"
+                                       class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <label for="is_vrv" class="font-bold">VRV</label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox"
+                                       name="is_non_vrv"
+                                       id="is_non_vrv"
+                                       class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <label for="is_non_vrv" class="font-bold">Non-VRV</label>
+                            </div>
                         </div>
                         <p class="text-sm text-gray-500 mt-2">
-                            Tick for VRV. Leave unticked for Non-VRV.
+                            Select either type, both types, or leave both blank.
                         </p>
                     </div>
 
@@ -221,5 +237,27 @@ Add Store Item
     </div>
 
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const search = document.getElementById("category-search");
+    const select = document.getElementById("category-select");
+    const options = Array.from(select.options);
+
+    search.addEventListener("input", function() {
+        const query = search.value.trim().toLowerCase();
+        options.forEach(function(option) {
+            if (!option.value) return;
+            const matches = option.textContent.toLowerCase().includes(query);
+            option.hidden = !matches;
+            option.disabled = !matches;
+        });
+
+        if (select.selectedOptions[0] && select.selectedOptions[0].disabled) {
+            select.value = "";
+        }
+    });
+});
+</script>
 
 {% endblock %}

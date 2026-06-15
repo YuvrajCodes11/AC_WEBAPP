@@ -131,7 +131,7 @@ Store Items
                         </td>
 
                         <td class="px-6 py-5">
-                            {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
+                            {{ item.item_type_display }}
                         </td>
 
                         <td class="px-6 py-5 font-bold">

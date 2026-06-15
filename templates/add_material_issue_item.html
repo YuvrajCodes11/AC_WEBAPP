@@ -62,7 +62,7 @@ Add Material Issue Item
                                 [{{ item.category.category_name }}] {{ item.item_code }} - {{ item.item_description }}
                                 {% if item.size %} - {{ item.size }}{% endif %}
                                 | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
-                                {% if item.is_vrv %}| VRV{% else %}| Non-VRV{% endif %}
+                                | {{ item.item_type_display }}
                             </option>
                             {% endfor %}
                         </select>

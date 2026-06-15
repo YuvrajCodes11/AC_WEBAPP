@@ -12,6 +12,59 @@ from .models import StoreCategory, StoreItem
 
 
 class StoreItemRecalculationTests(TestCase):
+    def test_add_requires_serial_number_and_has_searchable_category(self):
+        user = User.objects.create_user("add-store-tester", password="test-pass")
+        category = StoreCategory.objects.create(category_name="Searchable Category")
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse("add_store_item"),
+            {
+                "category": category.id,
+                "item_description": "Test Item",
+                "serial_number": "",
+                "unit": "NOS",
+                "opening_stock": "1",
+                "minimum_stock": "0",
+                "alert_percentage": "85",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Serial number is required.")
+        self.assertContains(response, 'id="category-select"')
+        self.assertContains(response, 'id="category-search"')
+        self.assertContains(response, 'placeholder="Search category..."')
+        self.assertFalse(StoreItem.objects.filter(item_description="Test Item").exists())
+
+    def test_item_type_supports_all_checkbox_combinations(self):
+        category = StoreCategory.objects.create(category_name="Type Category")
+        neither = StoreItem.objects.create(
+            category=category,
+            item_description="Neither",
+        )
+        vrv = StoreItem.objects.create(
+            category=category,
+            item_description="VRV",
+            is_vrv=True,
+        )
+        non_vrv = StoreItem.objects.create(
+            category=category,
+            item_description="Non VRV",
+            is_non_vrv=True,
+        )
+        both = StoreItem.objects.create(
+            category=category,
+            item_description="Both",
+            is_vrv=True,
+            is_non_vrv=True,
+        )
+
+        self.assertEqual(neither.item_type_display, "-")
+        self.assertEqual(vrv.item_type_display, "VRV")
+        self.assertEqual(non_vrv.item_type_display, "Non-VRV")
+        self.assertEqual(both.item_type_display, "VRV / Non-VRV")
+
     def test_edit_keeps_material_issue_deduction_in_current_stock(self):
         user = User.objects.create_user("store-tester", password="test-pass")
         customer = Customer.objects.create(
@@ -48,6 +101,7 @@ class StoreItemRecalculationTests(TestCase):
                 "serial_number": "",
                 "remarks": "",
                 "is_vrv": "on",
+                "is_non_vrv": "on",
                 "unit": "NOS",
                 "opening_stock": "10",
                 "minimum_stock": "1",

@@ -173,7 +173,7 @@ Add Project BOQ
 
                                                 {% for item in items %}
                                                 <option value="{{ item.id }}">
-                                                    {{ item.item_code }} - {{ item.item_description }}{% if item.size %} - {{ item.size }}{% endif %} | {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %} | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
+                                                    {{ item.item_code }} - {{ item.item_description }}{% if item.size %} - {{ item.size }}{% endif %} | {{ item.item_type_display }} | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
                                                 </option>
                                                 {% endfor %}
                                             </select>

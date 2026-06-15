@@ -75,6 +75,8 @@ def _project_consumption_rows():
         "store_item",
     )
     for issue_item in issue_items:
+        if not issue_item.material_issue.project_id:
+            continue
         key = (
             issue_item.material_issue.project_id,
             issue_item.store_item_id,

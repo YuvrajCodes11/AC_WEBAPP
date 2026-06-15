@@ -29,6 +29,7 @@ class StoreItemAdmin(admin.ModelAdmin):
         "item_description",
         "size",
         "is_vrv",
+        "is_non_vrv",
         "unit",
         "opening_stock",
         "current_stock",
@@ -43,6 +44,7 @@ class StoreItemAdmin(admin.ModelAdmin):
     list_filter = (
         "category",
         "is_vrv",
+        "is_non_vrv",
         "unit",
         "created_at",
     )

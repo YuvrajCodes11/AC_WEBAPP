@@ -248,7 +248,7 @@ Add BOQ
                                         {% endif %}
                                         | Category: {{ item.category.category_name }}
                                         | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
-                                        | {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
+                                        | {{ item.item_type_display }}
                                     </option>
                                     {% endfor %}
                                 </select>
@@ -387,7 +387,7 @@ Add BOQ
                         {% endif %}
                         | Category: {{ item.category.category_name }}
                         | Stock: {{ item.current_stock }} {{ item.get_unit_display }}
-                        | {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
+                        | {{ item.item_type_display }}
                     </option>
                     {% endfor %}
                 </select>

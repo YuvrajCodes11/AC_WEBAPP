@@ -235,20 +235,20 @@ Material Issues
                             <td class="px-4 py-4 min-w-[260px]">
 
                                 <p class="font-black text-slate-900">
-                                    {{ issue.project.get_customer_name }}
+                                    {% if issue.project %}{{ issue.project.get_customer_name }}{% else %}{{ issue.received_by|default:"Direct Issue" }}{% endif %}
                                 </p>
 
                                 <p class="text-xs text-slate-500 mt-1">
                                     Project ID:
                                     <span class="font-bold">
-                                        {{ issue.project.project_id }}
+                                        {% if issue.project %}{{ issue.project.project_id }}{% else %}Direct Issue{% endif %}
                                     </span>
                                 </p>
 
                                 <p class="text-xs text-slate-500 mt-1">
                                     Site:
                                     <span class="font-bold">
-                                        {{ issue.project.site_name|default:"-" }}
+                                        {% if issue.project %}{{ issue.project.site_name|default:"-" }}{% else %}-{% endif %}
                                     </span>
                                 </p>
 
@@ -372,11 +372,13 @@ Material Issues
                                         Print
                                     </a>
 
+                                    {% if issue.project %}
                                     <a href="{% url 'project_full_pdf_report' issue.project.id %}"
                                        target="_blank"
                                        class="px-3 py-2 rounded-xl bg-purple-100 text-purple-700 text-xs font-bold">
                                         Print Project PDF
                                     </a>
+                                    {% endif %}
 
                                     <a href="{% url 'edit_material_issue' issue.id %}"
                                        class="px-3 py-2 rounded-xl bg-blue-100 text-blue-700 text-xs font-bold">

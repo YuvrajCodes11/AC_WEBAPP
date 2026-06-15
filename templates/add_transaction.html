@@ -90,7 +90,7 @@ Add Stock Transaction
                             |
                             {{ item.size|default:"-" }}
                             |
-                            {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
+                            {{ item.item_type_display }}
                             |
                             Stock:
                             {{ item.current_stock }}

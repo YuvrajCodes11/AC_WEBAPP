@@ -46,11 +46,15 @@
                             <td class="p-4">{{ item.scrap_date|date:"d M Y"|default:"-" }}</td>
                             <td class="p-4 font-bold">{{ item.material_issue.issue_id }}</td>
                             <td class="p-4">
-                                {{ item.material_issue.project.get_customer_name }} |
-                                {{ item.material_issue.project.project_id }}
+                                {% if item.material_issue.project %}
+                                    {{ item.material_issue.project.get_customer_name }} |
+                                    {{ item.material_issue.project.project_id }}
+                                {% else %}
+                                    {{ item.material_issue.received_by|default:"Direct Issue" }}
+                                {% endif %}
                             </td>
                             <td class="p-4">{{ item.store_item.item_code }} - {{ item.store_item.item_description }}</td>
-                            <td class="p-4">{% if item.store_item.is_vrv %}VRV{% else %}Non-VRV{% endif %}</td>
+                            <td class="p-4">{{ item.store_item.item_type_display }}</td>
                             <td class="p-4 text-right font-black">{{ item.scrap_quantity }}</td>
                             <td class="p-4">{{ item.scrap_reason|default:"-" }}</td>
                         </tr>

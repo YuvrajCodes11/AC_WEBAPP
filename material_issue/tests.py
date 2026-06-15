@@ -244,7 +244,7 @@ class MaterialIssueStockTests(TestCase):
             "Category",
             "Size",
             "Unit",
-            "BOQ Item",
+            "BOQ Quantity",
             "Sent",
             "BOQ Balance",
             "Consumed",
@@ -263,4 +263,77 @@ class MaterialIssueStockTests(TestCase):
             )
         ]
         self.assertEqual(rendered_headings, headings)
+        self.assertContains(response, str(self.boq_item.required_quantity))
         self.assertNotContains(response, "Not Used")
+
+    def test_direct_person_issue_without_project_updates_store(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("add_material_issue"),
+            {
+                "project": "",
+                "boq": "",
+                "heading": "Direct Vendor Issue",
+                "issued_to": "Vendor",
+                "received_by": "Sharma Traders",
+                "status": "ISSUED",
+                "category": [str(self.category.id)],
+                "store_item": [str(self.item.id)],
+                "boq_item": [""],
+                "issued_quantity": ["2"],
+                "serial_number": ["SN-100"],
+                "item_remarks": ["Direct issue"],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        direct_issue = MaterialIssue.objects.get(heading="Direct Vendor Issue")
+        self.assertIsNone(direct_issue.project)
+        self.assertEqual(direct_issue.received_by, "Sharma Traders")
+        direct_item = direct_issue.items.get()
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("8"))
+        self.assertIsNone(direct_item.boq_item)
+        transaction = StoreTransaction.objects.get(
+            material_issue_item=direct_item,
+            transaction_type="OUT",
+        )
+        self.assertEqual(transaction.purpose, "GENERAL")
+        self.assertIsNone(transaction.project)
+        self.assertEqual(transaction.issued_to, "Sharma Traders")
+
+        detail = self.client.get(
+            reverse("material_issue_detail", args=[direct_issue.id])
+        )
+        self.assertEqual(detail.status_code, 200)
+        self.assertContains(detail, "Direct Issue - Sharma Traders")
+
+        direct_issue.project = self.project
+        direct_issue.received_by = ""
+        direct_issue.save()
+        transaction.refresh_from_db()
+        self.assertEqual(transaction.purpose, "PROJECT")
+        self.assertEqual(transaction.project, self.project)
+
+    def test_direct_issue_requires_person_or_project(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("add_material_issue"),
+            {
+                "project": "",
+                "boq": "",
+                "heading": "Invalid Direct Issue",
+                "received_by": "",
+                "status": "ISSUED",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Select a project or enter the direct person/vendor name.",
+        )
+        self.assertFalse(
+            MaterialIssue.objects.filter(heading="Invalid Direct Issue").exists()
+        )

@@ -123,7 +123,7 @@ Reports Dashboard
                             {{ issue.issue_id }}
                         </p>
                         <p class="text-sm text-slate-500">
-                            {{ issue.project.project_id }} - {{ issue.project.site_name }}
+                            {% if issue.project %}{{ issue.project.project_id }} - {{ issue.project.site_name }}{% else %}Direct Issue - {{ issue.received_by }}{% endif %}
                         </p>
                     </div>
                     {% empty %}

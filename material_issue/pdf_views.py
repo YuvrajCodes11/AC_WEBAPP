@@ -231,7 +231,7 @@ def project_full_pdf_report(request, project_id):
             for item in boq_items:
                 gtot += item.total_amount()
                 bdata.append([
-                    td(f"{item.store_item.item_description} ({'VRV' if item.store_item.is_vrv else 'Non-VRV'})"),
+                    td(f"{item.store_item.item_description} ({item.store_item.item_type_display})"),
                     td(item.store_item.get_unit_display(), align=1),
                     td(f"{item.required_quantity:.1f}", align=2),
                     td(f"{item.issued_quantity:.1f}", col=colors.HexColor("#2563EB"), align=2),
@@ -317,7 +317,7 @@ def project_full_pdf_report(request, project_id):
                     td(
                         f"{it.store_item.item_code} - {it.store_item.item_description}"
                         f"{' - ' + it.store_item.size if it.store_item.size else ''}"
-                        f" ({'VRV' if it.store_item.is_vrv else 'Non-VRV'})"
+                        f" ({it.store_item.item_type_display})"
                     ),
                     td(it.store_item.get_unit_display(), align=1),
                     td(f"{it.issued_quantity:.2f}", col=colors.HexColor("#2563EB"), align=2),

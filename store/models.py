@@ -83,6 +83,11 @@ class StoreItem(models.Model):
         help_text="Check if this item is VRV type."
     )
 
+    is_non_vrv = models.BooleanField(
+        default=False,
+        help_text="Check if this item is Non-VRV type."
+    )
+
     unit = models.CharField(
         max_length=20,
         choices=UNIT_CHOICES,
@@ -169,6 +174,15 @@ class StoreItem(models.Model):
     def __str__(self):
         size_text = f" - {self.size}" if self.size else ""
         return f"{self.item_code} - {self.item_description}{size_text}"
+
+    @property
+    def item_type_display(self):
+        labels = []
+        if self.is_vrv:
+            labels.append("VRV")
+        if self.is_non_vrv:
+            labels.append("Non-VRV")
+        return " / ".join(labels) if labels else "-"
 
 
 class StoreTransaction(models.Model):

@@ -130,7 +130,7 @@ Store Transactions
                                     {{ transaction.item.item_description }}
                                 </p>
                                 <p class="text-xs text-slate-500">
-                                    {{ transaction.item.item_code }} | {% if transaction.item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
+                                    {{ transaction.item.item_code }} | {{ transaction.item.item_type_display }}
                                 </p>
                             </td>
 

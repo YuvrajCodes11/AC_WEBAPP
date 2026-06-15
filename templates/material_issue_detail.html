@@ -25,7 +25,12 @@ Material Issue Detail
                     </h1>
 
                     <p class="text-blue-100 mt-2">
-                        {{ material_issue.issue_id }} | {{ material_issue.project.project_id }} - {{ material_issue.project.site_name }}
+                        {{ material_issue.issue_id }} |
+                        {% if material_issue.project %}
+                            {{ material_issue.project.project_id }} - {{ material_issue.project.site_name }}
+                        {% else %}
+                            Direct Issue - {{ material_issue.received_by }}
+                        {% endif %}
                     </p>
                 </div>
 
@@ -52,11 +57,13 @@ Material Issue Detail
                         Print Report
                     </a>
 
+                    {% if material_issue.project %}
                     <a href="{% url 'project_full_pdf_report' material_issue.project.id %}"
                        target="_blank"
                        class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2">
                         Print Project PDF
                     </a>
+                    {% endif %}
 
                 </div>
 
@@ -75,27 +82,27 @@ Material Issue Detail
                     </p>
 
                     <h2 class="text-2xl font-black text-slate-900 mt-2">
-                        {{ material_issue.project.get_customer_name }}
+                        {% if material_issue.project %}{{ material_issue.project.get_customer_name }}{% else %}{{ material_issue.received_by }}{% endif %}
                     </h2>
 
                     <p class="text-sm text-slate-500 mt-1">
                         Project:
                         <span class="font-bold text-slate-700">
-                            {{ material_issue.project.project_id }}
+                            {% if material_issue.project %}{{ material_issue.project.project_id }}{% else %}Direct Issue{% endif %}
                         </span>
                     </p>
 
                     <p class="text-sm text-slate-500 mt-1">
                         Site:
                         <span class="font-bold text-slate-700">
-                            {{ material_issue.project.site_name|default:"-" }}
+                            {% if material_issue.project %}{{ material_issue.project.site_name|default:"-" }}{% else %}-{% endif %}
                         </span>
                     </p>
 
                     <p class="text-sm text-slate-500 mt-1">
                         Location:
                         <span class="font-bold text-slate-700">
-                            {{ material_issue.project.location|default:"-" }}
+                            {% if material_issue.project %}{{ material_issue.project.location|default:"-" }}{% else %}-{% endif %}
                         </span>
                     </p>
                 </div>
@@ -248,7 +255,7 @@ Material Issue Detail
             <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
 
                 <h2 class="text-xl font-black text-[#0F4C81] mb-5">
-                    Project / BOQ Info
+                    Project / Recipient Info
                 </h2>
 
                 <div class="space-y-4 text-sm">
@@ -258,10 +265,10 @@ Material Issue Detail
                             Project
                         </p>
                         <p class="font-bold text-slate-900 mt-1">
-                            {{ material_issue.project.project_id }}
+                            {% if material_issue.project %}{{ material_issue.project.project_id }}{% else %}Direct Issue{% endif %}
                         </p>
                         <p class="text-slate-500 text-xs">
-                            {{ material_issue.project.site_name }}
+                            {% if material_issue.project %}{{ material_issue.project.site_name }}{% else %}{{ material_issue.received_by }}{% endif %}
                         </p>
                     </div>
 
@@ -270,7 +277,7 @@ Material Issue Detail
                             Customer
                         </p>
                         <p class="font-bold text-slate-900 mt-1">
-                            {{ material_issue.project.get_customer_name }}
+                            {% if material_issue.project %}{{ material_issue.project.get_customer_name }}{% else %}{{ material_issue.received_by }}{% endif %}
                         </p>
                     </div>
 
@@ -292,7 +299,7 @@ Material Issue Detail
                             Location
                         </p>
                         <p class="font-bold text-slate-900 mt-1">
-                            {{ material_issue.project.location|default:"-" }}
+                            {% if material_issue.project %}{{ material_issue.project.location|default:"-" }}{% else %}-{% endif %}
                         </p>
                     </div>
 
@@ -348,7 +355,7 @@ Material Issue Detail
                             </th>
 
                             <th class="px-4 py-4 text-left text-xs font-black uppercase">
-                                BOQ Item
+                                BOQ Quantity
                             </th>
 
                             <th class="px-4 py-4 text-left text-xs font-black uppercase">
@@ -398,11 +405,7 @@ Material Issue Detail
                                     {% if item.store_item.size %}
                                         - {{ item.store_item.size }}
                                     {% endif %}
-                                    {% if item.store_item.is_vrv %}
-                                        <span class="ml-2 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs">VRV</span>
-                                    {% else %}
-                                        <span class="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs">Non-VRV</span>
-                                    {% endif %}
+                                    <span class="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs">{{ item.store_item.item_type_display }}</span>
                                 </div>
 
                                 <div class="text-xs text-slate-500 mt-1">
@@ -432,7 +435,7 @@ Material Issue Detail
 
                             <td class="px-4 py-4">
                                 {% if item.boq_item %}
-                                    {{ item.boq_item.boq.boq_id }}
+                                    {{ item.boq_item.required_quantity }}
                                 {% else %}
                                     -
                                 {% endif %}

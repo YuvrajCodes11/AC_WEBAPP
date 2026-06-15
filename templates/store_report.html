@@ -67,7 +67,7 @@ Store Report
                         <td class="px-6 py-5">{{ item.size|default:"-" }}</td>
                         <td class="px-6 py-5">{{ item.remarks|default:"-" }}</td>
                         <td class="px-6 py-5">{{ item.get_unit_display }}</td>
-                        <td class="px-6 py-5">{% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}</td>
+                        <td class="px-6 py-5">{{ item.item_type_display }}</td>
                         <td class="px-6 py-5 font-bold">{{ item.current_stock }}</td>
                         <td class="px-6 py-5">{{ item.minimum_stock }}</td>
                         <td class="px-6 py-5">

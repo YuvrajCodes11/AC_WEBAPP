@@ -246,7 +246,7 @@ BOQ Detail
                             <td class="px-4 py-4 min-w-[320px] max-w-[480px]">
                                 <p class="font-black text-slate-900 whitespace-normal break-words leading-6">
                                     {{ item.store_item.item_description }}
-                                    {% if item.store_item.is_vrv %}<span class="ml-2 px-2 py-0.5 text-xs font-black rounded-full bg-blue-100 text-blue-700">VRV</span>{% else %}<span class="ml-2 px-2 py-0.5 text-xs font-black rounded-full bg-slate-100 text-slate-500">Non-VRV</span>{% endif %}
+                                    <span class="ml-2 px-2 py-0.5 text-xs font-black rounded-full bg-slate-100 text-slate-700">{{ item.store_item.item_type_display }}</span>
                                 </p>
                                 <p class="text-xs text-slate-500">
                                     {{ item.store_item.item_code }}

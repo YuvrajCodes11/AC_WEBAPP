@@ -243,12 +243,15 @@ def add_material_issue(request):
             issued_quantities = request.POST.getlist("issued_quantity")
             item_remarks = request.POST.getlist("item_remarks")
 
-            if not project_id:
-                error = "Please select project."
-
-            else:
+            project = None
+            if project_id:
                 project = get_object_or_404(CustomerProject, id=project_id)
 
+            if not project and not received_by:
+                error = "Select a project or enter the direct person/vendor name."
+            elif boq_id and not project:
+                error = "Select a project before selecting a BOQ."
+            else:
                 boq = None
                 if boq_id:
                     boq = get_object_or_404(ProjectBOQ, id=boq_id, project=project)
@@ -294,6 +297,8 @@ def add_material_issue(request):
                         if index < len(boq_item_ids):
                             boq_item_id = boq_item_ids[index]
                             if boq_item_id:
+                                if not project:
+                                    raise ValueError("A BOQ item requires a project.")
                                 boq_item = get_object_or_404(
                                     ProjectBOQItem,
                                     id=boq_item_id,
@@ -412,14 +417,18 @@ def edit_material_issue(request, id):
             project_id = request.POST.get("project")
             boq_id = request.POST.get("boq") or None
 
-            if not project_id:
-                error = "Please select project."
-
+            received_by = request.POST.get("received_by", "").strip()
+            if not project_id and not received_by:
+                error = "Select a project or enter the direct person/vendor name."
+            elif boq_id and not project_id:
+                error = "Select a project before selecting a BOQ."
             else:
-                material_issue.project = get_object_or_404(
-                    CustomerProject,
-                    id=project_id
-                )
+                material_issue.project = None
+                if project_id:
+                    material_issue.project = get_object_or_404(
+                        CustomerProject,
+                        id=project_id
+                    )
 
                 if boq_id:
                     material_issue.boq = get_object_or_404(
@@ -439,10 +448,7 @@ def edit_material_issue(request, id):
                     request.POST.get("heading", "").strip() or "Material Issue"
                 )
 
-                material_issue.received_by = request.POST.get(
-                    "received_by",
-                    ""
-                ).strip()
+                material_issue.received_by = received_by
 
                 material_issue.status = request.POST.get("status") or "DRAFT"
 
@@ -491,8 +497,10 @@ def add_material_issue_item(request, issue_id):
 
     if material_issue.boq:
         boq_items = boq_items.filter(boq=material_issue.boq)
-    else:
+    elif material_issue.project_id:
         boq_items = boq_items.filter(boq__project=material_issue.project)
+    else:
+        boq_items = boq_items.none()
 
     error = None
 
@@ -524,6 +532,8 @@ def add_material_issue_item(request, issue_id):
 
                 boq_item = None
                 if boq_item_id:
+                    if not material_issue.project_id:
+                        raise ValueError("A BOQ item requires a project.")
                     boq_item = get_object_or_404(
                         ProjectBOQItem,
                         id=boq_item_id,
@@ -578,8 +588,10 @@ def edit_material_issue_item(request, id):
 
     if issue_item.material_issue.boq:
         boq_items = boq_items.filter(boq=issue_item.material_issue.boq)
-    else:
+    elif issue_item.material_issue.project_id:
         boq_items = boq_items.filter(boq__project=issue_item.material_issue.project)
+    else:
+        boq_items = boq_items.none()
 
     error = None
 

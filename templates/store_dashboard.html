@@ -249,8 +249,8 @@ Store Dashboard
                                     {% if item.size %}
                                         - {{ item.size }}
                                     {% endif %}
-                                    <span class="ml-2 px-2 py-0.5 rounded-full {% if item.is_vrv %}bg-blue-100 text-blue-700{% else %}bg-slate-100 text-slate-600{% endif %} text-xs normal-case">
-                                        {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
+                                    <span class="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs normal-case">
+                                        {{ item.item_type_display }}
                                     </span>
                                 </p>
 
@@ -379,8 +379,8 @@ Store Dashboard
                                     {% if item.size %}
                                         - {{ item.size }}
                                     {% endif %}
-                                    <span class="ml-2 px-2 py-0.5 rounded-full {% if item.is_vrv %}bg-blue-100 text-blue-700{% else %}bg-slate-100 text-slate-600{% endif %} text-xs normal-case">
-                                        {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
+                                    <span class="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs normal-case">
+                                        {{ item.item_type_display }}
                                     </span>
                                 </p>
 
@@ -501,8 +501,8 @@ Store Dashboard
                                     {% if txn.item.size %}
                                         - {{ txn.item.size }}
                                     {% endif %}
-                                    <span class="ml-2 px-2 py-0.5 rounded-full {% if txn.item.is_vrv %}bg-blue-100 text-blue-700{% else %}bg-slate-100 text-slate-600{% endif %} text-xs normal-case">
-                                        {% if txn.item.is_vrv %}VRV{% else %}Non-VRV{% endif %}
+                                    <span class="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs normal-case">
+                                        {{ txn.item.item_type_display }}
                                     </span>
                                 </p>
 

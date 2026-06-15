@@ -61,17 +61,19 @@ Edit Material Issue
 
                     <div>
                         <label class="block font-bold mb-2">
-                            Project *
+                            Project <span class="text-slate-400 font-normal">(optional for direct issue)</span>
                         </label>
 
                         <select name="project"
                                 id="project-select"
-                                required
                                 class="w-full border border-slate-300 rounded-2xl px-4 py-3">
 
+                            <option value="" {% if not material_issue.project %}selected{% endif %}>
+                                Direct issue - no project
+                            </option>
                             {% for project in projects %}
                             <option value="{{ project.id }}"
-                                    {% if material_issue.project.id == project.id %}selected{% endif %}>
+                                    {% if material_issue.project and material_issue.project.id == project.id %}selected{% endif %}>
                                 {{ project.project_id }} - {{ project.site_name }}
                             </option>
                             {% endfor %}
@@ -116,7 +118,7 @@ Edit Material Issue
 
                     <div>
                         <label class="block font-bold mb-2">
-                            Return To <span class="text-slate-400 font-normal text-sm">(vendor / person)</span>
+                            Direct Person / Vendor <span class="text-slate-400 font-normal text-sm">(required without project)</span>
                         </label>
 
                         <input type="text"

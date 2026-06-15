@@ -31,7 +31,9 @@ class MaterialIssue(models.Model):
 
     project = models.ForeignKey(
         CustomerProject,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
         related_name="material_issues"
     )
 
@@ -93,6 +95,12 @@ class MaterialIssue(models.Model):
         ordering = ["-id"]
 
     def clean(self):
+        if not self.project_id and not (self.received_by or "").strip():
+            raise ValidationError(
+                "Select a project or enter the direct person/vendor name."
+            )
+        if self.boq_id and not self.project_id:
+            raise ValidationError("A BOQ can only be selected with a project.")
         if self.boq_id and self.boq.project_id != self.project_id:
             raise ValidationError("Selected BOQ does not belong to the selected project.")
         if self.pk:
@@ -114,12 +122,21 @@ class MaterialIssue(models.Model):
             self.issue_id = f"MIS{new_id:04d}"
 
         super().save(*args, **kwargs)
+        StoreTransaction.objects.filter(
+            material_issue_item__material_issue=self
+        ).update(
+            purpose="PROJECT" if self.project_id else "GENERAL",
+            project=self.project,
+            boq=self.boq,
+            issued_to=self.received_by or self.issued_to,
+        )
 
     def total_items(self):
         return self.items.count()
 
     def __str__(self):
-        return f"{self.issue_id} - {self.project}"
+        destination = self.project or self.received_by or self.issued_to
+        return f"{self.issue_id} - {destination}"
 
 
 class MaterialIssueItem(models.Model):
@@ -267,6 +284,8 @@ class MaterialIssueItem(models.Model):
             )
 
         if self.boq_item_id:
+            if not self.material_issue.project_id:
+                raise ValidationError("A BOQ item requires a project.")
             if self.boq_item.store_item_id != self.store_item_id:
                 raise ValidationError("BOQ item and store item must refer to the same material.")
             if self.boq_item.boq.project_id != self.material_issue.project_id:
@@ -296,7 +315,11 @@ class MaterialIssueItem(models.Model):
             old_scrap_quantity = old.scrap_quantity
             old_boq_item_id = old.boq_item_id
 
-        if not self.boq_item_id and self.store_item_id:
+        if (
+            not self.boq_item_id
+            and self.store_item_id
+            and self.material_issue.project_id
+        ):
             matching_boq_items = ProjectBOQItem.objects.filter(
                 boq__project=self.material_issue.project,
                 store_item_id=self.store_item_id,
@@ -343,17 +366,18 @@ class MaterialIssueItem(models.Model):
         ).delete()
 
         stock_after = self.store_item.current_stock
+        is_project_issue = bool(self.material_issue.project_id)
         transaction = StoreTransaction.objects.create(
             item=self.store_item,
             transaction_type="OUT",
-            purpose="PROJECT",
+            purpose="PROJECT" if is_project_issue else "GENERAL",
             project=self.material_issue.project,
             boq=self.material_issue.boq,
             material_issue_item=self,
             quantity=self.issued_quantity,
             stock_before=stock_after + Decimal(self.issued_quantity),
             stock_after=stock_after,
-            issued_to=self.material_issue.issued_to,
+            issued_to=self.material_issue.received_by or self.material_issue.issued_to,
             description=f"Issued against {self.material_issue.issue_id}",
             is_stock_updated=True,
             created_by=self.material_issue.issued_by,
@@ -383,15 +407,16 @@ class MaterialIssueItem(models.Model):
         self.return_stock_transaction = None
 
         if return_quantity > 0:
+            is_project_issue = bool(self.material_issue.project_id)
             txn = StoreTransaction.objects.create(
                 item=self.store_item,
                 transaction_type="RETURN",
-                purpose="PROJECT",
+                purpose="PROJECT" if is_project_issue else "GENERAL",
                 project=self.material_issue.project,
                 boq=self.material_issue.boq,
                 material_issue_item=self,
                 quantity=return_quantity,
-                issued_to=self.material_issue.issued_to,
+                issued_to=self.material_issue.received_by or self.material_issue.issued_to,
                 description=f"Returned against {self.material_issue.issue_id}",
                 created_by=self.material_issue.issued_by,
             )
@@ -419,17 +444,18 @@ class MaterialIssueItem(models.Model):
 
         stock_now = self.store_item.current_stock
         if self.scrap_quantity > 0:
+            is_project_issue = bool(self.material_issue.project_id)
             txn = StoreTransaction.objects.create(
                 item=self.store_item,
                 transaction_type="SCRAP",
-                purpose="PROJECT",
+                purpose="PROJECT" if is_project_issue else "GENERAL",
                 project=self.material_issue.project,
                 boq=self.material_issue.boq,
                 material_issue_item=self,
                 quantity=self.scrap_quantity,
                 stock_before=stock_now,
                 stock_after=stock_now,
-                issued_to=self.material_issue.issued_to,
+                issued_to=self.material_issue.received_by or self.material_issue.issued_to,
                 description=f"Scrap against {self.material_issue.issue_id}: {self.scrap_reason or '-'}",
                 is_stock_updated=True,
                 created_by=self.material_issue.issued_by,

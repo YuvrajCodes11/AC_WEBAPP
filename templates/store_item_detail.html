@@ -104,7 +104,7 @@ Store Item Detail
                 </div>
 
                 <div>
-                    <p><strong>Item Type:</strong> {% if item.is_vrv %}VRV{% else %}Non-VRV{% endif %}</p>
+                    <p><strong>Item Type:</strong> {{ item.item_type_display }}</p>
                 </div>
 
                 <div>
