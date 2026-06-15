@@ -352,10 +352,6 @@ Material Issue Detail
                             </th>
 
                             <th class="px-4 py-4 text-left text-xs font-black uppercase">
-                                BOQ Quantity
-                            </th>
-
-                            <th class="px-4 py-4 text-left text-xs font-black uppercase">
                                 Sent
                             </th>
 
@@ -442,14 +438,6 @@ Material Issue Detail
                                 {% endif %}
                             </td>
 
-                            <td class="px-4 py-4 font-black text-[#0F4C81]">
-                                {% if item.boq_item %}
-                                    {{ item.boq_item.required_quantity }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-
                             <td class="px-4 py-4 font-black text-blue-600">
                                 {{ item.issued_quantity }}
                             </td>
@@ -503,7 +491,7 @@ Material Issue Detail
                         {% empty %}
 
                         <tr>
-                            <td colspan="14" class="text-center py-12">
+                            <td colspan="13" class="text-center py-12">
 
                                 <h3 class="text-xl font-black text-slate-700">
                                     No Material Items Found
