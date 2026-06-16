@@ -48,8 +48,7 @@ class CustomerProject(models.Model):
     location = models.CharField(
         max_length=250,
         blank=True,
-        null=True,
-        default="Muzaffarpur"
+        null=True
     )
 
     site_address = models.TextField(

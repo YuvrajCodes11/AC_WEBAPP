@@ -111,7 +111,7 @@ def add_project(request):
             project = CustomerProject.objects.create(
                 customer=customer,
                 site_name=site_name,
-                location=request.POST.get("location", "").strip() or "Muzaffarpur",
+                location=request.POST.get("location", "").strip() or None,
                 site_address=request.POST.get("site_address", "").strip(),
                 capacity_value=parse_decimal(request.POST.get("capacity_value")),
                 capacity_unit=request.POST.get("capacity_unit") or "TR",
@@ -173,7 +173,7 @@ def edit_project(request, id):
 
             project.customer = customer
             project.site_name = site_name
-            project.location = request.POST.get("location", "").strip() or "Muzaffarpur"
+            project.location = request.POST.get("location", "").strip() or None
             project.site_address = request.POST.get("site_address", "").strip()
             project.capacity_value = parse_decimal(request.POST.get("capacity_value"))
             project.capacity_unit = request.POST.get("capacity_unit") or "TR"
