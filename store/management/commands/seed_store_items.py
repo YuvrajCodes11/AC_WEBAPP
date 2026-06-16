@@ -201,53 +201,84 @@ ITEMS = [
 ]
 
 
+def seed_official_store_items():
+    created_cats = 0
+    created_items = 0
+    skipped = 0
+
+    for cat_name, description, unit, is_vrv in ITEMS:
+        category, cat_created = StoreCategory.objects.get_or_create(
+            category_name=cat_name
+        )
+        if cat_created:
+            created_cats += 1
+
+        item = StoreItem.objects.filter(
+            category=category,
+            item_description=description,
+        ).first()
+
+        if item:
+            changed_fields = []
+            if item.is_vrv != is_vrv:
+                item.is_vrv = is_vrv
+                changed_fields.append("is_vrv")
+            previous_remarks = item.remarks
+            item.set_non_vrv(not is_vrv)
+            if item.remarks != previous_remarks:
+                changed_fields.append("remarks")
+            if changed_fields:
+                item.save(update_fields=changed_fields)
+            skipped += 1
+            continue
+
+        item = StoreItem(
+            category=category,
+            item_description=description,
+            unit=unit,
+            is_vrv=is_vrv,
+            opening_stock=0,
+            minimum_stock=0,
+        )
+        item.set_non_vrv(not is_vrv)
+        item.save()
+        created_items += 1
+
+    return {
+        "created_cats": created_cats,
+        "created_items": created_items,
+        "skipped": skipped,
+    }
+
+
+def official_catalog_is_missing():
+    for cat_name, description, unit, is_vrv in ITEMS:
+        if not StoreItem.objects.filter(
+            category__category_name=cat_name,
+            item_description=description,
+        ).exists():
+            return True
+    return False
+
+
+def ensure_official_store_catalog():
+    if official_catalog_is_missing():
+        return seed_official_store_items()
+    return {
+        "created_cats": 0,
+        "created_items": 0,
+        "skipped": len(ITEMS),
+    }
+
+
 class Command(BaseCommand):
     help = "Seed store categories and items from official item list"
 
     def handle(self, *args, **options):
-        created_cats = 0
-        created_items = 0
-        skipped = 0
-
-        for cat_name, description, unit, is_vrv in ITEMS:
-            category, cat_created = StoreCategory.objects.get_or_create(
-                category_name=cat_name
-            )
-            if cat_created:
-                created_cats += 1
-
-            item = StoreItem.objects.filter(
-                category=category,
-                item_description=description,
-            ).first()
-
-            if item:
-                changed_fields = []
-                if item.is_vrv != is_vrv:
-                    item.is_vrv = is_vrv
-                    changed_fields.append("is_vrv")
-                previous_remarks = item.remarks
-                item.set_non_vrv(not is_vrv)
-                if item.remarks != previous_remarks:
-                    changed_fields.append("remarks")
-                if changed_fields:
-                    item.save(update_fields=changed_fields)
-                skipped += 1
-                continue
-
-            item = StoreItem(
-                category=category,
-                item_description=description,
-                unit=unit,
-                is_vrv=is_vrv,
-                opening_stock=0,
-                minimum_stock=0,
-            )
-            item.set_non_vrv(not is_vrv)
-            item.save()
-            created_items += 1
+        stats = seed_official_store_items()
 
         self.stdout.write(self.style.SUCCESS(
-            f"Done — {created_cats} categories created, "
-            f"{created_items} items created, {skipped} skipped (already exist)."
+            f"Done — {stats['created_cats']} categories created, "
+            f"{stats['created_items']} items created, "
+            f"{stats['skipped']} skipped (already exist)."
         ))

@@ -9,7 +9,7 @@ from customers.models import Customer
 from material_issue.models import MaterialIssue, MaterialIssueItem
 from projects.models import CustomerProject
 
-from .management.commands.seed_store_items import ITEMS
+from .management.commands.seed_store_items import ITEMS, ensure_official_store_catalog
 from .models import StoreCategory, StoreItem, StoreTransaction
 
 
@@ -31,6 +31,19 @@ class StoreItemRecalculationTests(TestCase):
                 item_description='COPPER PIPE 6.4 mm/ 1/4" Non VRV'
             ).item_type_display,
             "Non-VRV",
+        )
+
+    def test_store_dashboard_self_heals_missing_official_catalog(self):
+        user = User.objects.create_user("catalog-dashboard", password="test-pass")
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("store_dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(StoreItem.objects.count(), len(ITEMS))
+        self.assertEqual(
+            ensure_official_store_catalog()["created_items"],
+            0,
         )
 
     def test_manual_transaction_records_serial_number(self):

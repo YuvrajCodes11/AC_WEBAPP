@@ -15,10 +15,12 @@ from .models import (
     StoreItem,
     StoreTransaction,
 )
+from .management.commands.seed_store_items import ensure_official_store_catalog
 
 
 @login_required
 def store_dashboard(request):
+    ensure_official_store_catalog()
 
     search = request.GET.get("search", "").strip()
     search_lower = search.lower()
@@ -198,6 +200,7 @@ def delete_store_category(request, id):
 
 @login_required
 def store_item_list(request):
+    ensure_official_store_catalog()
 
     search = request.GET.get("search", "").strip()
     category_id = request.GET.get("category", "").strip()

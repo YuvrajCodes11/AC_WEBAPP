@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from projects.models import CustomerProject
 from store.models import StoreItem, StoreCategory
+from store.management.commands.seed_store_items import ensure_official_store_catalog
 from .models import ProjectBOQ, ProjectBOQItem
 
 
@@ -62,6 +63,8 @@ def boq_list(request):
 
 @login_required
 def add_boq(request):
+    ensure_official_store_catalog()
+
     projects = CustomerProject.objects.select_related(
         "customer"
     ).filter(
